@@ -1,0 +1,66 @@
+Build a UK Property Investor Deal Analyser web app (England & Northern Ireland SDLT only for v1).
+
+GOAL
+A simple, professional web tool where I enter:
+- Address or postcode (string)
+- Asking price (£)
+- Expected monthly rent (£)
+- Solicitor fees (£) (default 1500)
+- Refurb/repairs budget (£) (default 0)
+- Other costs (£) (default 0)
+Optional toggles:
+- Buyer type: Investor (additional property) vs First-time buyer
+- Show both scenarios side-by-side
+
+The app should calculate:
+1) SDLT (Stamp Duty Land Tax) for:
+   A) First-time buyer (FTB relief rules)
+   B) Investor / additional property (higher rates)
+2) Total acquisition cost:
+   total = price + sdlt + solicitorFees + refurbCosts + otherCosts
+3) Annual rent = monthlyRent * 12
+4) Gross yield (%) = annualRent / total * 100
+5) Net yield (%) with optional inputs:
+   - void months per year (default 0)
+   - monthly running costs (default 0)
+   netAnnualRent = annualRent - (monthlyRent * voidMonths) - (runningCosts * 12)
+   netYield (%) = netAnnualRent / total * 100
+
+Also include a “Target Offer Price” feature:
+- User enters target yield % (default 7.0)
+- The app outputs the maximum purchase price that would hit that yield (for both Investor and FTB scenarios)
+- Implement an iterative approach because SDLT depends on the purchase price:
+  - Start with guess = asking price
+  - Calculate sdlt for that guess
+  - Compute implied maxPurchasePrice = (netAnnualRent / (targetYield/100)) - (sdlt + fees + refurb + other)
+  - Repeat up to 10 iterations or until change < £50
+- Show suggested offer price clearly with a short note: “To hit X% yield you’d need to pay around £Y”.
+
+SCOPE & SAFETY
+- V1 is calculation-first: do not build complex school/Ofsted features yet.
+- Do not include Scotland (LBTT) or Wales (LTT).
+- Use clean code, clear functions, and input validation.
+- Currency is GBP and formatting should use £ with commas.
+- Add a clear disclaimer: estimates only, not financial advice; SDLT rules can change.
+
+TECH / STRUCTURE
+- Convert the project to an Express server.
+- Serve a simple frontend (plain HTML + CSS + client-side JS) from /public.
+- Use a single page UI:
+  - Input panel
+  - Results panel
+- Keep SDLT logic in /src/sdlt.js and calculation logic in /src/calcs.js
+- Create /public/app.js to handle form input and update results dynamically (no page refresh).
+
+UI REQUIREMENTS
+- Clean, modern layout.
+- Results should include:
+  - SDLT amount
+  - Total cost breakdown (price, sdlt, fees, refurb, other)
+  - Gross yield and net yield
+  - Target Offer Price
+- Add small helper tooltips for each input.
+
+DELIVERABLES
+- Working app on Replit with a clear README.
+- Include a few test examples in README (e.g. £200k, £900 rent, fees £1500).
