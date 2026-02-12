@@ -1,0 +1,62 @@
+const express = require('express');
+const path = require('path');
+const { calculateDeal, calculateTargetOfferPrice } = require('./src/calcs');
+const { getSDLTBreakdown } = require('./src/sdlt');
+
+const app = express();
+const PORT = 5000;
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+}));
+
+app.post('/api/calculate', (req, res) => {
+  try {
+    const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, voidMonths, runningCosts, buyerType, targetYield } = req.body;
+
+    if (!price || price <= 0 || !monthlyRent || monthlyRent <= 0) {
+      return res.status(400).json({ error: 'Price and monthly rent are required and must be positive.' });
+    }
+
+    const params = {
+      price: Number(price),
+      monthlyRent: Number(monthlyRent),
+      solicitorFees: Number(solicitorFees) || 1500,
+      refurbCosts: Number(refurbCosts) || 0,
+      otherCosts: Number(otherCosts) || 0,
+      voidMonths: Number(voidMonths) || 0,
+      runningCosts: Number(runningCosts) || 0,
+    };
+
+    const investorResult = calculateDeal({ ...params, buyerType: 'additional' });
+    const investorBreakdown = getSDLTBreakdown(params.price, 'additional');
+    const investorOffer = calculateTargetOfferPrice({ ...params, buyerType: 'additional', targetYield: Number(targetYield) || 7.0 });
+
+    const ftbResult = calculateDeal({ ...params, buyerType: 'ftb' });
+    const ftbBreakdown = getSDLTBreakdown(params.price, 'ftb');
+    const ftbOffer = calculateTargetOfferPrice({ ...params, buyerType: 'ftb', targetYield: Number(targetYield) || 7.0 });
+
+    res.json({
+      investor: {
+        ...investorResult,
+        sdltBreakdown: investorBreakdown,
+        targetOffer: investorOffer,
+      },
+      ftb: {
+        ...ftbResult,
+        sdltBreakdown: ftbBreakdown,
+        targetOffer: ftbOffer,
+      },
+      targetYield: Number(targetYield) || 7.0,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Calculation error. Please check your inputs.' });
+  }
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});

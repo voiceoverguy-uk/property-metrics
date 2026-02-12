@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Property Deal Analyser</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>UK Property Deal Analyser</h1>
+      <p class="subtitle">England &amp; Northern Ireland &mdash; SDLT Calculator &amp; Yield Analysis</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="layout">
+      <section class="input-panel">
+        <h2>Property Details</h2>
+        <form id="dealForm" autocomplete="off">
+          <div class="form-group">
+            <label for="address">
+              Address / Postcode
+              <span class="tooltip" data-tip="Enter the property address or postcode for reference.">?</span>
+            </label>
+            <input type="text" id="address" placeholder="e.g. SW1A 1AA">
+          </div>
+
+          <div class="form-group">
+            <label for="price">
+              Asking Price (£)
+              <span class="tooltip" data-tip="The listed or agreed purchase price of the property.">?</span>
+            </label>
+            <input type="number" id="price" min="0" step="1000" required placeholder="e.g. 200000">
+          </div>
+
+          <div class="form-group">
+            <label for="monthlyRent">
+              Expected Monthly Rent (£)
+              <span class="tooltip" data-tip="The rent you expect to receive each month from tenants.">?</span>
+            </label>
+            <input type="number" id="monthlyRent" min="0" step="50" required placeholder="e.g. 900">
+          </div>
+
+          <div class="form-group">
+            <label for="solicitorFees">
+              Solicitor Fees (£)
+              <span class="tooltip" data-tip="Legal fees for the purchase. Default is £1,500.">?</span>
+            </label>
+            <input type="number" id="solicitorFees" min="0" step="100" value="1500">
+          </div>
+
+          <div class="form-group">
+            <label for="refurbCosts">
+              Refurb / Repairs Budget (£)
+              <span class="tooltip" data-tip="Estimated cost of any renovations or repairs needed.">?</span>
+            </label>
+            <input type="number" id="refurbCosts" min="0" step="100" value="0">
+          </div>
+
+          <div class="form-group">
+            <label for="otherCosts">
+              Other Costs (£)
+              <span class="tooltip" data-tip="Any other purchase costs (e.g. surveys, broker fees).">?</span>
+            </label>
+            <input type="number" id="otherCosts" min="0" step="100" value="0">
+          </div>
+
+          <h3>Yield Adjustments</h3>
+
+          <div class="form-row">
+            <div class="form-group half">
+              <label for="voidMonths">
+                Void Months / Year
+                <span class="tooltip" data-tip="Expected empty months per year with no rental income.">?</span>
+              </label>
+              <input type="number" id="voidMonths" min="0" max="12" step="1" value="0">
+            </div>
+            <div class="form-group half">
+              <label for="runningCosts">
+                Monthly Running Costs (£)
+                <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, management fees, etc).">?</span>
+              </label>
+              <input type="number" id="runningCosts" min="0" step="25" value="0">
+            </div>
+          </div>
+
+          <h3>Target Offer Price</h3>
+
+          <div class="form-group">
+            <label for="targetYield">
+              Target Yield (%)
+              <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum price to achieve this.">?</span>
+            </label>
+            <input type="number" id="targetYield" min="0" max="50" step="0.5" value="7.0">
+          </div>
+
+          <button type="submit" class="btn-calculate">Analyse Deal</button>
+        </form>
+      </section>
+
+      <section class="results-panel" id="resultsPanel">
+        <div class="results-placeholder">
+          <p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="disclaimer">
+      <p><strong>Disclaimer:</strong> These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England &amp; Northern Ireland only (not Scotland LBTT or Wales LTT).</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
