@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 app.post('/api/calculate', (req, res) => {
   try {
-    const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, voidMonths, runningCosts, buyerType, targetYield } = req.body;
+    const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, costItems, voidMonths, runningCosts, targetYield } = req.body;
 
     if (!price || price <= 0 || !monthlyRent || monthlyRent <= 0) {
       return res.status(400).json({ error: 'Price and monthly rent are required and must be positive.' });
@@ -31,11 +31,17 @@ app.post('/api/calculate', (req, res) => {
       runningCosts: Number(runningCosts) || 0,
     };
 
+    const parsedCostItems = Array.isArray(costItems)
+      ? costItems.map(item => ({ label: String(item.label || ''), amount: Number(item.amount) || 0 }))
+      : [];
+
     const investorResult = calculateDeal({ ...params, buyerType: 'additional' });
+    investorResult.breakdown.costItems = parsedCostItems;
     const investorBreakdown = getSDLTBreakdown(params.price, 'additional');
     const investorOffer = calculateTargetOfferPrice({ ...params, buyerType: 'additional', targetYield: Number(targetYield) || 7.0 });
 
     const ftbResult = calculateDeal({ ...params, buyerType: 'ftb' });
+    ftbResult.breakdown.costItems = parsedCostItems;
     const ftbBreakdown = getSDLTBreakdown(params.price, 'ftb');
     const ftbOffer = calculateTargetOfferPrice({ ...params, buyerType: 'ftb', targetYield: Number(targetYield) || 7.0 });
 
