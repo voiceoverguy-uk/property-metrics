@@ -4,7 +4,8 @@
 A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios.
 
 ## Recent Changes
-- 2026-02-13: Added Google Maps integration — PlaceAutocompleteElement for address search (new Places API), map preview with AdvancedMarkerElement; API key served via /api/maps-key endpoint
+- 2026-02-13: Switched to new AutocompleteSuggestion API (replaces deprecated AutocompleteService); uses session tokens, place.fetchFields() for coordinates
+- 2026-02-13: Added Google Maps integration — custom autocomplete dropdown, map preview with Marker; API key served via /api/maps-key endpoint
 - 2026-02-13: Fixed investor SDLT bands to post-April 2025 rates; replaced single refurb input with itemised cost list; fixed re-calculation on repeated clicks
 - 2026-02-12: Initial build — Express server, SDLT calculator, yield analysis, target offer price solver
 
@@ -30,10 +31,11 @@ public/app.js       — Client-side form handling and results rendering
 - `POST /api/calculate` — Accepts property details, returns investor and FTB analysis
 
 ### Google Maps Integration
-- Uses new Places API (`PlaceAutocompleteElement`) — compatible with keys created after March 2025
-- `AdvancedMarkerElement` for map pins (requires `mapId`)
-- API key stored in Replit Secrets (`GOOGLE_MAPS_API_KEY`), served via endpoint (never hardcoded)
-- Restricted to UK addresses (`componentRestrictions: { country: 'gb' }`)
+- Uses new Places API (`AutocompleteSuggestion.fetchAutocompleteSuggestions`) — required for keys created after March 2025
+- Custom dropdown with debounce (300ms) and session tokens for billing optimisation
+- `place.fetchFields()` to get coordinates after selection; `google.maps.Marker` for map pins
+- API key stored in Replit Secrets (`GOOGLE_MAPS_API_KEY`), served via `/api/maps-key` endpoint (never hardcoded)
+- Restricted to UK addresses (`includedRegionCodes: ['gb']`)
 
 ### SDLT Rates (England & NI, as of build date)
 - **Standard**: 0% up to £250k, 5% £250k-£925k, 10% £925k-£1.5m, 12% above

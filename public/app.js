@@ -21,22 +21,34 @@ async function initGoogleMaps() {
     }
     console.log('Google Maps: loading API...');
 
-    window.__gmapsReady = function () {
-      console.log('Google Maps: API ready via callback');
-      setupAutocomplete();
-    };
-
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=__gmapsReady`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,marker&v=weekly`;
     script.async = true;
     script.defer = true;
+
+    script.onload = async () => {
+      console.log('Google Maps: script loaded');
+      try {
+        const placesLib = await google.maps.importLibrary('places');
+        await google.maps.importLibrary('maps');
+        console.log('Google Maps: libraries imported');
+        console.log('Google Maps: AutocompleteSuggestion available:', !!placesLib.AutocompleteSuggestion);
+        setupAutocomplete(placesLib);
+      } catch (e) {
+        console.error('Google Maps: failed to import libraries:', e);
+      }
+    };
+    script.onerror = (e) => {
+      console.error('Google Maps: script failed to load', e);
+    };
+
     document.head.appendChild(script);
   } catch (e) {
     console.error('Google Maps failed to load:', e);
   }
 }
 
-function setupAutocomplete() {
+function setupAutocomplete(placesLib) {
   const addressInput = document.getElementById('address');
   const wrapper = addressInput.parentElement;
   wrapper.style.position = 'relative';
@@ -46,11 +58,19 @@ function setupAutocomplete() {
   dropdown.style.display = 'none';
   wrapper.appendChild(dropdown);
 
-  const autocompleteService = new google.maps.places.AutocompleteService();
-  const geocoder = new google.maps.Geocoder();
-  let debounceTimer = null;
+  const AutocompleteSuggestion = placesLib.AutocompleteSuggestion;
+  const AutocompleteSessionToken = placesLib.AutocompleteSessionToken;
 
-  console.log('Google Maps: custom autocomplete ready');
+  if (!AutocompleteSuggestion) {
+    console.warn('Google Maps: AutocompleteSuggestion not available, trying classic Autocomplete');
+    setupClassicAutocomplete(addressInput, dropdown);
+    return;
+  }
+
+  let debounceTimer = null;
+  let sessionToken = new AutocompleteSessionToken();
+
+  console.log('Google Maps: autocomplete ready (new API)');
 
   addressInput.addEventListener('input', () => {
     const query = addressInput.value.trim();
@@ -60,47 +80,60 @@ function setupAutocomplete() {
     }
 
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      autocompleteService.getPlacePredictions(
-        {
+    debounceTimer = setTimeout(async () => {
+      try {
+        const request = {
           input: query,
-          componentRestrictions: { country: 'gb' },
-          types: ['address'],
-        },
-        (predictions, status) => {
-          if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
-            console.warn('Google Maps autocomplete status:', status);
-            dropdown.style.display = 'none';
-            return;
-          }
-          renderDropdown(predictions);
+          sessionToken,
+          region: 'gb',
+          language: 'en-GB',
+        };
+
+        const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+        if (!suggestions || suggestions.length === 0) {
+          console.warn('Google Maps: no suggestions returned');
+          dropdown.style.display = 'none';
+          return;
         }
-      );
+        renderDropdown(suggestions);
+      } catch (e) {
+        console.error('Google Maps autocomplete error:', e);
+        dropdown.style.display = 'none';
+      }
     }, 300);
   });
 
-  function renderDropdown(predictions) {
+  function renderDropdown(suggestions) {
     dropdown.innerHTML = '';
-    predictions.forEach((prediction) => {
+    suggestions.forEach((suggestion) => {
+      const pred = suggestion.placePrediction;
+      if (!pred) return;
+
       const item = document.createElement('div');
       item.className = 'address-dropdown-item';
-      item.textContent = prediction.description;
-      item.addEventListener('mousedown', (e) => {
+      item.textContent = pred.text.text;
+      item.addEventListener('mousedown', async (e) => {
         e.preventDefault();
-        addressInput.value = prediction.description;
+        addressInput.value = pred.text.text;
         dropdown.style.display = 'none';
 
-        geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
-          if (status === 'OK' && results[0] && results[0].geometry) {
-            const loc = results[0].geometry.location;
+        try {
+          const place = pred.toPlace();
+          await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location'] });
+
+          if (place.location) {
             selectedLocation = {
-              lat: loc.lat(),
-              lng: loc.lng(),
-              address: prediction.description,
+              lat: place.location.lat(),
+              lng: place.location.lng(),
+              address: place.formattedAddress || pred.text.text,
             };
             showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
           }
-        });
+          sessionToken = new AutocompleteSessionToken();
+        } catch (err) {
+          console.error('Google Maps: place details error:', err);
+        }
       });
       dropdown.appendChild(item);
     });
@@ -113,6 +146,26 @@ function setupAutocomplete() {
 
   addressInput.addEventListener('focus', () => {
     if (dropdown.children.length > 0) dropdown.style.display = '';
+  });
+}
+
+function setupClassicAutocomplete(addressInput, dropdown) {
+  console.log('Google Maps: using classic Autocomplete widget');
+  const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+    componentRestrictions: { country: 'gb' },
+    fields: ['formatted_address', 'geometry', 'name'],
+  });
+
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (place.geometry && place.geometry.location) {
+      selectedLocation = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+        address: place.formatted_address || place.name,
+      };
+      showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+    }
   });
 }
 
@@ -129,7 +182,6 @@ function showMap(lat, lng, title) {
       mapTypeControl: false,
       streetViewControl: true,
       fullscreenControl: true,
-      styles: [{ featureType: 'poi', stylers: [{ visibility: 'simplified' }] }],
     });
   } else {
     map.setCenter(pos);
