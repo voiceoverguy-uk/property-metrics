@@ -49,6 +49,7 @@ header .subtitle {
   border-radius: 14px;
   padding: 28px;
   box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
+  overflow: visible;
 }
 
 .input-panel h2 {
@@ -513,17 +514,36 @@ header .subtitle {
   border: 1.5px solid #eee;
 }
 
-gmp-place-autocomplete {
-  width: 100%;
+.address-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 1000;
+  max-height: 260px;
+  overflow-y: auto;
 }
 
-#address-autocomplete {
-  width: 100%;
-  --gmpx-color-surface: #fff;
-  --gmpx-color-on-surface: #1a1a1a;
-  --gmpx-color-primary: #d42027;
-  --gmpx-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --gmpx-font-size-base: 0.95rem;
+.address-dropdown-item {
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+.address-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.address-dropdown-item:hover {
+  background: #fef2f2;
+  color: #d42027;
 }
 
 @media (max-width: 860px) {

@@ -27,7 +27,7 @@ async function initGoogleMaps() {
     };
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,marker&v=beta&callback=__gmapsReady`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=__gmapsReady`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
@@ -39,32 +39,80 @@ async function initGoogleMaps() {
 function setupAutocomplete() {
   const addressInput = document.getElementById('address');
   const wrapper = addressInput.parentElement;
+  wrapper.style.position = 'relative';
 
-  const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement({
-    componentRestrictions: { country: 'gb' },
+  const dropdown = document.createElement('div');
+  dropdown.className = 'address-dropdown';
+  dropdown.style.display = 'none';
+  wrapper.appendChild(dropdown);
+
+  const autocompleteService = new google.maps.places.AutocompleteService();
+  const geocoder = new google.maps.Geocoder();
+  let debounceTimer = null;
+
+  console.log('Google Maps: custom autocomplete ready');
+
+  addressInput.addEventListener('input', () => {
+    const query = addressInput.value.trim();
+    if (query.length < 3) {
+      dropdown.style.display = 'none';
+      return;
+    }
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      autocompleteService.getPlacePredictions(
+        {
+          input: query,
+          componentRestrictions: { country: 'gb' },
+          types: ['address'],
+        },
+        (predictions, status) => {
+          if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
+            console.warn('Google Maps autocomplete status:', status);
+            dropdown.style.display = 'none';
+            return;
+          }
+          renderDropdown(predictions);
+        }
+      );
+    }, 300);
   });
 
-  placeAutocomplete.id = 'address-autocomplete';
-  addressInput.style.display = 'none';
-  wrapper.appendChild(placeAutocomplete);
-  console.log('Google Maps: PlaceAutocompleteElement created and added to DOM');
+  function renderDropdown(predictions) {
+    dropdown.innerHTML = '';
+    predictions.forEach((prediction) => {
+      const item = document.createElement('div');
+      item.className = 'address-dropdown-item';
+      item.textContent = prediction.description;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        addressInput.value = prediction.description;
+        dropdown.style.display = 'none';
 
-  placeAutocomplete.addEventListener('gmp-placeselect', async ({ placePrediction }) => {
-    console.log('Google Maps: place selected');
-    const place = placePrediction.toPlace();
-    await place.fetchFields({
-      fields: ['displayName', 'formattedAddress', 'location'],
+        geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+          if (status === 'OK' && results[0] && results[0].geometry) {
+            const loc = results[0].geometry.location;
+            selectedLocation = {
+              lat: loc.lat(),
+              lng: loc.lng(),
+              address: prediction.description,
+            };
+            showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+          }
+        });
+      });
+      dropdown.appendChild(item);
     });
+    dropdown.style.display = '';
+  }
 
-    const loc = place.location;
-    selectedLocation = {
-      lat: loc.lat(),
-      lng: loc.lng(),
-      address: place.formattedAddress,
-    };
+  addressInput.addEventListener('blur', () => {
+    setTimeout(() => { dropdown.style.display = 'none'; }, 200);
+  });
 
-    addressInput.value = place.formattedAddress || place.displayName || '';
-    showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+  addressInput.addEventListener('focus', () => {
+    if (dropdown.children.length > 0) dropdown.style.display = '';
   });
 }
 
@@ -81,18 +129,19 @@ function showMap(lat, lng, title) {
       mapTypeControl: false,
       streetViewControl: true,
       fullscreenControl: true,
-      mapId: 'property-map',
+      styles: [{ featureType: 'poi', stylers: [{ visibility: 'simplified' }] }],
     });
   } else {
     map.setCenter(pos);
     map.setZoom(15);
   }
 
-  if (marker) marker.map = null;
-  marker = new google.maps.marker.AdvancedMarkerElement({
+  if (marker) marker.setMap(null);
+  marker = new google.maps.Marker({
     position: pos,
     map,
     title: title || 'Property Location',
+    animation: google.maps.Animation.DROP,
   });
 }
 
