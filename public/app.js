@@ -175,7 +175,7 @@ function renderCostItems() {
     row.className = 'cost-item-row';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="e.g. Decorating" data-index="${index}">
-      <input type="number" class="cost-item-amount" value="${item.amount}" min="0" step="100" placeholder="0" data-index="${index}">
+      <input type="number" class="cost-item-amount" value="${item.amount}" min="0" step="any" placeholder="0" data-index="${index}">
       ${costItems.length > 1 ? `<button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>` : '<span class="btn-remove-placeholder"></span>'}
     `;
     costItemsList.appendChild(row);
