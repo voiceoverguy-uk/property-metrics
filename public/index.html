@@ -29,7 +29,7 @@
 
           <div class="form-group">
             <label for="price">
-              Asking Price (£)
+              Asking Price (&pound;)
               <span class="tooltip" data-tip="The listed or agreed purchase price of the property.">?</span>
             </label>
             <input type="number" id="price" min="0" step="1000" required placeholder="e.g. 200000">
@@ -37,7 +37,7 @@
 
           <div class="form-group">
             <label for="monthlyRent">
-              Expected Monthly Rent (£)
+              Expected Monthly Rent (&pound;)
               <span class="tooltip" data-tip="The rent you expect to receive each month from tenants.">?</span>
             </label>
             <input type="number" id="monthlyRent" min="0" step="50" required placeholder="e.g. 900">
@@ -45,26 +45,22 @@
 
           <div class="form-group">
             <label for="solicitorFees">
-              Solicitor Fees (£)
-              <span class="tooltip" data-tip="Legal fees for the purchase. Default is £1,500.">?</span>
+              Solicitor Fees (&pound;)
+              <span class="tooltip" data-tip="Legal fees for the purchase. Default is &pound;1,500.">?</span>
             </label>
             <input type="number" id="solicitorFees" min="0" step="100" value="1500">
           </div>
 
-          <div class="form-group">
-            <label for="refurbCosts">
-              Refurb / Repairs Budget (£)
-              <span class="tooltip" data-tip="Estimated cost of any renovations or repairs needed.">?</span>
-            </label>
-            <input type="number" id="refurbCosts" min="0" step="100" value="0">
-          </div>
+          <h3>
+            Additional Costs
+            <span class="tooltip" data-tip="Add itemised costs such as refurb, repairs, decorating, EPC, EICR, surveys, etc.">?</span>
+          </h3>
 
-          <div class="form-group">
-            <label for="otherCosts">
-              Other Costs (£)
-              <span class="tooltip" data-tip="Any other purchase costs (e.g. surveys, broker fees).">?</span>
-            </label>
-            <input type="number" id="otherCosts" min="0" step="100" value="0">
+          <div id="costItemsList"></div>
+          <button type="button" id="addCostItem" class="btn-add-item">+ Add Cost Item</button>
+          <div class="cost-total-row">
+            <span>Total Additional Costs:</span>
+            <span id="costItemsTotal">&pound;0</span>
           </div>
 
           <h3>Yield Adjustments</h3>
@@ -79,7 +75,7 @@
             </div>
             <div class="form-group half">
               <label for="runningCosts">
-                Monthly Running Costs (£)
+                Monthly Running Costs (&pound;)
                 <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, management fees, etc).">?</span>
               </label>
               <input type="number" id="runningCosts" min="0" step="25" value="0">

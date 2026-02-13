@@ -1,9 +1,14 @@
 const form = document.getElementById('dealForm');
 const resultsPanel = document.getElementById('resultsPanel');
+const costItemsList = document.getElementById('costItemsList');
+const addCostItemBtn = document.getElementById('addCostItem');
+const costItemsTotalEl = document.getElementById('costItemsTotal');
+
+let costItems = [{ label: 'Refurb / Repairs', amount: 0 }];
 
 function fmt(n) {
-  if (n == null || isNaN(n)) return '£0';
-  return '£' + Math.round(n).toLocaleString('en-GB');
+  if (n == null || isNaN(n)) return '\u00a30';
+  return '\u00a3' + Math.round(n).toLocaleString('en-GB');
 }
 
 function fmtPct(n) {
@@ -17,6 +22,59 @@ function yieldClass(y) {
   return 'low';
 }
 
+function getCostItemsTotal() {
+  return costItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+}
+
+function renderCostItems() {
+  costItemsList.innerHTML = '';
+  costItems.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'cost-item-row';
+    row.innerHTML = `
+      <input type="text" class="cost-item-label" value="${item.label}" placeholder="e.g. Decorating" data-index="${index}">
+      <input type="number" class="cost-item-amount" value="${item.amount}" min="0" step="100" placeholder="0" data-index="${index}">
+      ${costItems.length > 1 ? `<button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>` : '<span class="btn-remove-placeholder"></span>'}
+    `;
+    costItemsList.appendChild(row);
+  });
+
+  costItemsList.querySelectorAll('.cost-item-label').forEach(input => {
+    input.addEventListener('input', (e) => {
+      costItems[parseInt(e.target.dataset.index)].label = e.target.value;
+    });
+  });
+
+  costItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
+    input.addEventListener('input', (e) => {
+      costItems[parseInt(e.target.dataset.index)].amount = parseFloat(e.target.value) || 0;
+      updateCostTotal();
+    });
+  });
+
+  costItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      costItems.splice(parseInt(e.target.dataset.index), 1);
+      renderCostItems();
+    });
+  });
+
+  updateCostTotal();
+}
+
+function updateCostTotal() {
+  costItemsTotalEl.textContent = fmt(getCostItemsTotal());
+}
+
+addCostItemBtn.addEventListener('click', () => {
+  costItems.push({ label: '', amount: 0 });
+  renderCostItems();
+  const labels = costItemsList.querySelectorAll('.cost-item-label');
+  if (labels.length > 0) labels[labels.length - 1].focus();
+});
+
+renderCostItems();
+
 function renderSDLTTable(breakdown) {
   if (!breakdown || !breakdown.bands || breakdown.bands.length === 0) {
     return '<p style="font-size:0.85rem;color:#777;">No SDLT due</p>';
@@ -24,12 +82,30 @@ function renderSDLTTable(breakdown) {
   let html = '<table class="sdlt-band-table"><thead><tr><th>Band</th><th class="rate-col">Rate</th><th class="amount-col">Tax</th></tr></thead><tbody>';
   for (const b of breakdown.bands) {
     html += `<tr>
-      <td>${fmt(b.from)} – ${fmt(b.to)}</td>
+      <td>${fmt(b.from)} \u2013 ${fmt(b.to)}</td>
       <td class="rate-col">${(b.rate * 100).toFixed(0)}%</td>
       <td class="amount-col">${fmt(b.tax)}</td>
     </tr>`;
   }
-  html += `</tbody></table>`;
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderCostBreakdownRows(data) {
+  let html = '';
+  html += `<div class="result-row"><span class="label">Purchase Price</span><span class="value">${fmt(data.breakdown.price)}</span></div>`;
+  html += `<div class="result-row"><span class="label">SDLT</span><span class="value">${fmt(data.breakdown.sdlt)}</span></div>`;
+  html += `<div class="result-row"><span class="label">Solicitor Fees</span><span class="value">${fmt(data.breakdown.solicitorFees)}</span></div>`;
+
+  if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
+    for (const item of data.breakdown.costItems) {
+      if (item.amount > 0) {
+        html += `<div class="result-row"><span class="label">${item.label || 'Cost item'}</span><span class="value">${fmt(item.amount)}</span></div>`;
+      }
+    }
+  }
+
+  html += `<div class="result-row total"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>`;
   return html;
 }
 
@@ -55,7 +131,7 @@ function renderScenario(data, label, targetYield) {
 
   return `
     <div class="result-section">
-      <h3>SDLT — ${label}</h3>
+      <h3>SDLT \u2014 ${label}</h3>
       ${renderSDLTTable(data.sdltBreakdown)}
       <div class="result-row total">
         <span class="label">Total SDLT</span>
@@ -65,12 +141,7 @@ function renderScenario(data, label, targetYield) {
 
     <div class="result-section">
       <h3>Cost Breakdown</h3>
-      <div class="result-row"><span class="label">Purchase Price</span><span class="value">${fmt(data.breakdown.price)}</span></div>
-      <div class="result-row"><span class="label">SDLT</span><span class="value">${fmt(data.breakdown.sdlt)}</span></div>
-      <div class="result-row"><span class="label">Solicitor Fees</span><span class="value">${fmt(data.breakdown.solicitorFees)}</span></div>
-      <div class="result-row"><span class="label">Refurb / Repairs</span><span class="value">${fmt(data.breakdown.refurbCosts)}</span></div>
-      <div class="result-row"><span class="label">Other Costs</span><span class="value">${fmt(data.breakdown.otherCosts)}</span></div>
-      <div class="result-row total"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>
+      ${renderCostBreakdownRows(data)}
     </div>
 
     <div class="result-section">
@@ -100,7 +171,7 @@ function renderResults(result) {
   const address = document.getElementById('address').value || 'Property';
   const targetYield = result.targetYield;
 
-  let html = `
+  const html = `
     <div class="results-content">
       <h2>Deal Analysis</h2>
       <p class="address-line">${address}</p>
@@ -149,9 +220,7 @@ function renderResults(result) {
   });
 }
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
+async function runCalculation() {
   const price = parseFloat(document.getElementById('price').value);
   const monthlyRent = parseFloat(document.getElementById('monthlyRent').value);
 
@@ -164,12 +233,15 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
+  const totalAdditionalCosts = getCostItemsTotal();
+
   const body = {
     price,
     monthlyRent,
     solicitorFees: parseFloat(document.getElementById('solicitorFees').value) || 1500,
-    refurbCosts: parseFloat(document.getElementById('refurbCosts').value) || 0,
-    otherCosts: parseFloat(document.getElementById('otherCosts').value) || 0,
+    refurbCosts: totalAdditionalCosts,
+    otherCosts: 0,
+    costItems: costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
     runningCosts: parseFloat(document.getElementById('runningCosts').value) || 0,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
@@ -194,4 +266,9 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#e74c3c;">Error: ${err.message}</p></div>`;
   }
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  runCalculation();
 });
