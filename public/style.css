@@ -7,7 +7,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: #f0f2f5;
-  color: #1a1a2e;
+  color: #1a1a1a;
   line-height: 1.6;
 }
 
@@ -18,9 +18,9 @@ body {
 }
 
 header {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #1a1a1a;
   color: #fff;
-  padding: 28px 0;
+  padding: 30px 0;
   text-align: center;
 }
 
@@ -32,29 +32,29 @@ header h1 {
 
 header .subtitle {
   font-size: 0.95rem;
-  opacity: 0.8;
-  margin-top: 4px;
+  opacity: 0.7;
+  margin-top: 5px;
 }
 
 .layout {
   display: grid;
   grid-template-columns: 400px 1fr;
-  gap: 28px;
-  margin-top: 28px;
+  gap: 24px;
+  margin-top: 24px;
   align-items: start;
 }
 
 .input-panel {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
 }
 
 .input-panel h2 {
   font-size: 1.2rem;
   margin-bottom: 20px;
-  color: #1a1a2e;
+  color: #1a1a1a;
 }
 
 .input-panel h3 {
@@ -83,15 +83,15 @@ header .subtitle {
   width: 100%;
   padding: 10px 12px;
   border: 1.5px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.95rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #0f3460;
-  box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+  border-color: #d42027;
+  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
 }
 
 .form-row {
@@ -110,7 +110,7 @@ header .subtitle {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #e0e0e0;
+  background: #e8e8e8;
   color: #555;
   font-size: 0.7rem;
   font-weight: 700;
@@ -124,10 +124,10 @@ header .subtitle {
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  background: #1a1a2e;
+  background: #1a1a1a;
   color: #fff;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 400;
   white-space: nowrap;
@@ -135,25 +135,25 @@ header .subtitle {
   white-space: normal;
   z-index: 10;
   margin-bottom: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
 
 .btn-calculate {
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #0f3460, #1a1a2e);
+  padding: 13px;
+  background: #d42027;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.2s;
+  margin-top: 10px;
+  transition: background 0.2s;
 }
 
 .btn-calculate:hover {
-  opacity: 0.9;
+  background: #a1181d;
 }
 
 .btn-calculate:active {
@@ -162,9 +162,9 @@ header .subtitle {
 
 .results-panel {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
   min-height: 400px;
 }
 
@@ -181,7 +181,7 @@ header .subtitle {
 .results-content h2 {
   font-size: 1.15rem;
   margin-bottom: 6px;
-  color: #1a1a2e;
+  color: #1a1a1a;
 }
 
 .results-content .address-line {
@@ -201,26 +201,27 @@ header .subtitle {
   padding: 10px;
   text-align: center;
   border: 2px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
   transition: all 0.2s;
   background: #fff;
+  color: #555;
 }
 
 .scenario-tab.active {
-  border-color: #0f3460;
-  background: #f0f4ff;
-  color: #0f3460;
+  border-color: #d42027;
+  background: #fef2f2;
+  color: #d42027;
 }
 
 .scenario-tab:hover {
-  border-color: #0f3460;
+  border-color: #d42027;
 }
 
 .result-section {
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
 .result-section h3 {
@@ -246,18 +247,18 @@ header .subtitle {
 
 .result-row .value {
   font-weight: 600;
-  color: #1a1a2e;
+  color: #1a1a1a;
 }
 
 .result-row.total {
-  border-top: 2px solid #1a1a2e;
+  border-top: 2px solid #1a1a1a;
   margin-top: 6px;
   padding-top: 10px;
   font-size: 1rem;
 }
 
 .result-row.total .value {
-  color: #0f3460;
+  color: #d42027;
   font-size: 1.1rem;
 }
 
@@ -265,14 +266,15 @@ header .subtitle {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .yield-card {
   background: #f8f9fb;
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 18px;
   text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .yield-card .yield-label {
@@ -285,56 +287,60 @@ header .subtitle {
 .yield-card .yield-value {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1a1a1a;
   margin-top: 4px;
 }
 
-.yield-card .yield-value.good {
-  color: #27ae60;
+.yield-card .yield-value.yield-good {
+  color: #1a9a4a;
 }
 
-.yield-card .yield-value.moderate {
-  color: #f39c12;
+.yield-card .yield-value.yield-below {
+  color: #d42027;
 }
 
-.yield-card .yield-value.low {
-  color: #e74c3c;
+.yield-card .yield-value.yield-near {
+  color: #1a1a1a;
 }
 
 .offer-box {
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
-  border: 2px solid #c5d5ff;
-  border-radius: 10px;
-  padding: 18px;
+  background: #fef8f8;
+  border: 2.5px solid #d42027;
+  border-radius: 14px;
+  padding: 24px;
   text-align: center;
+  box-shadow: 0 2px 12px rgba(212,32,39,0.1);
 }
 
 .offer-box .offer-label {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: #555;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .offer-box .offer-price {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f3460;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #d42027;
+  letter-spacing: -0.5px;
 }
 
 .offer-box .offer-note {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: #777;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .offer-box.not-achievable {
-  background: #fff5f5;
-  border-color: #fcc;
+  background: #fafafa;
+  border-color: #ccc;
+  box-shadow: none;
 }
 
 .offer-box.not-achievable .offer-price {
-  color: #e74c3c;
+  color: #999;
   font-size: 1rem;
+  font-weight: 600;
 }
 
 .sdlt-band-table {
@@ -375,17 +381,18 @@ header .subtitle {
 
 .comparison-col {
   border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 
 .comparison-col h4 {
   font-size: 0.85rem;
   text-align: center;
   padding-bottom: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   border-bottom: 2px solid #f0f2f5;
-  color: #0f3460;
+  color: #d42027;
 }
 
 .cost-item-row {
@@ -399,7 +406,7 @@ header .subtitle {
   flex: 1;
   padding: 8px 10px;
   border: 1.5px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.88rem;
 }
 
@@ -407,7 +414,7 @@ header .subtitle {
   width: 100px;
   padding: 8px 10px;
   border: 1.5px solid #ddd;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.88rem;
   text-align: right;
 }
@@ -415,8 +422,8 @@ header .subtitle {
 .cost-item-row .cost-item-label:focus,
 .cost-item-row .cost-item-amount:focus {
   outline: none;
-  border-color: #0f3460;
-  box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+  border-color: #d42027;
+  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
 }
 
 .btn-remove-item {
@@ -424,8 +431,8 @@ header .subtitle {
   height: 28px;
   border: none;
   background: #fee;
-  color: #e74c3c;
-  border-radius: 6px;
+  color: #d42027;
+  border-radius: 8px;
   font-size: 1.1rem;
   cursor: pointer;
   display: flex;
@@ -449,7 +456,7 @@ header .subtitle {
   padding: 8px;
   background: #f8f9fb;
   border: 1.5px dashed #ccc;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.85rem;
   color: #555;
   cursor: pointer;
@@ -458,9 +465,9 @@ header .subtitle {
 }
 
 .btn-add-item:hover {
-  border-color: #0f3460;
-  background: #f0f4ff;
-  color: #0f3460;
+  border-color: #d42027;
+  background: #fef2f2;
+  color: #d42027;
 }
 
 .cost-total-row {
@@ -479,7 +486,7 @@ header .subtitle {
   padding: 16px 20px;
   background: #fff8e1;
   border: 1px solid #ffe082;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.8rem;
   color: #6d5e00;
 }
