@@ -15,22 +15,24 @@ async function initGoogleMaps() {
   try {
     const res = await fetch('/api/maps-key');
     const { key } = await res.json();
-    if (!key) return;
+    if (!key) {
+      console.warn('No Google Maps API key found');
+      return;
+    }
+    console.log('Google Maps: loading API...');
 
-    const bootstrap = document.createElement('script');
-    bootstrap.textContent = `
-      (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src="https://maps."+c+"apis.com/maps/api/js?"+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
-      ({key: "${key}", v: "beta"});
-    `;
-    document.head.appendChild(bootstrap);
+    window.__gmapsReady = function () {
+      console.log('Google Maps: API ready via callback');
+      setupAutocomplete();
+    };
 
-    await google.maps.importLibrary('places');
-    await google.maps.importLibrary('maps');
-    await google.maps.importLibrary('marker');
-
-    setupAutocomplete();
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,marker&v=beta&callback=__gmapsReady`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
   } catch (e) {
-    console.warn('Google Maps failed to load:', e);
+    console.error('Google Maps failed to load:', e);
   }
 }
 
@@ -45,8 +47,10 @@ function setupAutocomplete() {
   placeAutocomplete.id = 'address-autocomplete';
   addressInput.style.display = 'none';
   wrapper.appendChild(placeAutocomplete);
+  console.log('Google Maps: PlaceAutocompleteElement created and added to DOM');
 
   placeAutocomplete.addEventListener('gmp-placeselect', async ({ placePrediction }) => {
+    console.log('Google Maps: place selected');
     const place = placePrediction.toPlace();
     await place.fetchFields({
       fields: ['displayName', 'formattedAddress', 'location'],
