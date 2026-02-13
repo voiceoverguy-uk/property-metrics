@@ -491,6 +491,41 @@ header .subtitle {
   color: #6d5e00;
 }
 
+.map-section {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
+}
+
+.map-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 14px;
+  color: #1a1a1a;
+}
+
+#mapContainer {
+  width: 100%;
+  height: 350px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #eee;
+}
+
+gmp-place-autocomplete {
+  width: 100%;
+}
+
+#address-autocomplete {
+  width: 100%;
+  --gmpx-color-surface: #fff;
+  --gmpx-color-on-surface: #1a1a1a;
+  --gmpx-color-primary: #d42027;
+  --gmpx-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --gmpx-font-size-base: 0.95rem;
+}
+
 @media (max-width: 860px) {
   .layout {
     grid-template-columns: 1fr;

@@ -3,8 +3,96 @@ const resultsPanel = document.getElementById('resultsPanel');
 const costItemsList = document.getElementById('costItemsList');
 const addCostItemBtn = document.getElementById('addCostItem');
 const costItemsTotalEl = document.getElementById('costItemsTotal');
+const mapSection = document.getElementById('mapSection');
+const mapContainer = document.getElementById('mapContainer');
 
 let costItems = [{ label: 'Refurb / Repairs', amount: 0 }];
+let map = null;
+let marker = null;
+let selectedLocation = null;
+
+async function initGoogleMaps() {
+  try {
+    const res = await fetch('/api/maps-key');
+    const { key } = await res.json();
+    if (!key) return;
+
+    const bootstrap = document.createElement('script');
+    bootstrap.textContent = `
+      (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src="https://maps."+c+"apis.com/maps/api/js?"+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once."):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+      ({key: "${key}", v: "beta"});
+    `;
+    document.head.appendChild(bootstrap);
+
+    await google.maps.importLibrary('places');
+    await google.maps.importLibrary('maps');
+    await google.maps.importLibrary('marker');
+
+    setupAutocomplete();
+  } catch (e) {
+    console.warn('Google Maps failed to load:', e);
+  }
+}
+
+function setupAutocomplete() {
+  const addressInput = document.getElementById('address');
+  const wrapper = addressInput.parentElement;
+
+  const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement({
+    componentRestrictions: { country: 'gb' },
+  });
+
+  placeAutocomplete.id = 'address-autocomplete';
+  addressInput.style.display = 'none';
+  wrapper.appendChild(placeAutocomplete);
+
+  placeAutocomplete.addEventListener('gmp-placeselect', async ({ placePrediction }) => {
+    const place = placePrediction.toPlace();
+    await place.fetchFields({
+      fields: ['displayName', 'formattedAddress', 'location'],
+    });
+
+    const loc = place.location;
+    selectedLocation = {
+      lat: loc.lat(),
+      lng: loc.lng(),
+      address: place.formattedAddress,
+    };
+
+    addressInput.value = place.formattedAddress || place.displayName || '';
+    showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+  });
+}
+
+function showMap(lat, lng, title) {
+  mapSection.style.display = '';
+  const pos = { lat, lng };
+
+  if (!map) {
+    map = new google.maps.Map(mapContainer, {
+      center: pos,
+      zoom: 15,
+      disableDefaultUI: true,
+      zoomControl: true,
+      mapTypeControl: false,
+      streetViewControl: true,
+      fullscreenControl: true,
+      mapId: 'property-map',
+    });
+  } else {
+    map.setCenter(pos);
+    map.setZoom(15);
+  }
+
+  if (marker) marker.map = null;
+  marker = new google.maps.marker.AdvancedMarkerElement({
+    position: pos,
+    map,
+    title: title || 'Property Location',
+  });
+}
+
+initGoogleMaps();
 
 function fmt(n) {
   if (n == null || isNaN(n)) return '\u00a30';
