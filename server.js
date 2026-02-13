@@ -13,6 +13,11 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
+app.get('/api/maps-key', (req, res) => {
+  const key = process.env.GOOGLE_MAPS_API_KEY || '';
+  res.json({ key });
+});
+
 app.post('/api/calculate', (req, res) => {
   try {
     const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, costItems, voidMonths, runningCosts, targetYield } = req.body;
