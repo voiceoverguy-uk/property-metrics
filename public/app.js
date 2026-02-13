@@ -16,10 +16,11 @@ function fmtPct(n) {
   return n.toFixed(2) + '%';
 }
 
-function yieldClass(y) {
-  if (y >= 7) return 'good';
-  if (y >= 4) return 'moderate';
-  return 'low';
+function yieldClass(yieldVal, targetYield) {
+  const diff = yieldVal - targetYield;
+  if (Math.abs(diff) <= 0.2) return 'yield-near';
+  if (diff >= 0) return 'yield-good';
+  return 'yield-below';
 }
 
 function getCostItemsTotal() {
@@ -149,11 +150,11 @@ function renderScenario(data, label, targetYield) {
       <div class="yield-cards">
         <div class="yield-card">
           <div class="yield-label">Gross Yield</div>
-          <div class="yield-value ${yieldClass(data.grossYield)}">${fmtPct(data.grossYield)}</div>
+          <div class="yield-value ${yieldClass(data.grossYield, targetYield)}">${fmtPct(data.grossYield)}</div>
         </div>
         <div class="yield-card">
           <div class="yield-label">Net Yield</div>
-          <div class="yield-value ${yieldClass(data.netYield)}">${fmtPct(data.netYield)}</div>
+          <div class="yield-value ${yieldClass(data.netYield, targetYield)}">${fmtPct(data.netYield)}</div>
         </div>
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
@@ -264,7 +265,7 @@ async function runCalculation() {
     const result = await res.json();
     renderResults(result);
   } catch (err) {
-    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#e74c3c;">Error: ${err.message}</p></div>`;
+    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#d42027;">Error: ${err.message}</p></div>`;
   }
 }
 
