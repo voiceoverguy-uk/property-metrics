@@ -8,13 +8,20 @@
 </head>
 <body>
   <header>
-    <div class="container">
-      <h1>UK Property Deal Analyser</h1>
-      <p class="subtitle">England &amp; Northern Ireland &mdash; SDLT Calculator &amp; Yield Analysis</p>
+    <div class="container header-inner">
+      <div>
+        <h1>UK Property Deal Analyser</h1>
+        <p class="subtitle">England &amp; Northern Ireland &mdash; SDLT Calculator &amp; Yield Analysis</p>
+      </div>
+      <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
     </div>
   </header>
 
   <main class="container">
+    <div class="mode-toggle">
+      <button type="button" class="mode-btn active" data-mode="analyser">Deal Analyser</button>
+      <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
+    </div>
     <div class="layout">
       <section class="input-panel">
         <h2>Property Details</h2>
@@ -35,7 +42,7 @@
             <input type="number" id="price" min="0" step="any" required placeholder="e.g. 200000">
           </div>
 
-          <div class="form-group">
+          <div class="form-group analyser-only">
             <label for="monthlyRent">
               Expected Monthly Rent (&pound;)
               <span class="tooltip" data-tip="The rent you expect to receive each month from tenants.">?</span>
@@ -43,7 +50,7 @@
             <input type="number" id="monthlyRent" min="0" step="any" required placeholder="e.g. 900">
           </div>
 
-          <div class="form-group">
+          <div class="form-group analyser-only">
             <label for="solicitorFees">
               Solicitor Fees (&pound;)
               <span class="tooltip" data-tip="Legal fees for the purchase. Default is &pound;1,500.">?</span>
@@ -51,21 +58,21 @@
             <input type="number" id="solicitorFees" min="0" step="any" value="1500">
           </div>
 
-          <h3>
+          <h3 class="analyser-only">
             Additional Costs
             <span class="tooltip" data-tip="Add itemised costs such as refurb, repairs, decorating, EPC, EICR, surveys, etc.">?</span>
           </h3>
 
-          <div id="costItemsList"></div>
-          <button type="button" id="addCostItem" class="btn-add-item">+ Add Cost Item</button>
-          <div class="cost-total-row">
+          <div id="costItemsList" class="analyser-only"></div>
+          <button type="button" id="addCostItem" class="btn-add-item analyser-only">+ Add Cost Item</button>
+          <div class="cost-total-row analyser-only">
             <span>Total Additional Costs:</span>
             <span id="costItemsTotal">&pound;0</span>
           </div>
 
-          <h3>Yield Adjustments</h3>
+          <h3 class="analyser-only">Yield Adjustments</h3>
 
-          <div class="form-row">
+          <div class="form-row analyser-only">
             <div class="form-group half">
               <label for="voidMonths">
                 Void Months / Year
@@ -82,9 +89,9 @@
             </div>
           </div>
 
-          <h3>Target Offer Price</h3>
+          <h3 class="analyser-only">Target Offer Price</h3>
 
-          <div class="form-group">
+          <div class="form-group analyser-only">
             <label for="targetYield">
               Target Yield (%)
               <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum price to achieve this.">?</span>
@@ -92,8 +99,47 @@
             <input type="number" id="targetYield" min="0" max="50" step="any" value="7.0">
           </div>
 
-          <button type="submit" class="btn-calculate">Analyse Deal</button>
-          <button type="button" id="savePdfBtn" class="btn-save-pdf" style="display:none;" onclick="printReport()">Save as PDF</button>
+          <h3 class="mortgage-header analyser-only">
+            Mortgage Calculator
+            <span class="tooltip" data-tip="Optional mortgage/financing analysis to calculate monthly payments, cash flow and cash-on-cash return.">?</span>
+          </h3>
+
+          <div class="form-group mortgage-toggle-group analyser-only">
+            <label class="mortgage-toggle-label">
+              <input type="checkbox" id="mortgageToggle">
+              <span>Include mortgage analysis</span>
+            </label>
+          </div>
+
+          <div id="mortgageFields" class="mortgage-fields analyser-only" style="display:none;">
+            <div class="form-row">
+              <div class="form-group half">
+                <label for="depositPct">
+                  Deposit (%)
+                  <span class="tooltip" data-tip="The percentage of the purchase price you will pay as a deposit.">?</span>
+                </label>
+                <input type="number" id="depositPct" min="0" max="100" step="any" value="25">
+              </div>
+              <div class="form-group half">
+                <label for="interestRate">
+                  Interest Rate (%)
+                  <span class="tooltip" data-tip="Annual mortgage interest rate.">?</span>
+                </label>
+                <input type="number" id="interestRate" min="0" max="30" step="any" value="4.5">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="mortgageTerm">
+                Mortgage Term (years)
+                <span class="tooltip" data-tip="The length of the mortgage in years.">?</span>
+              </label>
+              <input type="number" id="mortgageTerm" min="1" max="40" step="1" value="25">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-calculate analyser-only">Analyse Deal</button>
+          <button type="button" id="sdltCalcBtn" class="btn-calculate sdlt-only" style="display:none;">Calculate SDLT</button>
+          <button type="button" id="savePdfBtn" class="btn-save-pdf analyser-only" style="display:none;" onclick="printReport()">Save as PDF</button>
         </form>
       </section>
 
@@ -107,6 +153,11 @@
     <section class="map-section" id="mapSection" style="display:none;">
       <h2>Location</h2>
       <div id="mapContainer"></div>
+    </section>
+
+    <section class="history-section analyser-only" id="historySection">
+      <h2>Comparison History</h2>
+      <div id="historyList"></div>
     </section>
 
     <div id="printReport" class="print-report"></div>

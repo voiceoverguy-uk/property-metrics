@@ -18,6 +18,32 @@ app.get('/api/maps-key', (req, res) => {
   res.json({ key });
 });
 
+app.get('/api/sdlt', (req, res) => {
+  try {
+    const price = Number(req.query.price);
+    if (!price || price <= 0) {
+      return res.status(400).json({ error: 'Price is required and must be positive.' });
+    }
+    const { calculateSDLT } = require('./src/sdlt');
+    res.json({
+      standard: {
+        total: calculateSDLT(price, 'standard'),
+        breakdown: getSDLTBreakdown(price, 'standard'),
+      },
+      ftb: {
+        total: calculateSDLT(price, 'ftb'),
+        breakdown: getSDLTBreakdown(price, 'ftb'),
+      },
+      additional: {
+        total: calculateSDLT(price, 'additional'),
+        breakdown: getSDLTBreakdown(price, 'additional'),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'SDLT calculation error.' });
+  }
+});
+
 app.post('/api/calculate', (req, res) => {
   try {
     const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, costItems, voidMonths, runningCosts, targetYield } = req.body;

@@ -11,6 +11,74 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts'];
+
+function parseCurrencyValue(str) {
+  if (typeof str === 'number') return str;
+  return parseFloat(String(str).replace(/[^0-9.\-]/g, '')) || 0;
+}
+
+function formatCurrencyDisplay(val) {
+  const num = parseCurrencyValue(val);
+  if (!num && num !== 0) return '';
+  if (num === 0) return '';
+  return '\u00a3' + Math.round(num).toLocaleString('en-GB');
+}
+
+function initCurrencyFormatting() {
+  CURRENCY_FIELDS.forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.setAttribute('type', 'text');
+    input.setAttribute('inputmode', 'numeric');
+    const raw = input.value;
+    if (raw) {
+      input.dataset.rawValue = raw;
+      input.value = formatCurrencyDisplay(raw);
+    }
+
+    input.addEventListener('focus', () => {
+      const rv = input.dataset.rawValue || '';
+      input.value = rv;
+    });
+
+    input.addEventListener('blur', () => {
+      const num = parseCurrencyValue(input.value);
+      input.dataset.rawValue = num || '';
+      input.value = num ? formatCurrencyDisplay(num) : '';
+    });
+  });
+}
+
+function applyCurrencyToCostAmount(input) {
+  input.setAttribute('type', 'text');
+  input.setAttribute('inputmode', 'numeric');
+
+  input.addEventListener('focus', () => {
+    const rv = input.dataset.rawValue || '';
+    input.value = rv;
+  });
+
+  input.addEventListener('blur', () => {
+    const num = parseCurrencyValue(input.value);
+    input.dataset.rawValue = num || '';
+    input.value = num ? formatCurrencyDisplay(num) : '';
+    const idx = parseInt(input.dataset.index);
+    costItems[idx].amount = num;
+    updateCostTotal();
+  });
+}
+
+function getCurrencyFieldValue(id) {
+  const input = document.getElementById(id);
+  if (!input) return 0;
+  return parseCurrencyValue(input.dataset.rawValue || input.value);
+}
+
+document.getElementById('mortgageToggle').addEventListener('change', function() {
+  document.getElementById('mortgageFields').style.display = this.checked ? '' : 'none';
+});
+
 async function initGoogleMaps() {
   try {
     const res = await fetch('/api/maps-key');
@@ -198,6 +266,13 @@ function showMap(lat, lng, title) {
 }
 
 initGoogleMaps();
+initCurrencyFormatting();
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
 
 function fmt(n) {
   if (n == null || isNaN(n)) return '\u00a30';
@@ -216,6 +291,57 @@ function yieldClass(yieldVal, targetYield) {
   return 'yield-below';
 }
 
+function getDealRating(netYield, targetYield) {
+  const diff = netYield - targetYield;
+  if (diff >= 3) return { grade: 'A+', label: 'Excellent Deal', color: '#0a7a2e' };
+  if (diff >= 1.5) return { grade: 'A', label: 'Good Deal', color: '#1a9a4a' };
+  if (diff >= 0.5) return { grade: 'B', label: 'Fair Deal', color: '#0d7377' };
+  if (diff >= -0.5) return { grade: 'C', label: 'Below Target', color: '#b8860b' };
+  if (diff >= -2) return { grade: 'D', label: 'Poor Deal', color: '#cc5500' };
+  return { grade: 'F', label: 'Avoid', color: '#d42027' };
+}
+
+function calculateMortgage(price, data) {
+  const depositPct = parseFloat(document.getElementById('depositPct').value) || 25;
+  const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
+  const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
+  const runningCosts = getCurrencyFieldValue('runningCosts');
+  const solicitorFees = getCurrencyFieldValue('solicitorFees');
+  const refurbCosts = getCostItemsTotal();
+
+  const depositAmount = price * (depositPct / 100);
+  const mortgageAmount = price - depositAmount;
+  const monthlyRate = (interestRate / 100) / 12;
+  const totalMonths = mortgageTerm * 12;
+
+  let monthlyPayment = 0;
+  if (monthlyRate > 0 && totalMonths > 0 && mortgageAmount > 0) {
+    monthlyPayment = mortgageAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+  } else if (mortgageAmount > 0 && totalMonths > 0) {
+    monthlyPayment = mortgageAmount / totalMonths;
+  }
+
+  const monthlyRent = data.annualRent / 12;
+  const monthlyCashFlow = monthlyRent - monthlyPayment - runningCosts;
+  const annualCashFlow = monthlyCashFlow * 12;
+  const totalCashInvested = depositAmount + data.sdlt + solicitorFees + refurbCosts;
+  const cashOnCashReturn = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
+
+  return {
+    depositPct,
+    depositAmount,
+    mortgageAmount,
+    interestRate,
+    mortgageTerm,
+    monthlyPayment,
+    monthlyCashFlow,
+    annualCashFlow,
+    totalCashInvested,
+    cashOnCashReturn,
+    cashFlowPositive: monthlyCashFlow >= 0,
+  };
+}
+
 function getCostItemsTotal() {
   return costItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 }
@@ -227,7 +353,7 @@ function renderCostItems() {
     row.className = 'cost-item-row';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="e.g. Decorating" data-index="${index}">
-      <input type="number" class="cost-item-amount" value="${item.amount}" min="0" step="any" placeholder="0" data-index="${index}">
+      <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
       ${costItems.length > 1 ? `<button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>` : '<span class="btn-remove-placeholder"></span>'}
     `;
     costItemsList.appendChild(row);
@@ -240,10 +366,7 @@ function renderCostItems() {
   });
 
   costItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
-    input.addEventListener('input', (e) => {
-      costItems[parseInt(e.target.dataset.index)].amount = parseFloat(e.target.value) || 0;
-      updateCostTotal();
-    });
+    applyCurrencyToCostAmount(input);
   });
 
   costItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
@@ -294,7 +417,7 @@ function renderCostBreakdownRows(data) {
   if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
     for (const item of data.breakdown.costItems) {
       if (item.amount > 0) {
-        html += `<div class="result-row"><span class="label">${item.label || 'Cost item'}</span><span class="value">${fmt(item.amount)}</span></div>`;
+        html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Cost item')}</span><span class="value">${fmt(item.amount)}</span></div>`;
       }
     }
   }
@@ -303,7 +426,107 @@ function renderCostBreakdownRows(data) {
   return html;
 }
 
-function renderScenario(data, label, targetYield) {
+function renderDealRating(netYield, targetYield) {
+  const rating = getDealRating(netYield, targetYield);
+  return `
+    <div class="deal-rating">
+      <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
+      <div class="deal-rating-info">
+        <div class="deal-rating-label" style="color:${rating.color};">${rating.label}</div>
+        <div class="deal-rating-detail">Net yield ${fmtPct(netYield)} vs ${fmtPct(targetYield)} target</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMortgageSection(mortgage) {
+  const cfClass = mortgage.cashFlowPositive ? 'cash-flow-positive' : 'cash-flow-negative';
+  const cfLabel = mortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
+  return `
+    <div class="result-section">
+      <h3>Mortgage Analysis</h3>
+      <div class="result-row"><span class="label">Deposit (${mortgage.depositPct}%)</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
+      <div class="result-row"><span class="label">Mortgage Amount</span><span class="value">${fmt(mortgage.mortgageAmount)}</span></div>
+      <div class="result-row"><span class="label">Monthly Mortgage Payment</span><span class="value">${fmt(mortgage.monthlyPayment)}</span></div>
+      <div class="result-row"><span class="label">Monthly Cash Flow</span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
+      <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
+      <div class="result-row"><span class="label">Total Cash Invested</span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
+      <div class="cash-flow-indicator ${cfClass}">${cfLabel}</div>
+    </div>
+  `;
+}
+
+function renderYieldGauge(netYield, targetYield) {
+  const maxYield = 15;
+  const clampedYield = Math.min(Math.max(netYield, 0), maxYield);
+  const fillPct = clampedYield / maxYield;
+  const targetPct = Math.min(Math.max(targetYield, 0), maxYield) / maxYield;
+
+  const cx = 100, cy = 100, r = 80;
+  const startAngle = Math.PI;
+  const bgEndAngle = 0;
+  const fillEndAngle = Math.PI - (fillPct * Math.PI);
+  const targetAngle = Math.PI - (targetPct * Math.PI);
+
+  function arcPoint(angle) {
+    return { x: cx + r * Math.cos(angle), y: cy - r * Math.sin(angle) };
+  }
+
+  const bgStart = arcPoint(startAngle);
+  const bgEnd = arcPoint(bgEndAngle);
+  const bgPath = `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 1 1 ${bgEnd.x} ${bgEnd.y}`;
+
+  const fillEnd = arcPoint(fillEndAngle);
+  const largeArc = fillPct > 0.5 ? 1 : 0;
+  const fillPath = fillPct > 0 ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${largeArc} 1 ${fillEnd.x} ${fillEnd.y}` : '';
+
+  let fillColor = '#d42027';
+  const diff = netYield - targetYield;
+  if (diff >= 0) fillColor = '#1a9a4a';
+  else if (diff >= -1) fillColor = '#b8860b';
+
+  const tickInner = arcPoint(targetAngle);
+  const tickOuter = { x: cx + (r + 12) * Math.cos(targetAngle), y: cy - (r + 12) * Math.sin(targetAngle) };
+
+  return `
+    <div class="yield-gauge">
+      <svg width="200" height="110" viewBox="0 0 200 110">
+        <path d="${bgPath}" fill="none" stroke="#e8e8e8" stroke-width="14" stroke-linecap="round"/>
+        ${fillPath ? `<path d="${fillPath}" fill="none" stroke="${fillColor}" stroke-width="14" stroke-linecap="round"/>` : ''}
+        <line x1="${tickInner.x}" y1="${tickInner.y}" x2="${tickOuter.x}" y2="${tickOuter.y}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="28" font-weight="800" fill="${fillColor}">${fmtPct(netYield)}</text>
+        <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="11" fill="#777">Net Yield</text>
+      </svg>
+    </div>
+  `;
+}
+
+function renderSDLTComparison(investorSDLT, ftbSDLT) {
+  const maxSDLT = Math.max(investorSDLT, ftbSDLT, 1);
+  const investorPct = (investorSDLT / maxSDLT) * 100;
+  const ftbPct = (ftbSDLT / maxSDLT) * 100;
+  return `
+    <div class="sdlt-comparison-chart">
+      <h3>SDLT Comparison</h3>
+      <div class="sdlt-bar-row">
+        <span class="sdlt-bar-label">Investor</span>
+        <div class="sdlt-bar-track">
+          <div class="sdlt-bar-fill sdlt-bar-investor" style="width:${Math.max(investorPct, 2)}%"></div>
+        </div>
+        <span class="sdlt-bar-amount">${fmt(investorSDLT)}</span>
+      </div>
+      <div class="sdlt-bar-row">
+        <span class="sdlt-bar-label">FTB</span>
+        <div class="sdlt-bar-track">
+          <div class="sdlt-bar-fill sdlt-bar-ftb" style="width:${Math.max(ftbPct, 2)}%"></div>
+        </div>
+        <span class="sdlt-bar-amount">${fmt(ftbSDLT)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderScenario(data, label, targetYield, mortgage) {
   const offer = data.targetOffer;
 
   let offerHtml;
@@ -323,7 +546,14 @@ function renderScenario(data, label, targetYield) {
       </div>`;
   }
 
+  let mortgageHtml = '';
+  if (mortgage) {
+    mortgageHtml = renderMortgageSection(mortgage);
+  }
+
   return `
+    ${renderDealRating(data.netYield, targetYield)}
+
     <div class="result-section">
       <h3>SDLT \u2014 ${label}</h3>
       ${renderSDLTTable(data.sdltBreakdown)}
@@ -340,6 +570,7 @@ function renderScenario(data, label, targetYield) {
 
     <div class="result-section">
       <h3>Yield Analysis</h3>
+      ${renderYieldGauge(data.netYield, targetYield)}
       <div class="yield-cards">
         <div class="yield-card">
           <div class="yield-label">Gross Yield</div>
@@ -354,6 +585,8 @@ function renderScenario(data, label, targetYield) {
       <div class="result-row"><span class="label">Net Annual Rent</span><span class="value">${fmt(data.netAnnualRent)}</span></div>
     </div>
 
+    ${mortgageHtml}
+
     <div class="result-section">
       <h3>Target Offer Price</h3>
       ${offerHtml}
@@ -362,11 +595,26 @@ function renderScenario(data, label, targetYield) {
 }
 
 let lastResult = null;
+let lastMortgageData = null;
 
 function renderResults(result) {
   lastResult = result;
-  const address = document.getElementById('address').value || 'Property';
+  const addressRaw = document.getElementById('address').value || 'Property';
+  const address = escHtml(addressRaw);
   const targetYield = result.targetYield;
+  const price = getCurrencyFieldValue('price');
+  const includeMortgage = document.getElementById('mortgageToggle').checked;
+
+  let investorMortgage = null;
+  let ftbMortgage = null;
+
+  if (includeMortgage) {
+    investorMortgage = calculateMortgage(price, result.investor);
+    ftbMortgage = calculateMortgage(price, result.ftb);
+    lastMortgageData = { investor: investorMortgage, ftb: ftbMortgage };
+  } else {
+    lastMortgageData = null;
+  }
 
   document.getElementById('savePdfBtn').style.display = '';
 
@@ -377,8 +625,13 @@ function renderResults(result) {
           <h2>Deal Analysis</h2>
           <p class="address-line">${address}</p>
         </div>
-        <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
+        <div class="results-header-buttons">
+          <button type="button" class="btn-share" onclick="shareDeal()">Share</button>
+          <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
+        </div>
       </div>
+
+      ${renderSDLTComparison(result.investor.sdlt, result.ftb.sdlt)}
 
       <div class="scenario-tabs">
         <div class="scenario-tab active" data-view="comparison">Both Scenarios</div>
@@ -390,21 +643,21 @@ function renderResults(result) {
         <div class="comparison-grid">
           <div class="comparison-col">
             <h4>Investor / Additional Property</h4>
-            ${renderScenario(result.investor, 'Investor', targetYield)}
+            ${renderScenario(result.investor, 'Investor', targetYield, investorMortgage)}
           </div>
           <div class="comparison-col">
             <h4>First-time Buyer</h4>
-            ${renderScenario(result.ftb, 'First-time Buyer', targetYield)}
+            ${renderScenario(result.ftb, 'First-time Buyer', targetYield, ftbMortgage)}
           </div>
         </div>
       </div>
 
       <div id="view-investor" class="view-content" style="display:none;">
-        ${renderScenario(result.investor, 'Investor / Additional Property', targetYield)}
+        ${renderScenario(result.investor, 'Investor / Additional Property', targetYield, investorMortgage)}
       </div>
 
       <div id="view-ftb" class="view-content" style="display:none;">
-        ${renderScenario(result.ftb, 'First-time Buyer', targetYield)}
+        ${renderScenario(result.ftb, 'First-time Buyer', targetYield, ftbMortgage)}
       </div>
     </div>
   `;
@@ -425,8 +678,8 @@ function renderResults(result) {
 }
 
 async function runCalculation() {
-  const price = parseFloat(document.getElementById('price').value);
-  const monthlyRent = parseFloat(document.getElementById('monthlyRent').value);
+  const price = getCurrencyFieldValue('price');
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
 
   if (!price || price <= 0) {
     alert('Please enter a valid asking price.');
@@ -442,12 +695,12 @@ async function runCalculation() {
   const body = {
     price,
     monthlyRent,
-    solicitorFees: parseFloat(document.getElementById('solicitorFees').value) || 1500,
+    solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
     refurbCosts: totalAdditionalCosts,
     otherCosts: 0,
     costItems: costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
-    runningCosts: parseFloat(document.getElementById('runningCosts').value) || 0,
+    runningCosts: getCurrencyFieldValue('runningCosts') || 0,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
   };
 
@@ -467,6 +720,9 @@ async function runCalculation() {
 
     const result = await res.json();
     renderResults(result);
+    if (currentMode === 'analyser') {
+      addToHistory(result);
+    }
   } catch (err) {
     resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#d42027;">Error: ${err.message}</p></div>`;
   }
@@ -489,7 +745,40 @@ function printSDLTTable(breakdown) {
   return html;
 }
 
-function printScenario(data, label, targetYield) {
+function printDealRating(netYield, targetYield) {
+  const rating = getDealRating(netYield, targetYield);
+  return `
+    <div class="print-deal-rating">
+      <span class="print-deal-grade" style="color:${rating.color};">${rating.grade}</span>
+      <span class="print-deal-label">${rating.label}</span>
+      <span class="print-deal-detail">(Net yield ${fmtPct(netYield)} vs ${fmtPct(targetYield)} target)</span>
+    </div>
+  `;
+}
+
+function printMortgageSection(mortgage) {
+  if (!mortgage) return '';
+  const cfLabel = mortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
+  return `
+    <h4>Mortgage Analysis</h4>
+    <table>
+      <tbody>
+        <tr><td>Deposit (${mortgage.depositPct}%)</td><td>${fmt(mortgage.depositAmount)}</td></tr>
+        <tr><td>Mortgage Amount</td><td>${fmt(mortgage.mortgageAmount)}</td></tr>
+        <tr><td>Interest Rate</td><td>${mortgage.interestRate}%</td></tr>
+        <tr><td>Term</td><td>${mortgage.mortgageTerm} years</td></tr>
+        <tr><td>Monthly Mortgage Payment</td><td>${fmt(mortgage.monthlyPayment)}</td></tr>
+        <tr><td>Monthly Cash Flow</td><td>${fmt(mortgage.monthlyCashFlow)}</td></tr>
+        <tr><td>Annual Cash Flow</td><td>${fmt(mortgage.annualCashFlow)}</td></tr>
+        <tr><td>Total Cash Invested</td><td>${fmt(mortgage.totalCashInvested)}</td></tr>
+        <tr><td>Cash-on-Cash Return</td><td>${fmtPct(mortgage.cashOnCashReturn)}</td></tr>
+      </tbody>
+    </table>
+    <p><strong>${cfLabel}</strong></p>
+  `;
+}
+
+function printScenario(data, label, targetYield, mortgage) {
   const offer = data.targetOffer;
   let offerText = '';
   if (offer && offer.achievable) {
@@ -502,7 +791,7 @@ function printScenario(data, label, targetYield) {
   if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
     for (const item of data.breakdown.costItems) {
       if (item.amount > 0) {
-        costItemsHtml += `<tr><td>${item.label || 'Cost item'}</td><td>${fmt(item.amount)}</td></tr>`;
+        costItemsHtml += `<tr><td>${escHtml(item.label || 'Cost item')}</td><td>${fmt(item.amount)}</td></tr>`;
       }
     }
   }
@@ -510,6 +799,8 @@ function printScenario(data, label, targetYield) {
   return `
     <div class="print-scenario">
       <h3>${label}</h3>
+
+      ${printDealRating(data.netYield, targetYield)}
 
       <h4>SDLT Breakdown</h4>
       ${printSDLTTable(data.sdltBreakdown)}
@@ -536,6 +827,8 @@ function printScenario(data, label, targetYield) {
         </tbody>
       </table>
 
+      ${printMortgageSection(mortgage)}
+
       ${offerText}
     </div>
   `;
@@ -547,12 +840,12 @@ function printReport() {
     return;
   }
 
-  const address = document.getElementById('address').value || 'Not specified';
-  const price = document.getElementById('price').value;
-  const monthlyRent = document.getElementById('monthlyRent').value;
-  const solicitorFees = document.getElementById('solicitorFees').value;
+  const address = escHtml(document.getElementById('address').value || 'Not specified');
+  const price = getCurrencyFieldValue('price');
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+  const solicitorFees = getCurrencyFieldValue('solicitorFees');
   const voidMonths = document.getElementById('voidMonths').value;
-  const runningCosts = document.getElementById('runningCosts').value;
+  const runningCosts = getCurrencyFieldValue('runningCosts');
   const targetYield = document.getElementById('targetYield').value;
   const now = new Date();
   const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -572,12 +865,15 @@ function printReport() {
   if (activeCosts.length > 0) {
     costItemsHtml = '<table><tbody>';
     activeCosts.forEach(item => {
-      costItemsHtml += `<tr><td>${item.label || 'Cost item'}</td><td>${fmt(item.amount)}</td></tr>`;
+      costItemsHtml += `<tr><td>${escHtml(item.label || 'Cost item')}</td><td>${fmt(item.amount)}</td></tr>`;
     });
     costItemsHtml += `</tbody><tfoot><tr class="total-row"><td><strong>Total Additional Costs</strong></td><td><strong>${fmt(getCostItemsTotal())}</strong></td></tr></tfoot></table>`;
   } else {
     costItemsHtml = '<p>None</p>';
   }
+
+  const investorMortgage = lastMortgageData ? lastMortgageData.investor : null;
+  const ftbMortgage = lastMortgageData ? lastMortgageData.ftb : null;
 
   const reportHtml = `
     <div class="print-header">
@@ -591,11 +887,11 @@ function printReport() {
       <h2>Input Summary</h2>
       <table>
         <tbody>
-          <tr><td>Asking Price</td><td>${fmt(parseFloat(price))}</td></tr>
-          <tr><td>Expected Monthly Rent</td><td>${fmt(parseFloat(monthlyRent))}</td></tr>
-          <tr><td>Solicitor Fees</td><td>${fmt(parseFloat(solicitorFees))}</td></tr>
+          <tr><td>Asking Price</td><td>${fmt(price)}</td></tr>
+          <tr><td>Expected Monthly Rent</td><td>${fmt(monthlyRent)}</td></tr>
+          <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
           <tr><td>Void Months / Year</td><td>${voidMonths}</td></tr>
-          <tr><td>Monthly Running Costs</td><td>${fmt(parseFloat(runningCosts))}</td></tr>
+          <tr><td>Monthly Running Costs</td><td>${fmt(runningCosts)}</td></tr>
           <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
         </tbody>
       </table>
@@ -606,12 +902,12 @@ function printReport() {
 
     <div class="print-section">
       <h2>Investor / Additional Property</h2>
-      ${printScenario(lastResult.investor, 'Investor', lastResult.targetYield)}
+      ${printScenario(lastResult.investor, 'Investor', lastResult.targetYield, investorMortgage)}
     </div>
 
     <div class="print-section">
       <h2>First-time Buyer</h2>
-      ${printScenario(lastResult.ftb, 'First-time Buyer', lastResult.targetYield)}
+      ${printScenario(lastResult.ftb, 'First-time Buyer', lastResult.targetYield, ftbMortgage)}
     </div>
 
     <div class="print-disclaimer">
@@ -623,3 +919,432 @@ function printReport() {
 
   setTimeout(() => { window.print(); }, 100);
 }
+
+let currentMode = 'analyser';
+
+function setMode(mode) {
+  currentMode = mode;
+  const btns = document.querySelectorAll('.mode-btn');
+  btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
+  const analyserEls = document.querySelectorAll('.analyser-only');
+  const sdltEls = document.querySelectorAll('.sdlt-only');
+
+  if (mode === 'sdlt') {
+    document.body.classList.add('sdlt-mode');
+    analyserEls.forEach(el => el.style.display = 'none');
+    sdltEls.forEach(el => el.style.display = '');
+    document.getElementById('monthlyRent').removeAttribute('required');
+    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>';
+  } else {
+    document.body.classList.remove('sdlt-mode');
+    analyserEls.forEach(el => {
+      if (el.id === 'mortgageFields') {
+        el.style.display = document.getElementById('mortgageToggle').checked ? '' : 'none';
+      } else if (el.id === 'savePdfBtn') {
+        el.style.display = lastResult ? '' : 'none';
+      } else {
+        el.style.display = '';
+      }
+    });
+    sdltEls.forEach(el => el.style.display = 'none');
+    document.getElementById('monthlyRent').setAttribute('required', '');
+    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+  }
+}
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+
+function renderSDLTStandaloneResults(data, price) {
+  const address = document.getElementById('address').value || 'Property';
+
+  const renderSDLTSection = (label, info) => {
+    let bandHtml = '';
+    if (info.breakdown && info.breakdown.bands && info.breakdown.bands.length > 0) {
+      bandHtml = renderSDLTTable(info.breakdown);
+    } else {
+      bandHtml = '<p style="font-size:0.85rem;color:#777;">No SDLT due</p>';
+    }
+    return `
+      <div class="result-section">
+        <h3>SDLT — ${label}</h3>
+        ${bandHtml}
+        <div class="result-row total">
+          <span class="label">Total SDLT</span>
+          <span class="value">${fmt(info.total)}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  const maxSDLT = Math.max(data.additional.total, data.standard.total, data.ftb.total, 1);
+
+  const html = `
+    <div class="results-content">
+      <div class="results-header-row">
+        <div>
+          <h2>SDLT Calculation</h2>
+          <p class="address-line">${address} — ${fmt(price)}</p>
+        </div>
+      </div>
+
+      <div class="sdlt-comparison-chart">
+        <h3>SDLT Comparison</h3>
+        <div class="sdlt-bar-row">
+          <span class="sdlt-bar-label">Additional</span>
+          <div class="sdlt-bar-track">
+            <div class="sdlt-bar-fill sdlt-bar-investor" style="width:${Math.max((data.additional.total / maxSDLT) * 100, 2)}%"></div>
+          </div>
+          <span class="sdlt-bar-amount">${fmt(data.additional.total)}</span>
+        </div>
+        <div class="sdlt-bar-row">
+          <span class="sdlt-bar-label">Standard</span>
+          <div class="sdlt-bar-track">
+            <div class="sdlt-bar-fill sdlt-bar-standard" style="width:${Math.max((data.standard.total / maxSDLT) * 100, 2)}%"></div>
+          </div>
+          <span class="sdlt-bar-amount">${fmt(data.standard.total)}</span>
+        </div>
+        <div class="sdlt-bar-row">
+          <span class="sdlt-bar-label">FTB</span>
+          <div class="sdlt-bar-track">
+            <div class="sdlt-bar-fill sdlt-bar-ftb" style="width:${Math.max((data.ftb.total / maxSDLT) * 100, 2)}%"></div>
+          </div>
+          <span class="sdlt-bar-amount">${fmt(data.ftb.total)}</span>
+        </div>
+      </div>
+
+      <div class="sdlt-standalone-tabs">
+        <div class="scenario-tab active" data-sdlt-view="all">All Buyer Types</div>
+        <div class="scenario-tab" data-sdlt-view="additional">Additional</div>
+        <div class="scenario-tab" data-sdlt-view="standard">Standard</div>
+        <div class="scenario-tab" data-sdlt-view="ftb">First-time Buyer</div>
+      </div>
+
+      <div id="sdlt-view-all" class="view-content">
+        ${renderSDLTSection('Additional Property', data.additional)}
+        ${renderSDLTSection('Standard', data.standard)}
+        ${renderSDLTSection('First-time Buyer', data.ftb)}
+      </div>
+      <div id="sdlt-view-additional" class="view-content" style="display:none;">
+        ${renderSDLTSection('Additional Property', data.additional)}
+      </div>
+      <div id="sdlt-view-standard" class="view-content" style="display:none;">
+        ${renderSDLTSection('Standard', data.standard)}
+      </div>
+      <div id="sdlt-view-ftb" class="view-content" style="display:none;">
+        ${renderSDLTSection('First-time Buyer', data.ftb)}
+      </div>
+    </div>
+  `;
+
+  resultsPanel.innerHTML = html;
+
+  const tabs = resultsPanel.querySelectorAll('.sdlt-standalone-tabs .scenario-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const view = tab.getAttribute('data-sdlt-view');
+      ['all', 'additional', 'standard', 'ftb'].forEach(v => {
+        document.getElementById('sdlt-view-' + v).style.display = v === view ? '' : 'none';
+      });
+    });
+  });
+}
+
+document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
+  const price = getCurrencyFieldValue('price');
+  if (!price || price <= 0) {
+    alert('Please enter a valid asking price.');
+    return;
+  }
+  resultsPanel.innerHTML = '<div class="results-placeholder"><p>Calculating...</p></div>';
+  try {
+    const res = await fetch(`/api/sdlt?price=${encodeURIComponent(price)}`);
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'SDLT calculation failed');
+    }
+    const data = await res.json();
+    renderSDLTStandaloneResults(data, price);
+  } catch (err) {
+    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#d42027;">Error: ${err.message}</p></div>`;
+  }
+});
+
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('dealHistory')) || [];
+  } catch { return []; }
+}
+
+function saveHistory(history) {
+  localStorage.setItem('dealHistory', JSON.stringify(history));
+}
+
+function addToHistory(result) {
+  const address = document.getElementById('address').value || '';
+  const price = getCurrencyFieldValue('price');
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+  const targetYield = parseFloat(document.getElementById('targetYield').value) || 7.0;
+  const investorRating = getDealRating(result.investor.netYield, targetYield);
+  const now = new Date();
+
+  const entry = {
+    id: Date.now(),
+    address: address,
+    price: price,
+    monthlyRent: monthlyRent,
+    targetYield: targetYield,
+    investorNetYield: result.investor.netYield,
+    ftbNetYield: result.ftb.netYield,
+    investorSDLT: result.investor.sdlt,
+    ftbSDLT: result.ftb.sdlt,
+    investorRating: investorRating.grade,
+    solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
+    refurbCosts: getCostItemsTotal(),
+    voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
+    runningCosts: getCurrencyFieldValue('runningCosts') || 0,
+    date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+  };
+
+  let history = getHistory();
+  history.unshift(entry);
+  if (history.length > 20) history = history.slice(0, 20);
+  saveHistory(history);
+  renderHistory();
+}
+
+function deleteHistoryItem(id) {
+  let history = getHistory();
+  history = history.filter(h => h.id !== id);
+  saveHistory(history);
+  renderHistory();
+}
+
+function clearHistory() {
+  localStorage.removeItem('dealHistory');
+  renderHistory();
+}
+
+function applyHistoryEntry(entry) {
+  const priceInput = document.getElementById('price');
+  priceInput.dataset.rawValue = entry.price;
+  priceInput.value = formatCurrencyDisplay(entry.price);
+
+  const rentInput = document.getElementById('monthlyRent');
+  rentInput.dataset.rawValue = entry.monthlyRent;
+  rentInput.value = formatCurrencyDisplay(entry.monthlyRent);
+
+  if (entry.solicitorFees !== undefined) {
+    const solInput = document.getElementById('solicitorFees');
+    solInput.dataset.rawValue = entry.solicitorFees;
+    solInput.value = formatCurrencyDisplay(entry.solicitorFees);
+  }
+
+  if (entry.voidMonths !== undefined) {
+    document.getElementById('voidMonths').value = entry.voidMonths;
+  }
+
+  if (entry.runningCosts !== undefined) {
+    const rcInput = document.getElementById('runningCosts');
+    rcInput.dataset.rawValue = entry.runningCosts;
+    rcInput.value = formatCurrencyDisplay(entry.runningCosts);
+  }
+
+  if (entry.targetYield !== undefined) {
+    document.getElementById('targetYield').value = entry.targetYield;
+  }
+
+  if (entry.address) {
+    document.getElementById('address').value = entry.address;
+  }
+
+  if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
+    costItems = [{ label: 'Refurb / Repairs', amount: entry.refurbCosts }];
+    renderCostItems();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  runCalculation();
+}
+
+function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  if (!historyList) return;
+  const history = getHistory();
+  const section = document.getElementById('historySection');
+
+  if (history.length === 0) {
+    historyList.innerHTML = '<div class="history-empty">No saved analyses yet. Run a deal analysis to see it here.</div>';
+    if (section) {
+      const h2 = section.querySelector('h2');
+      if (h2) h2.innerHTML = 'Comparison History';
+    }
+    return;
+  }
+
+  if (section) {
+    const h2 = section.querySelector('h2');
+    if (h2) h2.innerHTML = 'Comparison History <button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
+  }
+
+  let html = '';
+  history.forEach(entry => {
+    const rating = getDealRating(entry.investorNetYield, entry.targetYield);
+    const displayAddress = escHtml(entry.address || 'No address');
+    html += `
+      <div class="history-card" onclick="loadHistoryItem(${entry.id})">
+        <div class="history-card-grade" style="background:${rating.color};">${rating.grade}</div>
+        <div class="history-card-info">
+          <div class="history-card-address">${displayAddress}</div>
+          <div class="history-card-details">${fmt(entry.price)} &middot; Net ${fmtPct(entry.investorNetYield)} &middot; ${entry.date}</div>
+        </div>
+        <button type="button" class="history-card-delete" onclick="event.stopPropagation(); deleteHistoryItem(${entry.id});">&times;</button>
+      </div>
+    `;
+  });
+
+  historyList.innerHTML = html;
+}
+
+window.loadHistoryItem = function(id) {
+  const history = getHistory();
+  const entry = history.find(h => h.id === id);
+  if (entry) applyHistoryEntry(entry);
+};
+
+renderHistory();
+
+function shareDeal() {
+  const price = getCurrencyFieldValue('price');
+  const rent = getCurrencyFieldValue('monthlyRent');
+  const sol = getCurrencyFieldValue('solicitorFees');
+  const refurb = getCostItemsTotal();
+  const voidMonths = parseFloat(document.getElementById('voidMonths').value) || 0;
+  const running = getCurrencyFieldValue('runningCosts');
+  const target = parseFloat(document.getElementById('targetYield').value) || 7;
+  const addr = document.getElementById('address').value || '';
+
+  const params = new URLSearchParams();
+  if (price) params.set('price', price);
+  if (rent) params.set('rent', rent);
+  if (sol) params.set('sol', sol);
+  if (refurb) params.set('refurb', refurb);
+  if (voidMonths) params.set('void', voidMonths);
+  if (running) params.set('running', running);
+  params.set('target', target);
+  if (addr) params.set('addr', addr);
+
+  const url = window.location.origin + window.location.pathname + '?' + params.toString();
+
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.btn-share');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = url;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    const btn = document.querySelector('.btn-share');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
+}
+
+function initDarkMode() {
+  const toggle = document.getElementById('darkModeToggle');
+  const saved = localStorage.getItem('darkMode');
+
+  if (saved === 'true') {
+    document.body.classList.add('dark');
+    toggle.innerHTML = '&#9728;';
+  }
+
+  toggle.addEventListener('click', () => {
+    const isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', isDark);
+    toggle.innerHTML = isDark ? '&#9728;' : '&#9790;';
+  });
+}
+
+initDarkMode();
+
+function checkUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('price')) return;
+
+  const price = parseFloat(params.get('price'));
+  if (!price || price <= 0) return;
+
+  const priceInput = document.getElementById('price');
+  priceInput.dataset.rawValue = price;
+  priceInput.value = formatCurrencyDisplay(price);
+
+  if (params.has('rent')) {
+    const rent = parseFloat(params.get('rent'));
+    const rentInput = document.getElementById('monthlyRent');
+    rentInput.dataset.rawValue = rent;
+    rentInput.value = formatCurrencyDisplay(rent);
+  }
+
+  if (params.has('sol')) {
+    const sol = parseFloat(params.get('sol'));
+    const solInput = document.getElementById('solicitorFees');
+    solInput.dataset.rawValue = sol;
+    solInput.value = formatCurrencyDisplay(sol);
+  }
+
+  if (params.has('refurb')) {
+    const refurb = parseFloat(params.get('refurb'));
+    if (refurb > 0) {
+      costItems = [{ label: 'Refurb / Repairs', amount: refurb }];
+      renderCostItems();
+    }
+  }
+
+  if (params.has('void')) {
+    document.getElementById('voidMonths').value = parseFloat(params.get('void')) || 0;
+  }
+
+  if (params.has('running')) {
+    const running = parseFloat(params.get('running'));
+    const rcInput = document.getElementById('runningCosts');
+    rcInput.dataset.rawValue = running;
+    rcInput.value = formatCurrencyDisplay(running);
+  }
+
+  if (params.has('target')) {
+    document.getElementById('targetYield').value = parseFloat(params.get('target')) || 7;
+  }
+
+  if (params.has('addr')) {
+    document.getElementById('address').value = decodeURIComponent(params.get('addr'));
+  }
+
+  window.history.replaceState({}, '', window.location.pathname);
+
+  setTimeout(() => runCalculation(), 300);
+}
+
+checkUrlParams();
+

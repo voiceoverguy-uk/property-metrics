@@ -1,13 +1,20 @@
 # UK Property Deal Analyser
 
 ## Overview
-A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios.
+A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. Studio Finder branding (#d42027 red, #1a1a1a charcoal).
 
 ## Recent Changes
-- 2026-02-14: Added Save as PDF feature — window.print() with clean print layout, hides all UI, shows full report with both scenarios, SDLT tables, yields, target offer, input summary, timestamp
-- 2026-02-13: Switched to new AutocompleteSuggestion API (replaces deprecated AutocompleteService); uses session tokens, place.fetchFields() for coordinates
-- 2026-02-13: Added Google Maps integration — custom autocomplete dropdown, map preview with Marker; API key served via /api/maps-key endpoint
-- 2026-02-13: Fixed investor SDLT bands to post-April 2025 rates; replaced single refurb input with itemised cost list; fixed re-calculation on repeated clicks
+- 2026-02-14: Added dark mode toggle (moon/sun icon, localStorage persistence), mobile responsive improvements
+- 2026-02-14: Added comparison history (localStorage, max 20 entries) with load/delete/clear; share deal via URL query params with clipboard copy
+- 2026-02-14: Added standalone SDLT calculator mode with toggle buttons and dedicated /api/sdlt endpoint; shows all 3 buyer types
+- 2026-02-14: Added SVG yield gauge (semi-circle arc) and SDLT comparison bar chart (investor vs FTB horizontal bars)
+- 2026-02-14: Added mortgage/financing calculator — collapsible section with deposit %, interest rate, term; shows monthly payment, cash flow, cash-on-cash return
+- 2026-02-14: Added deal rating indicator (A+ to F letter grades with color-coded circles based on net yield vs target yield)
+- 2026-02-14: Added live currency formatting on numeric inputs (£ with commas, formatted on blur, raw on focus)
+- 2026-02-14: Added XSS protection via escHtml() for user-provided strings in innerHTML
+- 2026-02-14: Added Save as PDF feature — window.print() with clean print layout
+- 2026-02-13: Switched to new AutocompleteSuggestion API; added Google Maps integration
+- 2026-02-13: Fixed investor SDLT bands to post-April 2025 rates; replaced single refurb input with itemised cost list
 - 2026-02-12: Initial build — Express server, SDLT calculator, yield analysis, target offer price solver
 
 ## Project Architecture
@@ -15,27 +22,40 @@ A web-based UK property investment deal analyser for England & Northern Ireland.
 ### Tech Stack
 - **Backend**: Node.js + Express (server.js)
 - **Frontend**: Plain HTML + CSS + vanilla JS (served from /public)
-- **No database** — pure calculation tool
+- **Storage**: localStorage for history and dark mode preference — no database
 
 ### Structure
 ```
-server.js           — Express server, API endpoint
+server.js           — Express server, API endpoints
 src/sdlt.js         — SDLT band calculations (standard, FTB, additional property)
 src/calcs.js        — Deal calculations (costs, yields, target offer price solver)
-public/index.html   — Single-page UI
-public/style.css    — Styling
-public/app.js       — Client-side form handling and results rendering
+public/index.html   — Single-page UI with mode toggle, mortgage section, history
+public/style.css    — Styling incl. dark mode, print styles, responsive
+public/app.js       — Client-side: form handling, results, charts, history, sharing
 ```
 
 ### API
 - `GET /api/maps-key` — Returns Google Maps API key for client-side use
 - `POST /api/calculate` — Accepts property details, returns investor and FTB analysis
+- `GET /api/sdlt?price=N` — Standalone SDLT calculation for all 3 buyer types
+
+### Features
+- **Mode Toggle**: "Deal Analyser" (full) vs "SDLT Calculator Only" (price + SDLT only)
+- **Deal Rating**: A+ to F grades based on net yield vs target yield difference
+- **Mortgage Calculator**: Collapsible section; annuity formula; shows deposit, payment, cash flow, cash-on-cash return
+- **SVG Charts**: Yield gauge (semi-circle arc) and SDLT comparison bar chart
+- **Currency Formatting**: £ with commas on blur, raw number on focus; data-rawValue attribute
+- **Comparison History**: localStorage, max 20 entries, click to reload, delete/clear
+- **Share via URL**: Query params auto-populate form; clipboard copy with "Copied!" feedback
+- **Dark Mode**: Toggle in header, localStorage persistence, CSS body.dark selector
+- **PDF Export**: window.print() with clean layout, suggested filename
+- **Google Maps**: AutocompleteSuggestion API, session tokens, map preview with Marker
 
 ### Google Maps Integration
-- Uses new Places API (`AutocompleteSuggestion.fetchAutocompleteSuggestions`) — required for keys created after March 2025
+- Uses new Places API (`AutocompleteSuggestion.fetchAutocompleteSuggestions`)
 - Custom dropdown with debounce (300ms) and session tokens for billing optimisation
-- `place.fetchFields()` to get coordinates after selection; `google.maps.Marker` for map pins
-- API key stored in Replit Secrets (`GOOGLE_MAPS_API_KEY`), served via `/api/maps-key` endpoint (never hardcoded)
+- `place.fetchFields()` to get coordinates; `google.maps.Marker` for map pins
+- API key stored in Replit Secrets (`GOOGLE_MAPS_API_KEY`), served via `/api/maps-key`
 - Restricted to UK addresses (`includedRegionCodes: ['gb']`)
 
 ### SDLT Rates (England & NI, as of build date)
@@ -53,3 +73,4 @@ Server binds to 0.0.0.0:5000.
 - Currency: GBP with £ and commas
 - V1: England & NI only (no Scotland LBTT / Wales LTT)
 - Clean, modern UI with tooltips
+- Studio Finder branding: red #d42027, charcoal #1a1a1a
