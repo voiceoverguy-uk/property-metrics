@@ -4,6 +4,7 @@
 A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios.
 
 ## Recent Changes
+- 2026-02-14: Added Save as PDF feature — window.print() with clean print layout, hides all UI, shows full report with both scenarios, SDLT tables, yields, target offer, input summary, timestamp
 - 2026-02-13: Switched to new AutocompleteSuggestion API (replaces deprecated AutocompleteService); uses session tokens, place.fetchFields() for coordinates
 - 2026-02-13: Added Google Maps integration — custom autocomplete dropdown, map preview with Marker; API key served via /api/maps-key endpoint
 - 2026-02-13: Fixed investor SDLT bands to post-April 2025 rates; replaced single refurb input with itemised cost list; fixed re-calculation on repeated clicks
