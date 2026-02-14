@@ -654,6 +654,14 @@ header .subtitle {
     margin-bottom: 20px;
   }
 
+  .print-report .print-filename {
+    font-size: 8.5pt;
+    color: #888;
+    font-family: 'Courier New', Courier, monospace;
+    margin-bottom: 10px;
+    word-break: break-all;
+  }
+
   .print-report .print-header h1 {
     font-size: 22pt;
     color: #000;
