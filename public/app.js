@@ -361,14 +361,24 @@ function renderScenario(data, label, targetYield) {
   `;
 }
 
+let lastResult = null;
+
 function renderResults(result) {
+  lastResult = result;
   const address = document.getElementById('address').value || 'Property';
   const targetYield = result.targetYield;
 
+  document.getElementById('savePdfBtn').style.display = '';
+
   const html = `
     <div class="results-content">
-      <h2>Deal Analysis</h2>
-      <p class="address-line">${address}</p>
+      <div class="results-header-row">
+        <div>
+          <h2>Deal Analysis</h2>
+          <p class="address-line">${address}</p>
+        </div>
+        <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
+      </div>
 
       <div class="scenario-tabs">
         <div class="scenario-tab active" data-view="comparison">Both Scenarios</div>
@@ -466,3 +476,140 @@ form.addEventListener('submit', (e) => {
   e.preventDefault();
   runCalculation();
 });
+
+function printSDLTTable(breakdown) {
+  if (!breakdown || !breakdown.bands || breakdown.bands.length === 0) {
+    return '<p>No SDLT due</p>';
+  }
+  let html = '<table><thead><tr><th>Band</th><th>Rate</th><th>Tax</th></tr></thead><tbody>';
+  for (const b of breakdown.bands) {
+    html += `<tr><td>${fmt(b.from)} \u2013 ${fmt(b.to)}</td><td>${(b.rate * 100).toFixed(0)}%</td><td>${fmt(b.tax)}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  return html;
+}
+
+function printScenario(data, label, targetYield) {
+  const offer = data.targetOffer;
+  let offerText = '';
+  if (offer && offer.achievable) {
+    offerText = `<p><strong>Target Offer Price (for ${fmtPct(targetYield)} yield):</strong> ${fmt(offer.offerPrice)}</p>`;
+  } else {
+    offerText = `<p><strong>Target Offer Price (for ${fmtPct(targetYield)} yield):</strong> Not achievable with current inputs</p>`;
+  }
+
+  let costItemsHtml = '';
+  if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
+    for (const item of data.breakdown.costItems) {
+      if (item.amount > 0) {
+        costItemsHtml += `<tr><td>${item.label || 'Cost item'}</td><td>${fmt(item.amount)}</td></tr>`;
+      }
+    }
+  }
+
+  return `
+    <div class="print-scenario">
+      <h3>${label}</h3>
+
+      <h4>SDLT Breakdown</h4>
+      ${printSDLTTable(data.sdltBreakdown)}
+      <p class="print-total"><strong>Total SDLT:</strong> ${fmt(data.sdlt)}</p>
+
+      <h4>Cost Breakdown</h4>
+      <table>
+        <tbody>
+          <tr><td>Purchase Price</td><td>${fmt(data.breakdown.price)}</td></tr>
+          <tr><td>SDLT</td><td>${fmt(data.breakdown.sdlt)}</td></tr>
+          <tr><td>Solicitor Fees</td><td>${fmt(data.breakdown.solicitorFees)}</td></tr>
+          ${costItemsHtml}
+        </tbody>
+        <tfoot><tr class="total-row"><td><strong>Total Acquisition Cost</strong></td><td><strong>${fmt(data.totalCost)}</strong></td></tr></tfoot>
+      </table>
+
+      <h4>Yield Analysis</h4>
+      <table>
+        <tbody>
+          <tr><td>Annual Rent</td><td>${fmt(data.annualRent)}</td></tr>
+          <tr><td>Net Annual Rent</td><td>${fmt(data.netAnnualRent)}</td></tr>
+          <tr><td>Gross Yield</td><td>${fmtPct(data.grossYield)}</td></tr>
+          <tr><td>Net Yield</td><td>${fmtPct(data.netYield)}</td></tr>
+        </tbody>
+      </table>
+
+      ${offerText}
+    </div>
+  `;
+}
+
+function printReport() {
+  if (!lastResult) {
+    alert('Please run a deal analysis first.');
+    return;
+  }
+
+  const address = document.getElementById('address').value || 'Not specified';
+  const price = document.getElementById('price').value;
+  const monthlyRent = document.getElementById('monthlyRent').value;
+  const solicitorFees = document.getElementById('solicitorFees').value;
+  const voidMonths = document.getElementById('voidMonths').value;
+  const runningCosts = document.getElementById('runningCosts').value;
+  const targetYield = document.getElementById('targetYield').value;
+  const now = new Date();
+  const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  let costItemsHtml = '';
+  const activeCosts = costItems.filter(i => i.amount > 0);
+  if (activeCosts.length > 0) {
+    costItemsHtml = '<table><tbody>';
+    activeCosts.forEach(item => {
+      costItemsHtml += `<tr><td>${item.label || 'Cost item'}</td><td>${fmt(item.amount)}</td></tr>`;
+    });
+    costItemsHtml += `</tbody><tfoot><tr class="total-row"><td><strong>Total Additional Costs</strong></td><td><strong>${fmt(getCostItemsTotal())}</strong></td></tr></tfoot></table>`;
+  } else {
+    costItemsHtml = '<p>None</p>';
+  }
+
+  const reportHtml = `
+    <div class="print-header">
+      <h1>UK Property Deal Report</h1>
+      <p class="print-date">Generated: ${timestamp}</p>
+      <p class="print-address">${address}</p>
+    </div>
+
+    <div class="print-section">
+      <h2>Input Summary</h2>
+      <table>
+        <tbody>
+          <tr><td>Asking Price</td><td>${fmt(parseFloat(price))}</td></tr>
+          <tr><td>Expected Monthly Rent</td><td>${fmt(parseFloat(monthlyRent))}</td></tr>
+          <tr><td>Solicitor Fees</td><td>${fmt(parseFloat(solicitorFees))}</td></tr>
+          <tr><td>Void Months / Year</td><td>${voidMonths}</td></tr>
+          <tr><td>Monthly Running Costs</td><td>${fmt(parseFloat(runningCosts))}</td></tr>
+          <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Additional Costs</h4>
+      ${costItemsHtml}
+    </div>
+
+    <div class="print-section">
+      <h2>Investor / Additional Property</h2>
+      ${printScenario(lastResult.investor, 'Investor', lastResult.targetYield)}
+    </div>
+
+    <div class="print-section">
+      <h2>First-time Buyer</h2>
+      ${printScenario(lastResult.ftb, 'First-time Buyer', lastResult.targetYield)}
+    </div>
+
+    <div class="print-disclaimer">
+      <p><strong>Disclaimer:</strong> These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.</p>
+    </div>
+  `;
+
+  document.getElementById('printReport').innerHTML = reportHtml;
+
+  setTimeout(() => { window.print(); }, 100);
+}
