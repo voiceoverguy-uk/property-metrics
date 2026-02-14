@@ -96,6 +96,25 @@ document.getElementById('mortgageToggle').addEventListener('click', function(e) 
 
 document.getElementById('includeMortgage').addEventListener('change', syncMortgageInputsVisibility);
 
+function updateBorrowingSummary() {
+  const price = getCurrencyFieldValue('price');
+  const deposit = getCurrencyFieldValue('depositAmount');
+  const summary = document.getElementById('borrowingSummary');
+  const amountEl = document.getElementById('borrowingAmount');
+
+  if (price > 0 && deposit > 0) {
+    const borrowed = Math.max(price - deposit, 0);
+    amountEl.textContent = fmt(borrowed);
+    summary.style.display = '';
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+document.getElementById('depositAmount').addEventListener('input', updateBorrowingSummary);
+document.getElementById('depositAmount').addEventListener('blur', updateBorrowingSummary);
+document.getElementById('price').addEventListener('blur', updateBorrowingSummary);
+
 async function initGoogleMaps() {
   try {
     const res = await fetch('/api/maps-key');
