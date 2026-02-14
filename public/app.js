@@ -932,22 +932,10 @@ function setMode(mode) {
 
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
-    analyserEls.forEach(el => el.style.display = 'none');
-    sdltEls.forEach(el => el.style.display = '');
     document.getElementById('monthlyRent').removeAttribute('required');
     resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>';
   } else {
     document.body.classList.remove('sdlt-mode');
-    analyserEls.forEach(el => {
-      if (el.id === 'mortgageFields') {
-        el.style.display = document.getElementById('mortgageToggle').checked ? '' : 'none';
-      } else if (el.id === 'savePdfBtn') {
-        el.style.display = lastResult ? '' : 'none';
-      } else {
-        el.style.display = '';
-      }
-    });
-    sdltEls.forEach(el => el.style.display = 'none');
     document.getElementById('monthlyRent').setAttribute('required', '');
     resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
   }
