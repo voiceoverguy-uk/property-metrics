@@ -75,8 +75,14 @@ function getCurrencyFieldValue(id) {
   return parseCurrencyValue(input.dataset.rawValue || input.value);
 }
 
-document.getElementById('mortgageToggle').addEventListener('change', function() {
-  document.getElementById('mortgageFields').style.display = this.checked ? '' : 'none';
+document.getElementById('mortgageToggle').addEventListener('click', function(e) {
+  if (e.target.classList.contains('tooltip')) return;
+  const fields = document.getElementById('mortgageFields');
+  const arrow = this.querySelector('.mortgage-arrow');
+  const isOpen = this.classList.contains('open');
+  this.classList.toggle('open');
+  fields.style.display = isOpen ? 'none' : '';
+  if (arrow) arrow.innerHTML = isOpen ? '&#9654;' : '&#9660;';
 });
 
 async function initGoogleMaps() {
@@ -603,7 +609,7 @@ function renderResults(result) {
   const address = escHtml(addressRaw);
   const targetYield = result.targetYield;
   const price = getCurrencyFieldValue('price');
-  const includeMortgage = document.getElementById('mortgageToggle').checked;
+  const includeMortgage = document.getElementById('mortgageToggle').classList.contains('open');
 
   let investorMortgage = null;
   let ftbMortgage = null;
