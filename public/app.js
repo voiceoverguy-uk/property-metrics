@@ -22,7 +22,10 @@ function formatCurrencyDisplay(val) {
   const num = parseCurrencyValue(val);
   if (!num && num !== 0) return '';
   if (num === 0) return '';
-  return '\u00a3' + Math.round(num).toLocaleString('en-GB');
+  if (num === Math.floor(num)) {
+    return '\u00a3' + num.toLocaleString('en-GB');
+  }
+  return '\u00a3' + num.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function initCurrencyFormatting() {
@@ -290,7 +293,10 @@ function escHtml(str) {
 
 function fmt(n) {
   if (n == null || isNaN(n)) return '\u00a30';
-  return '\u00a3' + Math.round(n).toLocaleString('en-GB');
+  if (n === Math.floor(n)) {
+    return '\u00a3' + n.toLocaleString('en-GB');
+  }
+  return '\u00a3' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fmtPct(n) {
@@ -461,9 +467,12 @@ function renderRunningCostsBreakdown() {
   const agentFeeTotal = getLettingAgentFeeMonthly();
   const totalMonthly = baseRunning + agentFeeTotal;
 
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+
   let html = '';
   if (baseRunning > 0 || agentPct > 0) {
     html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
+    html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
     if (baseRunning > 0) {
       html += `<div class="result-row"><span class="label">Other Running Costs</span><span class="value">${fmt(baseRunning)}/mo</span></div>`;
     }
