@@ -99,17 +99,10 @@
             <input type="number" id="targetYield" min="0" max="50" step="any" value="7.0">
           </div>
 
-          <h3 class="mortgage-header analyser-only">
-            Mortgage Calculator
-            <span class="tooltip" data-tip="Optional mortgage/financing analysis to calculate monthly payments, cash flow and cash-on-cash return.">?</span>
+          <h3 class="mortgage-header analyser-only" id="mortgageToggle" style="cursor:pointer;">
+            Mortgage Calculator <span class="mortgage-arrow">&#9654;</span>
+            <span class="tooltip" data-tip="Click to expand. Adds monthly payments, cash flow and cash-on-cash return to your analysis.">?</span>
           </h3>
-
-          <div class="form-group mortgage-toggle-group analyser-only">
-            <label class="mortgage-toggle-label">
-              <input type="checkbox" id="mortgageToggle">
-              <span>Include mortgage analysis</span>
-            </label>
-          </div>
 
           <div id="mortgageFields" class="mortgage-fields analyser-only" style="display:none;">
             <div class="form-row">

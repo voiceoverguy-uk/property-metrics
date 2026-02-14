@@ -638,28 +638,18 @@ header .subtitle {
 }
 
 .mortgage-header {
-  cursor: default;
-}
-
-.mortgage-toggle-group {
-  margin-bottom: 10px;
-}
-
-.mortgage-toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #333;
   cursor: pointer;
+  user-select: none;
 }
 
-.mortgage-toggle-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #d42027;
-  cursor: pointer;
+.mortgage-header:hover {
+  color: #d42027;
+}
+
+.mortgage-arrow {
+  font-size: 0.7rem;
+  margin-left: 2px;
+  transition: transform 0.2s;
 }
 
 .mortgage-fields {
@@ -1624,8 +1614,16 @@ body.dark .btn-save-pdf-inline:hover {
   color: #16213e;
 }
 
-body.dark .mortgage-toggle-label {
-  color: #c0c0d0;
+body.dark .mortgage-header {
+  color: #a0a0b0;
+}
+
+body.dark .mortgage-header:hover {
+  color: #d42027;
+}
+
+body.dark .mortgage-arrow {
+  color: #a0a0b0;
 }
 
 body.dark .cash-flow-indicator.cash-flow-positive {
