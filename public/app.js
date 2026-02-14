@@ -558,6 +558,15 @@ function printReport() {
   const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+  const dateStr = now.getFullYear() + '-'
+    + String(now.getMonth() + 1).padStart(2, '0') + '-'
+    + String(now.getDate()).padStart(2, '0');
+  const sanitisedAddress = address
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .substring(0, 40) || 'Property';
+  const priceInt = Math.round(parseFloat(price) || 0);
+  const suggestedFilename = `${sanitisedAddress}-${priceInt}-Deal-Report-${dateStr}.pdf`;
+
   let costItemsHtml = '';
   const activeCosts = costItems.filter(i => i.amount > 0);
   if (activeCosts.length > 0) {
@@ -572,6 +581,7 @@ function printReport() {
 
   const reportHtml = `
     <div class="print-header">
+      <p class="print-filename">Suggested filename: ${suggestedFilename}</p>
       <h1>UK Property Deal Report</h1>
       <p class="print-date">Generated: ${timestamp}</p>
       <p class="print-address">${address}</p>
