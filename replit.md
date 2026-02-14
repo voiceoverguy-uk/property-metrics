@@ -4,6 +4,8 @@
 A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. Studio Finder branding (#d42027 red, #1a1a1a charcoal).
 
 ## Recent Changes
+- 2026-02-14: Added letting agent fee input with +20% VAT checkbox; integrated into running costs, yield calcs, mortgage cash flow, PDF, history, and share URL
+- 2026-02-14: Added mortgage include/exclude checkbox inside expanded mortgage section for cash vs mortgage purchase toggle
 - 2026-02-14: Added dark mode toggle (moon/sun icon, localStorage persistence), mobile responsive improvements
 - 2026-02-14: Added comparison history (localStorage, max 20 entries) with load/delete/clear; share deal via URL query params with clipboard copy
 - 2026-02-14: Added standalone SDLT calculator mode with toggle buttons and dedicated /api/sdlt endpoint; shows all 3 buyer types

@@ -11,7 +11,7 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'lettingAgentFee'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -75,6 +75,11 @@ function getCurrencyFieldValue(id) {
   return parseCurrencyValue(input.dataset.rawValue || input.value);
 }
 
+function syncMortgageInputsVisibility() {
+  const checked = document.getElementById('includeMortgage').checked;
+  document.getElementById('mortgageInputs').style.display = checked ? '' : 'none';
+}
+
 document.getElementById('mortgageToggle').addEventListener('click', function(e) {
   if (e.target.classList.contains('tooltip')) return;
   const fields = document.getElementById('mortgageFields');
@@ -83,7 +88,10 @@ document.getElementById('mortgageToggle').addEventListener('click', function(e) 
   this.classList.toggle('open');
   fields.style.display = isOpen ? 'none' : '';
   if (arrow) arrow.innerHTML = isOpen ? '&#9654;' : '&#9660;';
+  if (!isOpen) syncMortgageInputsVisibility();
 });
+
+document.getElementById('includeMortgage').addEventListener('change', syncMortgageInputsVisibility);
 
 async function initGoogleMaps() {
   try {
@@ -311,7 +319,9 @@ function calculateMortgage(price, data) {
   const depositPct = parseFloat(document.getElementById('depositPct').value) || 25;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
-  const runningCosts = getCurrencyFieldValue('runningCosts');
+  const baseRunningCosts = getCurrencyFieldValue('runningCosts');
+  const lettingAgentFee = getLettingAgentFeeMonthly();
+  const runningCosts = baseRunningCosts + lettingAgentFee;
   const solicitorFees = getCurrencyFieldValue('solicitorFees');
   const refurbCosts = getCostItemsTotal();
 
@@ -350,6 +360,12 @@ function calculateMortgage(price, data) {
 
 function getCostItemsTotal() {
   return costItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+}
+
+function getLettingAgentFeeMonthly() {
+  const fee = getCurrencyFieldValue('lettingAgentFee');
+  const includeVat = document.getElementById('lettingAgentVat').checked;
+  return includeVat ? fee * 1.2 : fee;
 }
 
 function renderCostItems() {
@@ -429,6 +445,31 @@ function renderCostBreakdownRows(data) {
   }
 
   html += `<div class="result-row total"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>`;
+  return html;
+}
+
+function renderRunningCostsBreakdown() {
+  const baseRunning = getCurrencyFieldValue('runningCosts');
+  const agentFeeRaw = getCurrencyFieldValue('lettingAgentFee');
+  const vatChecked = document.getElementById('lettingAgentVat').checked;
+  const agentFeeTotal = getLettingAgentFeeMonthly();
+  const totalMonthly = baseRunning + agentFeeTotal;
+
+  let html = '';
+  if (baseRunning > 0 || agentFeeRaw > 0) {
+    html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
+    if (baseRunning > 0) {
+      html += `<div class="result-row"><span class="label">Other Running Costs</span><span class="value">${fmt(baseRunning)}/mo</span></div>`;
+    }
+    if (agentFeeRaw > 0) {
+      let agentLabel = 'Letting Agent Fee';
+      if (vatChecked) agentLabel += ' (inc. 20% VAT)';
+      html += `<div class="result-row"><span class="label">${agentLabel}</span><span class="value">${fmt(agentFeeTotal)}/mo</span></div>`;
+    }
+    html += `<div class="result-row total"><span class="label">Total Monthly Costs</span><span class="value">${fmt(totalMonthly)}/mo</span></div>`;
+    html += `<div class="result-row"><span class="label">Annual Running Costs</span><span class="value">${fmt(totalMonthly * 12)}/yr</span></div>`;
+    html += '</div>';
+  }
   return html;
 }
 
@@ -591,6 +632,8 @@ function renderScenario(data, label, targetYield, mortgage) {
       <div class="result-row"><span class="label">Net Annual Rent</span><span class="value">${fmt(data.netAnnualRent)}</span></div>
     </div>
 
+    ${renderRunningCostsBreakdown()}
+
     ${mortgageHtml}
 
     <div class="result-section">
@@ -609,7 +652,7 @@ function renderResults(result) {
   const address = escHtml(addressRaw);
   const targetYield = result.targetYield;
   const price = getCurrencyFieldValue('price');
-  const includeMortgage = document.getElementById('mortgageToggle').classList.contains('open');
+  const includeMortgage = document.getElementById('includeMortgage').checked;
 
   let investorMortgage = null;
   let ftbMortgage = null;
@@ -698,6 +741,10 @@ async function runCalculation() {
 
   const totalAdditionalCosts = getCostItemsTotal();
 
+  const lettingAgentFee = getLettingAgentFeeMonthly();
+  const baseRunningCosts = getCurrencyFieldValue('runningCosts') || 0;
+  const totalRunningCosts = baseRunningCosts + lettingAgentFee;
+
   const body = {
     price,
     monthlyRent,
@@ -706,8 +753,10 @@ async function runCalculation() {
     otherCosts: 0,
     costItems: costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
-    runningCosts: getCurrencyFieldValue('runningCosts') || 0,
+    runningCosts: totalRunningCosts,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
+    lettingAgentFee: getCurrencyFieldValue('lettingAgentFee') || 0,
+    lettingAgentVat: document.getElementById('lettingAgentVat').checked,
   };
 
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Calculating...</p></div>';
@@ -881,6 +930,17 @@ function printReport() {
   const investorMortgage = lastMortgageData ? lastMortgageData.investor : null;
   const ftbMortgage = lastMortgageData ? lastMortgageData.ftb : null;
 
+  const lettingAgentFee = getCurrencyFieldValue('lettingAgentFee');
+  const lettingAgentVat = document.getElementById('lettingAgentVat').checked;
+  const lettingAgentTotal = getLettingAgentFeeMonthly();
+
+  let lettingAgentRow = '';
+  if (lettingAgentFee > 0) {
+    let label = 'Letting Agent Fee';
+    if (lettingAgentVat) label += ' (inc. 20% VAT)';
+    lettingAgentRow = `<tr><td>${label}</td><td>${fmt(lettingAgentTotal)}/mo</td></tr>`;
+  }
+
   const reportHtml = `
     <div class="print-header">
       <p class="print-filename">Suggested filename: ${suggestedFilename}</p>
@@ -898,6 +958,7 @@ function printReport() {
           <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
           <tr><td>Void Months / Year</td><td>${voidMonths}</td></tr>
           <tr><td>Monthly Running Costs</td><td>${fmt(runningCosts)}</td></tr>
+          ${lettingAgentRow}
           <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
         </tbody>
       </table>
@@ -1101,6 +1162,8 @@ function addToHistory(result) {
     refurbCosts: getCostItemsTotal(),
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
     runningCosts: getCurrencyFieldValue('runningCosts') || 0,
+    lettingAgentFee: getCurrencyFieldValue('lettingAgentFee') || 0,
+    lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
 
@@ -1154,6 +1217,16 @@ function applyHistoryEntry(entry) {
 
   if (entry.address) {
     document.getElementById('address').value = entry.address;
+  }
+
+  if (entry.lettingAgentFee !== undefined) {
+    const lafInput = document.getElementById('lettingAgentFee');
+    lafInput.dataset.rawValue = entry.lettingAgentFee;
+    lafInput.value = entry.lettingAgentFee ? formatCurrencyDisplay(entry.lettingAgentFee) : '';
+  }
+
+  if (entry.lettingAgentVat !== undefined) {
+    document.getElementById('lettingAgentVat').checked = entry.lettingAgentVat;
   }
 
   if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
@@ -1222,6 +1295,9 @@ function shareDeal() {
   const target = parseFloat(document.getElementById('targetYield').value) || 7;
   const addr = document.getElementById('address').value || '';
 
+  const agentFee = getCurrencyFieldValue('lettingAgentFee') || 0;
+  const agentVat = document.getElementById('lettingAgentVat').checked;
+
   const params = new URLSearchParams();
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
@@ -1229,6 +1305,8 @@ function shareDeal() {
   if (refurb) params.set('refurb', refurb);
   if (voidMonths) params.set('void', voidMonths);
   if (running) params.set('running', running);
+  if (agentFee) params.set('agentfee', agentFee);
+  if (agentVat) params.set('agentvat', '1');
   params.set('target', target);
   if (addr) params.set('addr', addr);
 
@@ -1329,6 +1407,17 @@ function checkUrlParams() {
 
   if (params.has('target')) {
     document.getElementById('targetYield').value = parseFloat(params.get('target')) || 7;
+  }
+
+  if (params.has('agentfee')) {
+    const agentFee = parseFloat(params.get('agentfee'));
+    const lafInput = document.getElementById('lettingAgentFee');
+    lafInput.dataset.rawValue = agentFee;
+    lafInput.value = agentFee ? formatCurrencyDisplay(agentFee) : '';
+  }
+
+  if (params.has('agentvat') && params.get('agentvat') === '1') {
+    document.getElementById('lettingAgentVat').checked = true;
   }
 
   if (params.has('addr')) {

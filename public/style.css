@@ -656,6 +656,75 @@ header .subtitle {
   padding: 12px 0 4px;
 }
 
+.mortgage-include-row {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.toggle-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+.toggle-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #d42027;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-checkbox-label {
+  line-height: 1.4;
+}
+
+.letting-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.letting-agent-row input[type="number"] {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.letting-agent-row input[type="number"]:focus {
+  outline: none;
+  border-color: #d42027;
+  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
+}
+
+.vat-checkbox {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+  background: #f8f9fb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #ddd;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.vat-checkbox:has(input:checked) {
+  border-color: #d42027;
+  background: #fef2f2;
+  color: #d42027;
+}
+
 .cash-flow-indicator {
   display: inline-block;
   padding: 6px 16px;
@@ -1151,6 +1220,22 @@ body.sdlt-mode .analyser-only {
     width: 80px;
   }
 
+  .letting-agent-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .letting-agent-row input[type="text"] {
+    min-height: 44px;
+  }
+
+  .vat-checkbox {
+    align-self: flex-start;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
   .btn-add-item,
   .btn-remove-item,
   .btn-clear-history,
@@ -1612,6 +1697,36 @@ body.dark .btn-save-pdf-inline {
 body.dark .btn-save-pdf-inline:hover {
   background: #e8e8e8;
   color: #16213e;
+}
+
+body.dark .toggle-checkbox {
+  color: #c0c0d0;
+}
+
+body.dark .toggle-checkbox-label {
+  color: #c0c0d0;
+}
+
+body.dark .mortgage-include-row {
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .vat-checkbox {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .vat-checkbox:has(input:checked) {
+  border-color: #d42027;
+  background: rgba(212,32,39,0.1);
+  color: #d42027;
+}
+
+body.dark .letting-agent-row input[type="number"] {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+  color: #e8e8e8;
 }
 
 body.dark .mortgage-header {
