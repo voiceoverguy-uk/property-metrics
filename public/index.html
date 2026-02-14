@@ -34,6 +34,17 @@
             <input type="text" id="address" placeholder="e.g. SW1A 1AA">
           </div>
 
+          <div class="form-group buyer-type-group">
+            <label>
+              Buyer Type
+              <span class="tooltip" data-tip="Select whether this is an additional/investment property (higher SDLT) or a first-time buyer purchase (lower SDLT).">?</span>
+            </label>
+            <div class="buyer-type-toggle">
+              <button type="button" class="buyer-type-btn active" data-buyer="investor">Investor</button>
+              <button type="button" class="buyer-type-btn" data-buyer="ftb">First-Time Buyer</button>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="price">
               Asking Price (&pound;)
@@ -149,9 +160,24 @@
                 </label>
                 <input type="number" id="mortgageTerm" min="1" max="40" step="1" value="25">
               </div>
+              <button type="button" class="btn-mortgage-calc" id="mortgageCalcBtn">Calculate Mortgage</button>
               <div class="borrowing-summary" id="borrowingSummary" style="display:none;">
-                <span class="borrowing-label">Amount Borrowed</span>
-                <span class="borrowing-value" id="borrowingAmount">&pound;0</span>
+                <div class="borrowing-row">
+                  <span class="borrowing-label">Amount Borrowed</span>
+                  <span class="borrowing-value" id="borrowingAmount">&pound;0</span>
+                </div>
+                <div class="borrowing-row">
+                  <span class="borrowing-label">SDLT</span>
+                  <span class="borrowing-value" id="borrowingSDLT">&pound;0</span>
+                </div>
+                <div class="borrowing-row">
+                  <span class="borrowing-label">Solicitor Fees</span>
+                  <span class="borrowing-value" id="borrowingSolicitor">&pound;0</span>
+                </div>
+                <div class="borrowing-row borrowing-total">
+                  <span class="borrowing-label">Total Cash Required</span>
+                  <span class="borrowing-value" id="borrowingTotal">&pound;0</span>
+                </div>
               </div>
             </div>
           </div>

@@ -96,24 +96,51 @@ document.getElementById('mortgageToggle').addEventListener('click', function(e) 
 
 document.getElementById('includeMortgage').addEventListener('change', syncMortgageInputsVisibility);
 
-function updateBorrowingSummary() {
-  const price = getCurrencyFieldValue('price');
-  const deposit = getCurrencyFieldValue('depositAmount');
-  const summary = document.getElementById('borrowingSummary');
-  const amountEl = document.getElementById('borrowingAmount');
+let selectedBuyerType = 'investor';
 
-  if (price > 0 && deposit > 0) {
-    const borrowed = Math.max(price - deposit, 0);
-    amountEl.textContent = fmt(borrowed);
-    summary.style.display = '';
-  } else {
-    summary.style.display = 'none';
-  }
+document.querySelectorAll('.buyer-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedBuyerType = btn.dataset.buyer;
+  });
+});
+
+function getSelectedBuyerType() {
+  return selectedBuyerType;
 }
 
-document.getElementById('depositAmount').addEventListener('input', updateBorrowingSummary);
-document.getElementById('depositAmount').addEventListener('blur', updateBorrowingSummary);
-document.getElementById('price').addEventListener('blur', updateBorrowingSummary);
+document.getElementById('mortgageCalcBtn').addEventListener('click', async () => {
+  const price = getCurrencyFieldValue('price');
+  const deposit = getCurrencyFieldValue('depositAmount') || 0;
+  const solicitorFees = getCurrencyFieldValue('solicitorFees') || 1500;
+  const summary = document.getElementById('borrowingSummary');
+
+  if (!price || price <= 0) {
+    summary.style.display = 'none';
+    return;
+  }
+
+  const borrowed = Math.max(price - deposit, 0);
+  document.getElementById('borrowingAmount').textContent = fmt(borrowed);
+  document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
+
+  try {
+    const res = await fetch(`/api/sdlt?price=${price}`);
+    const data = await res.json();
+    const buyerType = getSelectedBuyerType();
+    const sdlt = buyerType === 'ftb' ? data.ftb.total : data.additional.total;
+    document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
+    const totalCash = deposit + sdlt + solicitorFees;
+    document.getElementById('borrowingTotal').textContent = fmt(totalCash);
+  } catch (e) {
+    document.getElementById('borrowingSDLT').textContent = '-';
+    const totalCash = deposit + solicitorFees;
+    document.getElementById('borrowingTotal').textContent = fmt(totalCash);
+  }
+
+  summary.style.display = '';
+});
 
 async function initGoogleMaps() {
   try {
@@ -1198,6 +1225,7 @@ function addToHistory(result) {
     runningCosts: getCurrencyFieldValue('runningCosts') || 0,
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
+    buyerType: getSelectedBuyerType(),
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
 
@@ -1259,6 +1287,13 @@ function applyHistoryEntry(entry) {
 
   if (entry.lettingAgentVat !== undefined) {
     document.getElementById('lettingAgentVat').checked = entry.lettingAgentVat;
+  }
+
+  if (entry.buyerType) {
+    selectedBuyerType = entry.buyerType;
+    document.querySelectorAll('.buyer-type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.buyer === entry.buyerType);
+    });
   }
 
   if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
@@ -1341,6 +1376,7 @@ function shareDeal() {
   if (agentVat) params.set('agentvat', '1');
   params.set('target', target);
   if (addr) params.set('addr', addr);
+  params.set('buyer', getSelectedBuyerType());
 
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
 
@@ -1451,6 +1487,14 @@ function checkUrlParams() {
 
   if (params.has('addr')) {
     document.getElementById('address').value = decodeURIComponent(params.get('addr'));
+  }
+
+  if (params.has('buyer')) {
+    const bt = params.get('buyer');
+    selectedBuyerType = bt;
+    document.querySelectorAll('.buyer-type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.buyer === bt);
+    });
   }
 
   window.history.replaceState({}, '', window.location.pathname);
