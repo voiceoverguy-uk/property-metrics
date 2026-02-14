@@ -78,14 +78,14 @@
                 Void Months / Year
                 <span class="tooltip" data-tip="Expected empty months per year with no rental income.">?</span>
               </label>
-              <input type="number" id="voidMonths" min="0" max="12" step="1" value="0">
+              <input type="number" id="voidMonths" min="0" max="12" step="1" placeholder="e.g. 1">
             </div>
             <div class="form-group half">
               <label for="runningCosts">
                 Monthly Running Costs (&pound;)
                 <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, ground rent, service charge, etc). Letting agent fee is separate below.">?</span>
               </label>
-              <input type="number" id="runningCosts" min="0" step="any" value="0">
+              <input type="number" id="runningCosts" min="0" step="any" placeholder="e.g. 150">
             </div>
           </div>
 
@@ -95,7 +95,7 @@
               <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
             </label>
             <div class="letting-agent-row">
-              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" value="0" placeholder="e.g. 10">
+              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" placeholder="e.g. 10">
               <label class="toggle-checkbox vat-checkbox">
                 <input type="checkbox" id="lettingAgentVat">
                 <span class="toggle-checkbox-label">+ 20% VAT</span>
@@ -128,11 +128,11 @@
             <div id="mortgageInputs">
               <div class="form-row">
                 <div class="form-group half">
-                  <label for="depositPct">
-                    Deposit (%)
-                    <span class="tooltip" data-tip="The percentage of the purchase price you will pay as a deposit.">?</span>
+                  <label for="depositAmount">
+                    Deposit (&pound;)
+                    <span class="tooltip" data-tip="The deposit amount you will put down. The rest will be the mortgage.">?</span>
                   </label>
-                  <input type="number" id="depositPct" min="0" max="100" step="any" value="25">
+                  <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. 40000">
                 </div>
                 <div class="form-group half">
                   <label for="interestRate">

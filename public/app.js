@@ -11,7 +11,7 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'depositAmount'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -322,7 +322,7 @@ function getDealRating(netYield, targetYield) {
 }
 
 function calculateMortgage(price, data) {
-  const depositPct = parseFloat(document.getElementById('depositPct').value) || 25;
+  const depositAmount = getCurrencyFieldValue('depositAmount') || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
   const baseRunningCosts = getCurrencyFieldValue('runningCosts');
@@ -331,8 +331,8 @@ function calculateMortgage(price, data) {
   const solicitorFees = getCurrencyFieldValue('solicitorFees');
   const refurbCosts = getCostItemsTotal();
 
-  const depositAmount = price * (depositPct / 100);
-  const mortgageAmount = price - depositAmount;
+  const mortgageAmount = Math.max(price - depositAmount, 0);
+  const depositPct = price > 0 ? (depositAmount / price) * 100 : 0;
   const monthlyRate = (interestRate / 100) / 12;
   const totalMonths = mortgageTerm * 12;
 
@@ -507,7 +507,7 @@ function renderMortgageSection(mortgage) {
   return `
     <div class="result-section">
       <h3>Mortgage Analysis</h3>
-      <div class="result-row"><span class="label">Deposit (${mortgage.depositPct}%)</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
+      <div class="result-row"><span class="label">Deposit (${fmtPct(mortgage.depositPct)})</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
       <div class="result-row"><span class="label">Mortgage Amount</span><span class="value">${fmt(mortgage.mortgageAmount)}</span></div>
       <div class="result-row"><span class="label">Monthly Mortgage Payment</span><span class="value">${fmt(mortgage.monthlyPayment)}</span></div>
       <div class="result-row"><span class="label">Monthly Cash Flow</span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
@@ -833,7 +833,7 @@ function printMortgageSection(mortgage) {
     <h4>Mortgage Analysis</h4>
     <table>
       <tbody>
-        <tr><td>Deposit (${mortgage.depositPct}%)</td><td>${fmt(mortgage.depositAmount)}</td></tr>
+        <tr><td>Deposit (${fmtPct(mortgage.depositPct)})</td><td>${fmt(mortgage.depositAmount)}</td></tr>
         <tr><td>Mortgage Amount</td><td>${fmt(mortgage.mortgageAmount)}</td></tr>
         <tr><td>Interest Rate</td><td>${mortgage.interestRate}%</td></tr>
         <tr><td>Term</td><td>${mortgage.mortgageTerm} years</td></tr>
