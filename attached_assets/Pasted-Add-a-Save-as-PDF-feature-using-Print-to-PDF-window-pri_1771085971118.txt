@@ -1,0 +1,51 @@
+Add a “Save as PDF” feature using Print-to-PDF (window.print) with a clean print layout.
+
+REQUIREMENTS
+1) Add a “Save as PDF” button
+- Place it near the “Analyse Deal” button AND also in the results header area (either location is fine, but at least one obvious place).
+- Clicking it should open the print dialog via window.print().
+
+2) Create a print-friendly layout (CSS @media print)
+- On print/PDF, hide all non-essential UI elements:
+  - Analyse Deal button (optional: hide after triggering print)
+  - scenario toggle buttons
+  - tooltips ( ? icons )
+  - add/remove cost item buttons and X delete buttons
+  - any debug messages
+- Ensure the printed page includes ONLY the essential report content:
+  A) Title: “UK Property Deal Report”
+  B) Date/time generated (local time)
+  C) Address/postcode
+  D) Inputs summary:
+     - Asking price
+     - Expected monthly rent
+     - Solicitor fees
+     - Void months/year
+     - Monthly running costs
+     - Itemised additional costs list with totals
+  E) Results summary for BOTH scenarios (Investor + First-time buyer):
+     - SDLT breakdown table (band, rate, tax)
+     - Total SDLT
+     - Total acquisition cost
+     - Gross yield, Net yield
+     - Target yield %
+     - Target offer price
+- If the user is viewing “Investor only” or “First-time buyer only”, the PDF should still include both scenarios (preferred) OR include only the currently selected view (acceptable). If including both is easy, do both.
+
+3) Print styling rules
+- Use a single-column print layout for readability.
+- Use black text on white background.
+- Remove shadows, rounded-corner “card” styling, and background gradients for print.
+- Keep the red (#d42027) only as a small accent (e.g. section headings or a thin divider line), but avoid large red blocks in print.
+- Ensure tables don’t split awkwardly across pages:
+  - Use page-break-inside: avoid on key sections and tables where possible.
+- Set sensible print margins.
+
+4) Implementation details
+- Add a print timestamp dynamically in the report.
+- Ensure window.print() works reliably and doesn’t require refresh.
+- Keep existing calculation logic unchanged.
+
+DELIVERABLE
+- Button works
+- PDF output is tidy, professional, and includes all key data
