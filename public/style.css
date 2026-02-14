@@ -662,6 +662,29 @@ header .subtitle {
   border-bottom: 1px solid #eee;
 }
 
+.borrowing-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  margin-top: 8px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.borrowing-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.borrowing-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
 .toggle-checkbox {
   display: flex;
   align-items: center;
@@ -1709,6 +1732,19 @@ body.dark .toggle-checkbox-label {
 
 body.dark .mortgage-include-row {
   border-bottom-color: #2a2a4a;
+}
+
+body.dark .borrowing-summary {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+}
+
+body.dark .borrowing-label {
+  color: #a0a0b0;
+}
+
+body.dark .borrowing-value {
+  color: #e0e0f0;
 }
 
 body.dark .vat-checkbox {
