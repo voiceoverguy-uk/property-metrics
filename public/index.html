@@ -91,11 +91,11 @@
 
           <div class="form-group analyser-only">
             <label for="lettingAgentFee">
-              Letting Agent Fee (&pound;/month)
-              <span class="tooltip" data-tip="Monthly letting/management agent fee. Tick the box to add 20% VAT on top.">?</span>
+              Letting Agent Fee (%)
+              <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
             </label>
             <div class="letting-agent-row">
-              <input type="number" id="lettingAgentFee" min="0" step="any" value="0" placeholder="e.g. 75">
+              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" value="0" placeholder="e.g. 10">
               <label class="toggle-checkbox vat-checkbox">
                 <input type="checkbox" id="lettingAgentVat">
                 <span class="toggle-checkbox-label">+ 20% VAT</span>

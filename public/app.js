@@ -11,7 +11,7 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'lettingAgentFee'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -362,8 +362,14 @@ function getCostItemsTotal() {
   return costItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 }
 
+function getLettingAgentPct() {
+  return parseFloat(document.getElementById('lettingAgentFee').value) || 0;
+}
+
 function getLettingAgentFeeMonthly() {
-  const fee = getCurrencyFieldValue('lettingAgentFee');
+  const pct = getLettingAgentPct();
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+  const fee = monthlyRent * (pct / 100);
   const includeVat = document.getElementById('lettingAgentVat').checked;
   return includeVat ? fee * 1.2 : fee;
 }
@@ -450,20 +456,20 @@ function renderCostBreakdownRows(data) {
 
 function renderRunningCostsBreakdown() {
   const baseRunning = getCurrencyFieldValue('runningCosts');
-  const agentFeeRaw = getCurrencyFieldValue('lettingAgentFee');
+  const agentPct = getLettingAgentPct();
   const vatChecked = document.getElementById('lettingAgentVat').checked;
   const agentFeeTotal = getLettingAgentFeeMonthly();
   const totalMonthly = baseRunning + agentFeeTotal;
 
   let html = '';
-  if (baseRunning > 0 || agentFeeRaw > 0) {
+  if (baseRunning > 0 || agentPct > 0) {
     html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
     if (baseRunning > 0) {
       html += `<div class="result-row"><span class="label">Other Running Costs</span><span class="value">${fmt(baseRunning)}/mo</span></div>`;
     }
-    if (agentFeeRaw > 0) {
-      let agentLabel = 'Letting Agent Fee';
-      if (vatChecked) agentLabel += ' (inc. 20% VAT)';
+    if (agentPct > 0) {
+      let agentLabel = `Letting Agent (${agentPct}%)`;
+      if (vatChecked) agentLabel += ' inc. VAT';
       html += `<div class="result-row"><span class="label">${agentLabel}</span><span class="value">${fmt(agentFeeTotal)}/mo</span></div>`;
     }
     html += `<div class="result-row total"><span class="label">Total Monthly Costs</span><span class="value">${fmt(totalMonthly)}/mo</span></div>`;
@@ -755,7 +761,7 @@ async function runCalculation() {
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
     runningCosts: totalRunningCosts,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
-    lettingAgentFee: getCurrencyFieldValue('lettingAgentFee') || 0,
+    lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
   };
 
@@ -930,14 +936,14 @@ function printReport() {
   const investorMortgage = lastMortgageData ? lastMortgageData.investor : null;
   const ftbMortgage = lastMortgageData ? lastMortgageData.ftb : null;
 
-  const lettingAgentFee = getCurrencyFieldValue('lettingAgentFee');
+  const lettingAgentPct = getLettingAgentPct();
   const lettingAgentVat = document.getElementById('lettingAgentVat').checked;
   const lettingAgentTotal = getLettingAgentFeeMonthly();
 
   let lettingAgentRow = '';
-  if (lettingAgentFee > 0) {
-    let label = 'Letting Agent Fee';
-    if (lettingAgentVat) label += ' (inc. 20% VAT)';
+  if (lettingAgentPct > 0) {
+    let label = `Letting Agent (${lettingAgentPct}%)`;
+    if (lettingAgentVat) label += ' inc. VAT';
     lettingAgentRow = `<tr><td>${label}</td><td>${fmt(lettingAgentTotal)}/mo</td></tr>`;
   }
 
@@ -1162,7 +1168,7 @@ function addToHistory(result) {
     refurbCosts: getCostItemsTotal(),
     voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
     runningCosts: getCurrencyFieldValue('runningCosts') || 0,
-    lettingAgentFee: getCurrencyFieldValue('lettingAgentFee') || 0,
+    lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
@@ -1219,10 +1225,8 @@ function applyHistoryEntry(entry) {
     document.getElementById('address').value = entry.address;
   }
 
-  if (entry.lettingAgentFee !== undefined) {
-    const lafInput = document.getElementById('lettingAgentFee');
-    lafInput.dataset.rawValue = entry.lettingAgentFee;
-    lafInput.value = entry.lettingAgentFee ? formatCurrencyDisplay(entry.lettingAgentFee) : '';
+  if (entry.lettingAgentPct !== undefined) {
+    document.getElementById('lettingAgentFee').value = entry.lettingAgentPct || 0;
   }
 
   if (entry.lettingAgentVat !== undefined) {
@@ -1295,7 +1299,7 @@ function shareDeal() {
   const target = parseFloat(document.getElementById('targetYield').value) || 7;
   const addr = document.getElementById('address').value || '';
 
-  const agentFee = getCurrencyFieldValue('lettingAgentFee') || 0;
+  const agentPct = getLettingAgentPct();
   const agentVat = document.getElementById('lettingAgentVat').checked;
 
   const params = new URLSearchParams();
@@ -1305,7 +1309,7 @@ function shareDeal() {
   if (refurb) params.set('refurb', refurb);
   if (voidMonths) params.set('void', voidMonths);
   if (running) params.set('running', running);
-  if (agentFee) params.set('agentfee', agentFee);
+  if (agentPct) params.set('agentpct', agentPct);
   if (agentVat) params.set('agentvat', '1');
   params.set('target', target);
   if (addr) params.set('addr', addr);
@@ -1409,11 +1413,8 @@ function checkUrlParams() {
     document.getElementById('targetYield').value = parseFloat(params.get('target')) || 7;
   }
 
-  if (params.has('agentfee')) {
-    const agentFee = parseFloat(params.get('agentfee'));
-    const lafInput = document.getElementById('lettingAgentFee');
-    lafInput.dataset.rawValue = agentFee;
-    lafInput.value = agentFee ? formatCurrencyDisplay(agentFee) : '';
+  if (params.has('agentpct')) {
+    document.getElementById('lettingAgentFee').value = parseFloat(params.get('agentpct')) || 0;
   }
 
   if (params.has('agentvat') && params.get('agentvat') === '1') {
