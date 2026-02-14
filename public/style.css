@@ -596,8 +596,398 @@ header .subtitle {
   margin-bottom: 4px;
 }
 
+.deal-rating {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8f9fb;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.deal-rating-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
+}
+
+.deal-rating-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deal-rating-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.deal-rating-detail {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.mortgage-header {
+  cursor: default;
+}
+
+.mortgage-toggle-group {
+  margin-bottom: 10px;
+}
+
+.mortgage-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+}
+
+.mortgage-toggle-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #d42027;
+  cursor: pointer;
+}
+
+.mortgage-fields {
+  padding: 12px 0 4px;
+}
+
+.cash-flow-indicator {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.cash-flow-indicator.cash-flow-positive {
+  background: #e6f9ed;
+  color: #1a9a4a;
+}
+
+.cash-flow-indicator.cash-flow-negative {
+  background: #fef2f2;
+  color: #d42027;
+}
+
+.cash-flow-positive {
+  color: #1a9a4a;
+}
+
+.cash-flow-negative {
+  color: #d42027;
+}
+
 .print-report {
   display: none;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.mode-btn {
+  padding: 10px 24px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  border-color: #d42027;
+  background: #fef2f2;
+  color: #d42027;
+}
+
+.mode-btn:hover {
+  border-color: #d42027;
+}
+
+.yield-gauge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.yield-gauge svg {
+  display: block;
+}
+
+.sdlt-comparison-chart {
+  background: #f8f9fb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.sdlt-comparison-chart h3 {
+  font-size: 0.9rem;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.sdlt-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sdlt-bar-row:last-child {
+  margin-bottom: 0;
+}
+
+.sdlt-bar-label {
+  width: 80px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sdlt-bar-track {
+  flex: 1;
+  height: 22px;
+  background: #e8e8e8;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sdlt-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+}
+
+.sdlt-bar-investor {
+  background: #d42027;
+}
+
+.sdlt-bar-ftb {
+  background: #0d7377;
+}
+
+.sdlt-bar-standard {
+  background: #b8860b;
+}
+
+.sdlt-bar-amount {
+  width: 80px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.sdlt-standalone-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.sdlt-standalone-tabs .scenario-tab {
+  flex: 1;
+}
+
+.sdlt-only {
+  display: none;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dark-mode-toggle {
+  background: none;
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.dark-mode-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.btn-share {
+  padding: 8px 18px;
+  background: #0d7377;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.btn-share:hover {
+  background: #0a5a5d;
+}
+
+.btn-share.copied {
+  background: #1a9a4a;
+}
+
+.results-header-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.history-section {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  margin-top: 24px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 0 1px rgba(0,0,0,0.04);
+}
+
+.history-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 14px;
+  color: #1a1a1a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-clear-history {
+  padding: 6px 14px;
+  background: #fee;
+  color: #d42027;
+  border: 1.5px solid #d42027;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-clear-history:hover {
+  background: #fcc;
+}
+
+.history-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8f9fb;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  border: 1px solid #eee;
+}
+
+.history-card:hover {
+  background: #fef2f2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.history-card-grade {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.history-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-card-address {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-card-details {
+  font-size: 0.78rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+.history-card-delete {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #fee;
+  color: #d42027;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.history-card-delete:hover {
+  background: #fcc;
+}
+
+.history-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 0.88rem;
 }
 
 @media (max-width: 860px) {
@@ -606,6 +996,168 @@ header .subtitle {
   }
   .comparison-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 18px 0;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  header .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  .header-inner {
+    gap: 8px;
+  }
+
+  .dark-mode-toggle {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .mode-toggle {
+    margin-top: 14px;
+    gap: 6px;
+  }
+
+  .mode-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  .input-panel {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  .results-panel {
+    padding: 18px;
+    border-radius: 10px;
+    min-height: 200px;
+  }
+
+  .layout {
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-group input {
+    padding: 12px;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .btn-calculate {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .scenario-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .scenario-tab {
+    padding: 10px 8px;
+    font-size: 0.78rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sdlt-standalone-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sdlt-standalone-tabs .scenario-tab {
+    min-height: 44px;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .yield-card {
+    padding: 14px;
+  }
+
+  .results-header-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .results-header-buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .offer-box .offer-price {
+    font-size: 1.4rem;
+  }
+
+  .sdlt-bar-label {
+    width: 60px;
+    font-size: 0.75rem;
+  }
+
+  .sdlt-bar-amount {
+    width: 65px;
+    font-size: 0.78rem;
+  }
+
+  .history-section {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  .history-card {
+    padding: 10px 12px;
+  }
+
+  .map-section {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  #mapContainer {
+    height: 250px;
+  }
+
+  .btn-save-pdf {
+    min-height: 48px;
+  }
+
+  .cost-item-row .cost-item-amount {
+    width: 80px;
+  }
+
+  .btn-add-item,
+  .btn-remove-item,
+  .btn-clear-history,
+  .history-card-delete {
+    min-height: 44px;
   }
 }
 
@@ -628,15 +1180,21 @@ header .subtitle {
   .input-panel,
   .results-panel,
   .map-section,
+  .history-section,
   .disclaimer,
   .scenario-tabs,
   .btn-calculate,
   .btn-save-pdf,
   .btn-save-pdf-inline,
+  .btn-share,
   .btn-add-item,
   .btn-remove-item,
   .tooltip,
-  .address-dropdown {
+  .address-dropdown,
+  .mode-toggle,
+  .yield-gauge,
+  .sdlt-comparison-chart,
+  .sdlt-standalone-tabs {
     display: none !important;
   }
 
@@ -768,8 +1326,379 @@ header .subtitle {
     page-break-inside: avoid;
   }
 
+  .print-report .print-deal-rating {
+    margin: 6px 0 10px;
+    padding: 6px 0;
+    font-size: 11pt;
+  }
+
+  .print-report .print-deal-grade {
+    font-size: 16pt;
+    font-weight: 800;
+    margin-right: 6px;
+  }
+
+  .print-report .print-deal-label {
+    font-weight: 700;
+    font-size: 11pt;
+    margin-right: 6px;
+  }
+
+  .print-report .print-deal-detail {
+    font-size: 9pt;
+    color: #555;
+  }
+
   @page {
     margin: 15mm 12mm;
     size: A4;
   }
+}
+
+body.dark {
+  background: #1a1a2e;
+  color: #e8e8e8;
+}
+
+body.dark header {
+  background: #0f0f23;
+}
+
+body.dark .input-panel,
+body.dark .results-panel,
+body.dark .map-section,
+body.dark .history-section,
+body.dark .disclaimer {
+  background: #16213e;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.2);
+}
+
+body.dark .input-panel h2,
+body.dark .results-content h2,
+body.dark .map-section h2,
+body.dark .history-section h2 {
+  color: #e8e8e8;
+}
+
+body.dark .input-panel h3 {
+  color: #a0a0b0;
+  border-top-color: #2a2a4a;
+}
+
+body.dark .form-group label {
+  color: #c0c0d0;
+}
+
+body.dark .form-group input {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+  color: #e8e8e8;
+}
+
+body.dark .form-group input:focus {
+  border-color: #d42027;
+  box-shadow: 0 0 0 3px rgba(212,32,39,0.2);
+}
+
+body.dark .cost-item-row .cost-item-label,
+body.dark .cost-item-row .cost-item-amount {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+  color: #e8e8e8;
+}
+
+body.dark .cost-item-row .cost-item-label:focus,
+body.dark .cost-item-row .cost-item-amount:focus {
+  border-color: #d42027;
+  box-shadow: 0 0 0 3px rgba(212,32,39,0.2);
+}
+
+body.dark .cost-total-row {
+  color: #c0c0d0;
+  border-top-color: #2a2a4a;
+}
+
+body.dark .btn-add-item {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .btn-add-item:hover {
+  border-color: #d42027;
+  background: rgba(212,32,39,0.1);
+  color: #d42027;
+}
+
+body.dark .btn-remove-item {
+  background: rgba(212,32,39,0.15);
+}
+
+body.dark .btn-remove-item:hover {
+  background: rgba(212,32,39,0.3);
+}
+
+body.dark .mode-btn {
+  background: #16213e;
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .mode-btn.active {
+  border-color: #d42027;
+  background: rgba(212,32,39,0.15);
+  color: #d42027;
+}
+
+body.dark .mode-btn:hover {
+  border-color: #d42027;
+}
+
+body.dark .tooltip {
+  background: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .tooltip:hover::after {
+  background: #0f0f23;
+  color: #e8e8e8;
+}
+
+body.dark .results-placeholder {
+  color: #a0a0b0;
+}
+
+body.dark .results-content .address-line {
+  color: #a0a0b0;
+}
+
+body.dark .scenario-tab {
+  background: #16213e;
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .scenario-tab.active {
+  border-color: #d42027;
+  background: rgba(212,32,39,0.15);
+  color: #d42027;
+}
+
+body.dark .scenario-tab:hover {
+  border-color: #d42027;
+}
+
+body.dark .result-section h3 {
+  color: #a0a0b0;
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .result-row .label {
+  color: #a0a0b0;
+}
+
+body.dark .result-row .value {
+  color: #e8e8e8;
+}
+
+body.dark .result-row.total {
+  border-top-color: #e8e8e8;
+}
+
+body.dark .comparison-col {
+  border-color: #2a2a4a;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+body.dark .comparison-col h4 {
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .yield-card {
+  background: #1a1a2e;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+body.dark .yield-card .yield-label {
+  color: #a0a0b0;
+}
+
+body.dark .yield-card .yield-value {
+  color: #e8e8e8;
+}
+
+body.dark .yield-card .yield-value.yield-near {
+  color: #e8e8e8;
+}
+
+body.dark .deal-rating {
+  background: #1a1a2e;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+body.dark .deal-rating-detail {
+  color: #a0a0b0;
+}
+
+body.dark .sdlt-comparison-chart {
+  background: #1a1a2e;
+}
+
+body.dark .sdlt-comparison-chart h3 {
+  color: #a0a0b0;
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .sdlt-bar-label {
+  color: #a0a0b0;
+}
+
+body.dark .sdlt-bar-track {
+  background: #2a2a4a;
+}
+
+body.dark .sdlt-bar-amount {
+  color: #e8e8e8;
+}
+
+body.dark .sdlt-band-table th {
+  background: #1a1a2e;
+  color: #a0a0b0;
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .sdlt-band-table td {
+  border-bottom-color: #2a2a4a;
+  color: #e8e8e8;
+}
+
+body.dark .offer-box {
+  background: rgba(212,32,39,0.08);
+  border-color: #d42027;
+}
+
+body.dark .offer-box .offer-label {
+  color: #a0a0b0;
+}
+
+body.dark .offer-box .offer-note {
+  color: #a0a0b0;
+}
+
+body.dark .offer-box.not-achievable {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+}
+
+body.dark .offer-box.not-achievable .offer-price {
+  color: #a0a0b0;
+}
+
+body.dark .btn-save-pdf {
+  background: #16213e;
+  color: #e8e8e8;
+  border-color: #e8e8e8;
+}
+
+body.dark .btn-save-pdf:hover {
+  background: #e8e8e8;
+  color: #16213e;
+}
+
+body.dark .btn-save-pdf-inline {
+  background: #16213e;
+  color: #e8e8e8;
+  border-color: #e8e8e8;
+}
+
+body.dark .btn-save-pdf-inline:hover {
+  background: #e8e8e8;
+  color: #16213e;
+}
+
+body.dark .mortgage-toggle-label {
+  color: #c0c0d0;
+}
+
+body.dark .cash-flow-indicator.cash-flow-positive {
+  background: rgba(26,154,74,0.15);
+}
+
+body.dark .cash-flow-indicator.cash-flow-negative {
+  background: rgba(212,32,39,0.15);
+}
+
+body.dark .address-dropdown {
+  background: #16213e;
+  border-color: #2a2a4a;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+body.dark .address-dropdown-item {
+  color: #e8e8e8;
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .address-dropdown-item:hover {
+  background: rgba(212,32,39,0.1);
+  color: #d42027;
+}
+
+body.dark #mapContainer {
+  border-color: #2a2a4a;
+}
+
+body.dark .disclaimer {
+  background: rgba(255,248,225,0.08);
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .history-card {
+  background: #1a1a2e;
+  border-color: #2a2a4a;
+}
+
+body.dark .history-card:hover {
+  background: rgba(212,32,39,0.08);
+}
+
+body.dark .history-card-address {
+  color: #e8e8e8;
+}
+
+body.dark .history-card-details {
+  color: #a0a0b0;
+}
+
+body.dark .history-card-delete {
+  background: rgba(212,32,39,0.15);
+}
+
+body.dark .history-card-delete:hover {
+  background: rgba(212,32,39,0.3);
+}
+
+body.dark .btn-clear-history {
+  background: rgba(212,32,39,0.15);
+}
+
+body.dark .btn-clear-history:hover {
+  background: rgba(212,32,39,0.3);
+}
+
+body.dark .history-empty {
+  color: #a0a0b0;
+}
+
+body.dark .yield-gauge svg path[stroke="#e8e8e8"] {
+  stroke: #2a2a4a;
+}
+
+body.dark .yield-gauge svg text[fill="#777"] {
+  fill: #a0a0b0;
+}
+
+body.dark .yield-gauge svg line[stroke="#1a1a1a"] {
+  stroke: #e8e8e8;
 }
