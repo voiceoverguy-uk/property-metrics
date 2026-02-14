@@ -819,7 +819,15 @@ header .subtitle {
 }
 
 .sdlt-only {
-  display: none;
+  display: none !important;
+}
+
+body.sdlt-mode .sdlt-only {
+  display: block !important;
+}
+
+body.sdlt-mode .analyser-only {
+  display: none !important;
 }
 
 .header-inner {
