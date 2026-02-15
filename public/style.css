@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Manrope';
+  src: url('fonts/Manrope-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -25,15 +33,10 @@ header {
 }
 
 header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 2.4rem;
+  font-weight: 600;
   letter-spacing: -0.5px;
-}
-
-.header-logo {
-  max-height: 50px;
-  width: auto;
-  filter: invert(1) brightness(2);
 }
 
 header .subtitle {
@@ -884,6 +887,14 @@ header .subtitle {
   border-color: #d42027;
 }
 
+.yield-basis-note {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
 .yield-gauge {
   display: flex;
   justify-content: center;
@@ -1694,6 +1705,10 @@ body.dark .comparison-col {
 
 body.dark .comparison-col h4 {
   border-bottom-color: #2a2a4a;
+}
+
+body.dark .yield-basis-note {
+  color: #a0a0b0;
 }
 
 body.dark .yield-card {
