@@ -4,6 +4,9 @@
 A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#B11217 deep red, #1a1a1a charcoal).
 
 ## Recent Changes
+- 2026-02-15: Fixed PDF generation — replaced off-screen rendering with in-viewport wrapper (z-index overlay, pointer-events:none) so html2canvas captures reliably; double rAF + forced reflow before capture
+- 2026-02-15: Changed void allowance default from 5% to 0% (HTML, reset, URL fallback)
+- 2026-02-15: Updated Deal Reference placeholder to "e.g. house with mortgage"
 - 2026-02-15: Added Deal Reference text input below Buyer Type — shown in results header, history cards, Compare Deals overlay, PDF report, URL sharing; cleared on Start Again; analyser-only (hidden in SDLT mode)
 - 2026-02-15: Fixed deal rating bug — "Below Target" was shown for yields slightly above target; added "On Target" band (B-) for diff 0–0.5; "Below Target" now only for negative diff; added parseFloat safety
 - 2026-02-15: Added Compare Deals feature — "Compare Deals" button in history section (shown when 2+ entries); opens full-screen overlay with deals ranked by rating/yield; shows price, rent, gross yield, net yield, annual cash flow, SDLT, buyer type; sortable by rating, net yield, gross yield, price, rent; gold/silver/bronze rank badges; "Best Deal" label; close via button, Escape key, or overlay click; dark mode and mobile responsive
