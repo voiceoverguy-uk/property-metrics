@@ -55,7 +55,7 @@ app.post('/api/calculate', (req, res) => {
     const params = {
       price: Number(price),
       monthlyRent: Number(monthlyRent),
-      solicitorFees: Number(solicitorFees) || 1500,
+      solicitorFees: solicitorFees !== undefined && solicitorFees !== null && solicitorFees !== '' ? Number(solicitorFees) : 1500,
       refurbCosts: Number(refurbCosts) || 0,
       otherCosts: Number(otherCosts) || 0,
       voidPct: Number(voidPct) || 0,

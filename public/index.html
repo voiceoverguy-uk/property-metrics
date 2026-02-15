@@ -80,12 +80,16 @@
             <input type="number" id="solicitorFees" min="0" step="any" value="1500">
           </div>
 
-          <div class="form-group analyser-only simple-only">
-            <label for="simpleAdditionalCosts">
-              Additional Costs (&pound;)
-              <span class="tooltip" data-tip="Total additional costs such as solicitor fees, refurb, surveys, etc.">?</span>
-            </label>
-            <input type="number" id="simpleAdditionalCosts" min="0" step="any" placeholder="e.g. £5,000">
+          <div class="analyser-only simple-only">
+            <h3>
+              Additional Costs
+              <span class="tooltip" data-tip="Add costs such as solicitor fees, refurb, surveys, etc.">?</span>
+            </h3>
+            <div id="simpleCostItemsList"></div>
+            <div class="cost-total-row">
+              <span>Total Additional Costs:</span>
+              <span id="simpleCostItemsTotal">&pound;0</span>
+            </div>
           </div>
 
           <h3 class="analyser-only full-only">

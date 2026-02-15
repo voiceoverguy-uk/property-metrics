@@ -7,12 +7,13 @@ const mapSection = document.getElementById('mapSection');
 const mapContainer = document.getElementById('mapContainer');
 
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
+let simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'depositAmount', 'maintenanceFixed', 'simpleAdditionalCosts'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'depositAmount', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -587,6 +588,59 @@ addCostItemBtn.addEventListener('click', () => {
 
 renderCostItems();
 
+const simpleCostItemsList = document.getElementById('simpleCostItemsList');
+const simpleCostItemsTotalEl = document.getElementById('simpleCostItemsTotal');
+
+function getSimpleCostItemsTotal() {
+  return simpleCostItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+}
+
+function renderSimpleCostItems() {
+  simpleCostItemsList.innerHTML = '';
+  const placeholders = ['e.g. Solicitor Fees', 'e.g. Electrics'];
+  simpleCostItems.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'cost-item-row';
+    const placeholder = placeholders[index] || 'e.g. Cost item';
+    row.innerHTML = `
+      <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
+      <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
+    `;
+    simpleCostItemsList.appendChild(row);
+  });
+
+  simpleCostItemsList.querySelectorAll('.cost-item-label').forEach(input => {
+    input.addEventListener('input', (e) => {
+      simpleCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
+    });
+  });
+
+  simpleCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
+    input.addEventListener('focus', function() {
+      const raw = this.dataset.rawValue || this.getAttribute('data-raw-value') || '';
+      this.value = raw && raw !== '0' ? raw : '';
+    });
+    input.addEventListener('blur', function() {
+      const raw = parseCurrencyValue(this.value);
+      const idx = parseInt(this.dataset.index);
+      simpleCostItems[idx].amount = raw;
+      this.dataset.rawValue = raw || '';
+      this.setAttribute('data-raw-value', raw || '');
+      this.value = raw ? formatCurrencyDisplay(raw) : '';
+      simpleCostItemsTotalEl.textContent = fmt(getSimpleCostItemsTotal());
+    });
+    input.addEventListener('input', function() {
+      const raw = parseCurrencyValue(this.value);
+      const idx = parseInt(this.dataset.index);
+      simpleCostItems[idx].amount = raw;
+    });
+  });
+
+  simpleCostItemsTotalEl.textContent = fmt(getSimpleCostItemsTotal());
+}
+
+renderSimpleCostItems();
+
 const runningCostItemsList = document.getElementById('runningCostItemsList');
 const runningCostItemsTotalEl = document.getElementById('runningCostItemsTotal');
 const addRunningCostItemBtn = document.getElementById('addRunningCostItem');
@@ -660,15 +714,23 @@ function renderSDLTTable(breakdown) {
 }
 
 function renderCostBreakdownRows(data) {
+  const isSimple = currentMode === 'simple';
   let html = '';
   html += `<div class="result-row"><span class="label">Purchase Price</span><span class="value">${fmt(data.breakdown.price)}</span></div>`;
   html += `<div class="result-row"><span class="label">SDLT</span><span class="value">${fmt(data.breakdown.sdlt)}</span></div>`;
-  html += `<div class="result-row"><span class="label">Solicitor Fees</span><span class="value">${fmt(data.breakdown.solicitorFees)}</span></div>`;
 
-  if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
-    for (const item of data.breakdown.costItems) {
-      if (item.amount > 0) {
-        html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Cost item')}</span><span class="value">${fmt(item.amount)}</span></div>`;
+  if (isSimple) {
+    const activeSimple = simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+    for (const item of activeSimple) {
+      html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Additional cost')}</span><span class="value">${fmt(item.amount)}</span></div>`;
+    }
+  } else {
+    html += `<div class="result-row"><span class="label">Solicitor Fees</span><span class="value">${fmt(data.breakdown.solicitorFees)}</span></div>`;
+    if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
+      for (const item of data.breakdown.costItems) {
+        if (item.amount > 0) {
+          html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Cost item')}</span><span class="value">${fmt(item.amount)}</span></div>`;
+        }
       }
     }
   }
@@ -1237,7 +1299,7 @@ async function runCalculation() {
   let totalAdditionalCosts, lettingAgentFee, baseRunningCosts, maintenanceAnnual, maintenanceMonthly, totalRunningCosts;
 
   if (isSimple) {
-    totalAdditionalCosts = getCurrencyFieldValue('simpleAdditionalCosts') || 0;
+    totalAdditionalCosts = getSimpleCostItemsTotal();
     lettingAgentFee = 0;
     baseRunningCosts = 0;
     maintenanceAnnual = 0;
@@ -1258,7 +1320,9 @@ async function runCalculation() {
     solicitorFees: isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500),
     refurbCosts: totalAdditionalCosts,
     otherCosts: 0,
-    costItems: isSimple ? [] : costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
+    costItems: isSimple
+      ? simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 }))
+      : costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
     runningCosts: totalRunningCosts,
     targetYield: isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0),
@@ -1331,8 +1395,8 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   syncMortgageInputsVisibility();
   document.getElementById('borrowingSummary').style.display = 'none';
   document.getElementById('dealReference').value = '';
-  const simpleAddCosts = document.getElementById('simpleAdditionalCosts');
-  if (simpleAddCosts) { simpleAddCosts.value = ''; simpleAddCosts.dataset.rawValue = ''; }
+  simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
+  renderSimpleCostItems();
   document.getElementById('showTargetOffer').checked = true;
   document.getElementById('targetYieldGroup').style.display = '';
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
@@ -1760,9 +1824,12 @@ function printReport() {
       }
       inputRows.push({ cells: ['Target Yield', targetYield + '%'] });
     } else {
-      const simpleAddCosts = getCurrencyFieldValue('simpleAdditionalCosts') || 0;
-      if (simpleAddCosts > 0) {
-        inputRows.push({ cells: ['Additional Costs', fmt(simpleAddCosts)] });
+      const activeSimpleCosts = simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+      activeSimpleCosts.forEach(i => {
+        inputRows.push({ cells: [i.label || 'Additional cost', fmt(i.amount)] });
+      });
+      if (activeSimpleCosts.length > 0) {
+        inputRows.push({ cells: ['Total Additional Costs', fmt(getSimpleCostItemsTotal())], bold: true });
       }
     }
     h.table(inputRows);
@@ -2030,7 +2097,8 @@ function addToHistory(result) {
     hasMortgage: selectedPurchaseType === 'mortgage',
     depositAmount: getCurrencyFieldValue('depositAmount') || 0,
     solicitorFees: isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500),
-    refurbCosts: isSimple ? (getCurrencyFieldValue('simpleAdditionalCosts') || 0) : getCostItemsTotal(),
+    refurbCosts: isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal(),
+    simpleCostItems: isSimple ? simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })) : [],
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
     runningCosts: isSimple ? 0 : getRunningCostItemsTotal(),
     runningCostItems: isSimple ? [] : runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
@@ -2117,14 +2185,16 @@ function applyHistoryEntry(entry) {
     });
   }
 
-  if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
-    if (entry.mode === 'simple') {
-      const sacInput = document.getElementById('simpleAdditionalCosts');
-      if (sacInput) { sacInput.dataset.rawValue = entry.refurbCosts; sacInput.value = formatCurrencyDisplay(entry.refurbCosts); }
-    } else {
-      costItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }, { label: '', amount: 0 }];
-      renderCostItems();
-    }
+  if (entry.mode === 'simple' && entry.simpleCostItems && entry.simpleCostItems.length > 0) {
+    simpleCostItems = entry.simpleCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
+    while (simpleCostItems.length < 2) simpleCostItems.push({ label: '', amount: 0 });
+    renderSimpleCostItems();
+  } else if (entry.mode === 'simple' && entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
+    simpleCostItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }];
+    renderSimpleCostItems();
+  } else if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
+    costItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }, { label: '', amount: 0 }];
+    renderCostItems();
   }
 
   if (entry.voidPct !== undefined) {
@@ -2519,7 +2589,7 @@ function shareDeal() {
   const rent = getCurrencyFieldValue('monthlyRent');
   const isSimple = currentMode === 'simple';
   const sol = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
-  const refurb = isSimple ? (getCurrencyFieldValue('simpleAdditionalCosts') || 0) : getCostItemsTotal();
+  const refurb = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
   const running = isSimple ? 0 : getRunningCostItemsTotal();
   const target = isSimple ? 6 : (parseFloat(document.getElementById('targetYield').value) || 7);
   const addr = document.getElementById('address').value || '';
@@ -2535,11 +2605,17 @@ function shareDeal() {
   const dealRef = document.getElementById('dealReference').value || '';
 
   const params = new URLSearchParams();
-  if (isSimple) params.set('mode', 'simple');
+  if (isSimple) {
+    params.set('mode', 'simple');
+    const activeSimple = simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+    if (activeSimple.length > 0) {
+      params.set('scitems', JSON.stringify(activeSimple.map(i => ({ l: i.label, a: i.amount }))));
+    }
+  }
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
   if (!isSimple && sol) params.set('sol', sol);
-  if (refurb) params.set('refurb', refurb);
+  if (!isSimple && refurb) params.set('refurb', refurb);
   if (!isSimple && running) params.set('running', running);
   if (!isSimple && agentPct) params.set('agentpct', agentPct);
   if (!isSimple && agentVat) params.set('agentvat', '1');
@@ -2633,12 +2709,21 @@ function checkUrlParams() {
     solInput.value = formatCurrencyDisplay(sol);
   }
 
-  if (params.has('refurb')) {
+  if (currentMode === 'simple' && params.has('scitems')) {
+    try {
+      const items = JSON.parse(params.get('scitems'));
+      if (Array.isArray(items) && items.length > 0) {
+        simpleCostItems = items.map(i => ({ label: i.l || '', amount: parseFloat(i.a) || 0 }));
+        while (simpleCostItems.length < 2) simpleCostItems.push({ label: '', amount: 0 });
+        renderSimpleCostItems();
+      }
+    } catch (e) {}
+  } else if (params.has('refurb')) {
     const refurb = parseFloat(params.get('refurb'));
     if (refurb > 0) {
       if (currentMode === 'simple') {
-        const sacInput = document.getElementById('simpleAdditionalCosts');
-        if (sacInput) { sacInput.dataset.rawValue = refurb; sacInput.value = formatCurrencyDisplay(refurb); }
+        simpleCostItems = [{ label: '', amount: refurb }, { label: '', amount: 0 }];
+        renderSimpleCostItems();
       } else {
         costItems = [{ label: '', amount: refurb }, { label: '', amount: 0 }, { label: '', amount: 0 }];
         renderCostItems();
