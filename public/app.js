@@ -2666,9 +2666,11 @@ function initDarkMode() {
   const toggle = document.getElementById('darkModeToggle');
   const saved = localStorage.getItem('darkMode');
 
-  if (saved === null || saved === 'true') {
+  if (saved === 'true') {
     document.body.classList.add('dark');
     toggle.innerHTML = '&#9728;';
+  } else {
+    toggle.innerHTML = '&#9790;';
   }
 
   toggle.addEventListener('click', () => {
