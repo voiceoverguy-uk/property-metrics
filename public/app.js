@@ -1507,6 +1507,11 @@ function addToHistory(result) {
     investorSDLT: result.investor.sdlt,
     ftbSDLT: result.ftb.sdlt,
     investorRating: investorRating.grade,
+    investorGrossYield: result.investor.grossYield,
+    ftbGrossYield: result.ftb.grossYield,
+    annualCashFlow: (result.investor.effectiveAnnualRent || result.investor.annualRent) - (getCurrencyFieldValue('runningCosts') || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual(),
+    hasMortgage: selectedPurchaseType === 'mortgage',
+    depositAmount: getCurrencyFieldValue('depositAmount') || 0,
     solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
     refurbCosts: getCostItemsTotal(),
     voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
@@ -1645,7 +1650,7 @@ function renderHistory() {
 
   if (section) {
     const h2 = section.querySelector('h2');
-    if (h2) h2.innerHTML = 'Comparison History <button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
+    if (h2) h2.innerHTML = 'Comparison History ' + (history.length >= 2 ? '<button type="button" class="btn-compare-deals" onclick="openCompare()">Compare Deals</button> ' : '') + '<button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
   }
 
   let html = '';
@@ -1674,6 +1679,137 @@ window.loadHistoryItem = function(id) {
 };
 
 renderHistory();
+
+function openCompare() {
+  const history = getHistory();
+  if (history.length < 2) return;
+  document.getElementById('compareOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderCompareTable();
+}
+
+function closeCompare() {
+  document.getElementById('compareOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function renderCompareTable() {
+  const history = getHistory();
+  if (history.length === 0) return;
+  
+  const sortBy = document.getElementById('compareSortBy').value;
+  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'F': 5 };
+  
+  const entries = history.map(entry => {
+    const isFtb = entry.buyerType === 'ftb';
+    const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
+    const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
+    const rating = getDealRating(netYield, entry.targetYield);
+
+    const annualRent = entry.monthlyRent * 12;
+    const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
+    const grossYield = isFtb
+      ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
+      : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
+
+    const lettingPct = entry.lettingAgentPct || 0;
+    let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
+    if (entry.lettingAgentVat) lettingMonthly *= 1.2;
+    const maintenanceAnnual = entry.maintenanceMode === 'fixed'
+      ? (entry.maintenanceFixed || 0)
+      : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
+    const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+
+    return {
+      ...entry,
+      displayNetYield: netYield,
+      displaySdlt: sdlt,
+      rating,
+      grossYieldCalc: Math.round(grossYield * 100) / 100,
+      cashFlow: Math.round(annualCashFlow),
+      ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6
+    };
+  });
+  
+  entries.sort((a, b) => {
+    switch (sortBy) {
+      case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
+      case 'netYield': return b.displayNetYield - a.displayNetYield;
+      case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
+      case 'price': return a.price - b.price;
+      case 'rent': return b.monthlyRent - a.monthlyRent;
+      default: return 0;
+    }
+  });
+  
+  let html = '<div class="compare-cards">';
+  
+  entries.forEach((entry, idx) => {
+    const rank = idx + 1;
+    const rankClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
+    const bestBadge = rank === 1 ? '<span class="best-deal-badge">Best Deal</span>' : '';
+    const cashFlowClass = entry.cashFlow >= 0 ? 'compare-positive' : 'compare-negative';
+    
+    html += `
+      <div class="compare-card ${rank === 1 ? 'compare-card-best' : ''}">
+        <div class="compare-rank ${rankClass}">#${rank}</div>
+        <div class="compare-card-header">
+          <div class="compare-card-grade" style="background:${entry.rating.color};">${entry.rating.grade}</div>
+          <div class="compare-card-title">
+            <div class="compare-card-address">${escHtml(entry.address || 'No address')}</div>
+            <div class="compare-card-label">${entry.rating.label} ${bestBadge}</div>
+          </div>
+        </div>
+        <div class="compare-card-metrics">
+          <div class="compare-metric">
+            <span class="compare-metric-label">Price</span>
+            <span class="compare-metric-value">${fmt(entry.price)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Monthly Rent</span>
+            <span class="compare-metric-value">${fmt(entry.monthlyRent)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Gross Yield</span>
+            <span class="compare-metric-value">${fmtPct(entry.grossYieldCalc)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Net Yield</span>
+            <span class="compare-metric-value compare-highlight">${fmtPct(entry.displayNetYield)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Cash Flow / yr</span>
+            <span class="compare-metric-value ${cashFlowClass}">${fmt(entry.cashFlow)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">SDLT</span>
+            <span class="compare-metric-value">${fmt(entry.displaySdlt)}</span>
+          </div>
+        </div>
+        <div class="compare-card-footer">
+          <span class="compare-card-buyer">${entry.buyerType === 'ftb' ? 'First-Time Buyer' : 'Investor'}</span>
+          <span class="compare-card-date">${entry.date}</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  document.getElementById('compareBody').innerHTML = html;
+}
+
+document.getElementById('compareOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCompare();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('compareOverlay').style.display !== 'none') {
+    closeCompare();
+  }
+});
+
+window.openCompare = openCompare;
+window.closeCompare = closeCompare;
+window.renderCompareTable = renderCompareTable;
 
 function shareDeal() {
   const price = getCurrencyFieldValue('price');

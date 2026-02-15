@@ -239,6 +239,26 @@
       <div id="historyList"></div>
     </section>
 
+    <div id="compareOverlay" class="compare-overlay" style="display:none;">
+      <div class="compare-container">
+        <div class="compare-header">
+          <h2>Deal Comparison</h2>
+          <button type="button" class="compare-close" onclick="closeCompare()">&times;</button>
+        </div>
+        <div class="compare-sort">
+          <label>Sort by:</label>
+          <select id="compareSortBy" onchange="renderCompareTable()">
+            <option value="rating">Deal Rating</option>
+            <option value="netYield">Net Yield</option>
+            <option value="grossYield">Gross Yield</option>
+            <option value="price">Price (Low to High)</option>
+            <option value="rent">Rent (High to Low)</option>
+          </select>
+        </div>
+        <div id="compareBody"></div>
+      </div>
+    </div>
+
     <div id="printReport" class="print-report"></div>
 
     <footer class="disclaimer">
