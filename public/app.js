@@ -541,7 +541,7 @@ function renderCostItems() {
   costItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholders = ['e.g. Refurb / Repairs', 'e.g. Decorating', 'e.g. New Boiler'];
+    const placeholders = ['e.g. Electrics', 'e.g. Decorating', 'e.g. New Boiler'];
     const placeholder = placeholders[index] || 'e.g. Cost item';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
