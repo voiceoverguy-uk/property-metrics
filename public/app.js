@@ -1322,6 +1322,23 @@ document.getElementById('showTargetOffer').addEventListener('change', function()
   document.getElementById('targetYieldGroup').style.display = this.checked ? '' : 'none';
 });
 
+function safeStr(v) { return v == null ? '' : String(v); }
+
+function safePdfDownload(pdf, filename) {
+  try {
+    pdf.save(filename);
+  } catch (e) {
+    var blob = pdf.output('blob');
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  }
+}
+
 function pdfHelper(pdf, margins) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -1384,6 +1401,8 @@ function pdfHelper(pdf, margins) {
 
   function textLine(text, opts) {
     opts = opts || {};
+    text = safeStr(text);
+    if (!text) return;
     pdf.setFontSize(opts.size || 10);
     pdf.setFont('helvetica', opts.bold ? 'bold' : opts.italic ? 'italic' : 'normal');
     pdf.setTextColor(...(opts.color ? hexToRgb(opts.color) : [0, 0, 0]));
@@ -1431,6 +1450,7 @@ function pdfHelper(pdf, margins) {
     }
 
     rows.forEach(row => {
+      if (!row || !row.cells) return;
       const isBold = row.bold || false;
       const isTotal = row.total || false;
       pdf.setFontSize(9);
@@ -1438,7 +1458,7 @@ function pdfHelper(pdf, margins) {
       let dynH = rowH;
       row.cells.forEach((cell, i) => {
         if (i < row.cells.length - 1) {
-          const wrapped = pdf.splitTextToSize(String(cell), colWidths[i] - 4);
+          const wrapped = pdf.splitTextToSize(safeStr(cell), colWidths[i] - 4);
           dynH = Math.max(dynH, wrapped.length * 4 + 2);
         }
       });
@@ -1458,7 +1478,7 @@ function pdfHelper(pdf, margins) {
       let cx = margins.left + 2;
       let extraLines = 0;
       row.cells.forEach((cell, i) => {
-        const cellStr = String(cell);
+        const cellStr = safeStr(cell);
         const align = i === row.cells.length - 1 ? 'right' : 'left';
         if (align === 'right') {
           pdf.text(cellStr, margins.left + colWidths.slice(0, i + 1).reduce((a, b) => a + b, 0) - 2, y, { align: 'right' });
@@ -1544,6 +1564,12 @@ function printReport() {
   if (btn) { btn.textContent = 'Generating PDF...'; btn.disabled = true; }
 
   try {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert('PDF library not loaded. Please refresh the page and try again.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
+
     const address = document.getElementById('address').value || 'Not specified';
     const dealRef = document.getElementById('dealReference').value || '';
     const price = getCurrencyFieldValue('price');
@@ -1562,6 +1588,11 @@ function printReport() {
 
     const buyerType = getSelectedBuyerType();
     const scenarioData = buyerType === 'ftb' ? lastResult.ftb : lastResult.investor;
+    if (!scenarioData || !scenarioData.breakdown) {
+      alert('Deal data is incomplete. Please run the analysis again.');
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+      return;
+    }
     const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
     const displayData = adjustYieldsForMortgage(scenarioData, selectedMortgage);
     const rating = getDealRating(displayData.netYield, parseFloat(targetYield));
@@ -1711,10 +1742,10 @@ function printReport() {
 
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
 
-    pdf.save(filename);
+    safePdfDownload(pdf, filename);
   } catch (err) {
-    console.error('PDF generation failed:', err);
-    alert('PDF generation failed. Please try again.');
+    console.error('PDF generation failed:', err, err.stack);
+    alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
   } finally {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
@@ -2154,6 +2185,12 @@ function downloadComparePdf() {
   if (pdfBtn) { pdfBtn.textContent = 'Generating...'; pdfBtn.disabled = true; }
 
   try {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert('PDF library not loaded. Please refresh the page and try again.');
+      if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+      return;
+    }
+
     const sortBy = document.getElementById('compareSortBy').value;
     const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
 
@@ -2298,10 +2335,10 @@ function downloadComparePdf() {
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
 
     const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '.pdf';
-    pdf.save(filename);
+    safePdfDownload(pdf, filename);
   } catch (err) {
-    console.error('Compare PDF generation failed:', err);
-    alert('PDF generation failed. Please try again.');
+    console.error('Compare PDF generation failed:', err, err.stack);
+    alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
   } finally {
     if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
   }
