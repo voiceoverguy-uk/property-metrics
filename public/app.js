@@ -1927,7 +1927,7 @@ function initDarkMode() {
   const toggle = document.getElementById('darkModeToggle');
   const saved = localStorage.getItem('darkMode');
 
-  if (saved === 'true') {
+  if (saved === null || saved === 'true') {
     document.body.classList.add('dark');
     toggle.innerHTML = '&#9728;';
   }
