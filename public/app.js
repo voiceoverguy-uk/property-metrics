@@ -1505,22 +1505,112 @@ function pdfHelper(pdf, margins) {
   }
 
   function dealRating(grade, label, detail, color) {
-    checkPage(10);
+    checkPage(22);
+    const rgb = hexToRgb(color);
+    const cx = margins.left + 12;
+    const cy = y + 6;
+    pdf.setFillColor(...rgb);
+    pdf.circle(cx, cy, 10, 'F');
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(...hexToRgb(color));
-    pdf.text(grade, margins.left, y);
-    const gradeW = pdf.getTextWidth(grade);
-    pdf.setFontSize(10);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(grade, cx, cy + 1.5, { align: 'center' });
+
+    pdf.setFontSize(13);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(0, 0, 0);
-    pdf.text('  ' + label, margins.left + gradeW + 2, y);
-    const labelW = pdf.getTextWidth('  ' + label);
+    pdf.text(label, margins.left + 26, y + 4);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(detail, margins.left + 26, y + 10);
+    y += 20;
+  }
+
+  function yieldGauge(netYield, targetYield) {
+    checkPage(52);
+    const cx = margins.left + contentW / 2;
+    const cy = y + 30;
+    const radius = 25;
+    const startAngle = Math.PI;
+    const maxYield = Math.max(targetYield * 2, 15);
+    const clampedYield = Math.max(0, Math.min(netYield, maxYield));
+    const fraction = clampedYield / maxYield;
+
+    pdf.setDrawColor(220, 220, 220);
+    pdf.setLineWidth(5);
+    const bgSteps = 40;
+    for (let i = 0; i < bgSteps; i++) {
+      const a1 = startAngle + (i / bgSteps) * Math.PI;
+      const a2 = startAngle + ((i + 1) / bgSteps) * Math.PI;
+      pdf.line(
+        cx + radius * Math.cos(a1), cy + radius * Math.sin(a1),
+        cx + radius * Math.cos(a2), cy + radius * Math.sin(a2)
+      );
+    }
+
+    let arcColor;
+    if (netYield >= targetYield) arcColor = [10, 122, 46];
+    else if (netYield >= targetYield * 0.7) arcColor = [184, 134, 11];
+    else arcColor = [177, 18, 23];
+    pdf.setDrawColor(...arcColor);
+    pdf.setLineWidth(5);
+    const arcSteps = Math.max(1, Math.round(fraction * 40));
+    for (let i = 0; i < arcSteps; i++) {
+      const a1 = startAngle + (i / 40) * Math.PI;
+      const a2 = startAngle + ((i + 1) / 40) * Math.PI;
+      pdf.line(
+        cx + radius * Math.cos(a1), cy + radius * Math.sin(a1),
+        cx + radius * Math.cos(a2), cy + radius * Math.sin(a2)
+      );
+    }
+
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...arcColor);
+    pdf.text(fmtPct(netYield), cx, cy - 3, { align: 'center' });
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(100, 100, 100);
-    pdf.text('  ' + detail, margins.left + gradeW + 2 + labelW + 2, y);
-    y += 7;
+    pdf.text('Net Yield', cx, cy + 3, { align: 'center' });
+    y = cy + 10;
+  }
+
+  function yieldCards(cards) {
+    checkPage(30);
+    const cols = Math.min(cards.length, 4);
+    const cardW = (contentW - (cols - 1) * 4) / cols;
+    const cardH = 22;
+    const startX = margins.left;
+    const startY = y;
+
+    cards.forEach((card, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx = startX + col * (cardW + 4);
+      const cy = startY + row * (cardH + 4);
+
+      if (row > 0 && col === 0) checkPage(cardH + 4);
+
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.3);
+      pdf.setFillColor(248, 248, 248);
+      pdf.roundedRect(cx, cy, cardW, cardH, 2, 2, 'FD');
+
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(card.label.toUpperCase(), cx + cardW / 2, cy + 7, { align: 'center' });
+
+      const valColor = card.color ? hexToRgb(card.color) : [0, 0, 0];
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(...valColor);
+      pdf.text(safeStr(card.value), cx + cardW / 2, cy + 17, { align: 'center' });
+    });
+
+    const totalRows = Math.ceil(cards.length / cols);
+    y = startY + totalRows * (cardH + 4) + 2;
   }
 
   function separator() {
@@ -1550,7 +1640,7 @@ function pdfHelper(pdf, margins) {
   function getY() { return y; }
   function setY(val) { y = val; }
 
-  return { title, subtitle, heading, subheading, textLine, table, dealRating, separator, disclaimer, gap, checkPage, getY, setY, contentW, pageW, pageH, margins, hexToRgb };
+  return { title, subtitle, heading, subheading, textLine, table, dealRating, yieldGauge, yieldCards, separator, disclaimer, gap, checkPage, getY, setY, contentW, pageW, pageH, margins, hexToRgb };
 }
 
 function printReport() {
@@ -1687,7 +1777,27 @@ function printReport() {
     costBreakdownRows.push({ cells: ['Total Acquisition Cost', fmt(scenarioData.totalCost)], bold: true, total: true });
     h.table(costBreakdownRows);
 
-    h.subheading('Yield Analysis');
+    h.heading('Yield Analysis');
+    if (selectedMortgage) {
+      h.textLine('Net yield based on ' + fmt(displayData.cashInvested) + ' cash invested (after mortgage costs)', { size: 9, align: 'center', color: '#555555' });
+    }
+    h.gap(2);
+    h.yieldGauge(displayData.netYield, parseFloat(targetYield));
+    h.gap(4);
+
+    const yieldCardData = [
+      { label: 'Gross Yield', value: fmtPct(displayData.grossYield), color: '#333333' },
+      { label: selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', value: fmtPct(displayData.netYield), color: displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217' },
+    ];
+    if (selectedMortgage) {
+      yieldCardData.push({ label: 'Cash-on-Cash Return', value: fmtPct(selectedMortgage.cashOnCashReturn), color: selectedMortgage.cashOnCashReturn >= 0 ? '#0a7a2e' : '#B11217' });
+      const payback = selectedMortgage.annualCashFlow > 0 ? (selectedMortgage.totalCashInvested / selectedMortgage.annualCashFlow).toFixed(1) + ' yrs' : 'N/A';
+      yieldCardData.push({ label: 'Payback Period', value: payback, color: '#333333' });
+    }
+    h.yieldCards(yieldCardData);
+    h.gap(2);
+
+    h.subheading('Yield Breakdown');
     const yieldRows = [{ cells: ['Annual Rent', fmt(scenarioData.annualRent)] }];
     if (voidPct > 0) {
       yieldRows.push({ cells: ['Effective Annual Rent (after ' + voidPct + '% void)', fmt(scenarioData.effectiveAnnualRent || scenarioData.annualRent)] });
@@ -1696,8 +1806,6 @@ function printReport() {
       yieldRows.push({ cells: ['Annual Mortgage Cost', fmt(displayData.annualMortgageCost)] });
     }
     yieldRows.push({ cells: ['Net Annual Rent' + (selectedMortgage ? ' (after mortgage)' : ''), fmt(displayData.netAnnualRent)] });
-    yieldRows.push({ cells: ['Gross Yield', fmtPct(displayData.grossYield)] });
-    yieldRows.push({ cells: [selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', fmtPct(displayData.netYield)] });
     if (selectedMortgage) {
       yieldRows.push({ cells: ['Cash Invested', fmt(displayData.cashInvested)] });
     }
@@ -1714,8 +1822,6 @@ function printReport() {
         { cells: ['Monthly Cash Flow', fmt(selectedMortgage.monthlyCashFlow)] },
         { cells: ['Annual Cash Flow', fmt(selectedMortgage.annualCashFlow)] },
         { cells: ['Total Cash Invested', fmt(selectedMortgage.totalCashInvested)] },
-        { cells: ['Cash-on-Cash Return', fmtPct(selectedMortgage.cashOnCashReturn)] },
-        { cells: ['Payback Period', selectedMortgage.annualCashFlow > 0 ? (selectedMortgage.totalCashInvested / selectedMortgage.annualCashFlow).toFixed(1) + ' years' : 'N/A'] },
       ];
       h.table(mortRows);
 
