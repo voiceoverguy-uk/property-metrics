@@ -1582,9 +1582,14 @@ function printReport() {
     const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
       + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    const sanitisedAddress = address.replace(/[^a-zA-Z0-9]/g, '').substring(0, 40) || 'Property';
-    const priceInt = Math.round(parseFloat(price) || 0);
-    const filename = `${sanitisedAddress}-${priceInt}-Deal-Report-${dateStr}.pdf`;
+    const timeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+    const sanitisedAddress = address.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 40);
+    const sanitisedRef = dealRef.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 40);
+    const parts = ['RentalMetrics'];
+    if (sanitisedAddress) parts.push(sanitisedAddress);
+    if (sanitisedRef) parts.push(sanitisedRef);
+    parts.push(dateStr + '-' + timeStr);
+    const filename = parts.join('-') + '.pdf';
 
     const buyerType = getSelectedBuyerType();
     const scenarioData = buyerType === 'ftb' ? lastResult.ftb : lastResult.investor;
@@ -2334,7 +2339,8 @@ function downloadComparePdf() {
     h.gap(6);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
 
-    const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '.pdf';
+    const compTimeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+    const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '-' + compTimeStr + '.pdf';
     safePdfDownload(pdf, filename);
   } catch (err) {
     console.error('Compare PDF generation failed:', err, err.stack);
