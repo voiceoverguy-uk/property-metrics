@@ -34,9 +34,16 @@ header {
 
 header h1 {
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 2.4rem;
+  font-size: 3rem;
   font-weight: 600;
   letter-spacing: -0.5px;
+}
+
+header h1 .domain-suffix {
+  font-size: 0.55em;
+  opacity: 0.75;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 header .subtitle {
@@ -966,7 +973,6 @@ header .subtitle {
 .mode-toggle {
   display: flex;
   gap: 8px;
-  margin-top: 20px;
   justify-content: center;
 }
 
@@ -1106,29 +1112,38 @@ body.sdlt-mode .analyser-only {
 
 .header-inner {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+}
+
+.mode-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .dark-mode-toggle {
   background: none;
-  border: 2px solid rgba(255,255,255,0.3);
-  color: #fff;
-  font-size: 1.5rem;
-  width: 44px;
-  height: 44px;
+  border: 2px solid #ddd;
+  color: #555;
+  font-size: 1.1rem;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
   flex-shrink: 0;
 }
 
 .dark-mode-toggle:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.5);
+  background: #f0f2f5;
+  border-color: #bbb;
+  color: #333;
 }
 
 .btn-share {
@@ -1287,7 +1302,7 @@ body.sdlt-mode .analyser-only {
   }
 
   header h1 {
-    font-size: 1.3rem;
+    font-size: 1.6rem;
   }
 
   header .subtitle {
@@ -1302,14 +1317,17 @@ body.sdlt-mode .analyser-only {
     gap: 8px;
   }
 
+  .mode-toggle-row {
+    gap: 8px;
+  }
+
   .dark-mode-toggle {
-    width: 38px;
-    height: 38px;
-    font-size: 1.2rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
   }
 
   .mode-toggle {
-    margin-top: 14px;
     gap: 6px;
   }
 
@@ -1734,6 +1752,17 @@ body.dark .btn-remove-item {
 
 body.dark .btn-remove-item:hover {
   background: rgba(212,32,39,0.3);
+}
+
+body.dark .dark-mode-toggle {
+  border-color: #2a2a4a;
+  color: #a0a0b0;
+}
+
+body.dark .dark-mode-toggle:hover {
+  background: #16213e;
+  border-color: #444;
+  color: #e0e0e0;
 }
 
 body.dark .mode-btn {
