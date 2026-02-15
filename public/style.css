@@ -228,7 +228,33 @@ header .subtitle {
 .results-content .address-line {
   font-size: 0.85rem;
   color: #777;
+  margin-bottom: 4px;
+}
+
+.results-content .deal-ref-line {
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 600;
   margin-bottom: 20px;
+}
+
+.history-card-ref {
+  font-weight: 400;
+  color: #888;
+  font-size: 0.85em;
+}
+
+.compare-card-ref {
+  font-weight: 400;
+  color: #999;
+  font-size: 0.85em;
+}
+
+.print-deal-ref {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 4px;
 }
 
 .scenario-tabs {
@@ -2402,6 +2428,18 @@ body.dark .sdlt-rates-note {
 
 body.dark .results-content .address-line {
   color: #a0a0b0;
+}
+
+body.dark .results-content .deal-ref-line {
+  color: #c8c8d8;
+}
+
+body.dark .history-card-ref {
+  color: #8888a0;
+}
+
+body.dark .compare-card-ref {
+  color: #9090a8;
 }
 
 body.dark .scenario-tab {
