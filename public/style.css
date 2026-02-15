@@ -26,7 +26,7 @@ body {
 }
 
 header {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
   padding: 30px 0;
   text-align: center;
@@ -109,8 +109,8 @@ header .subtitle {
 
 .form-group input:focus {
   outline: none;
-  border-color: #d42027;
-  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
 .form-row {
@@ -160,19 +160,25 @@ header .subtitle {
 .btn-calculate {
   width: 100%;
   padding: 13px;
-  background: #d42027;
+  background: #B11217;
   color: #fff;
   border: none;
+  outline: none;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   margin-top: 10px;
-  transition: background 0.2s;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .btn-calculate:hover {
-  background: #a1181d;
+  background: #961014;
+}
+
+.btn-calculate:focus {
+  outline: none;
 }
 
 .btn-calculate:active {
@@ -238,13 +244,13 @@ header .subtitle {
 }
 
 .scenario-tab.active {
-  border-color: #d42027;
+  border-color: #B11217;
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .scenario-tab:hover {
-  border-color: #d42027;
+  border-color: #B11217;
 }
 
 .result-section {
@@ -285,7 +291,7 @@ header .subtitle {
 }
 
 .result-row.total .value {
-  color: #d42027;
+  color: #B11217;
   font-size: 1.1rem;
 }
 
@@ -323,7 +329,7 @@ header .subtitle {
 }
 
 .yield-card .yield-value.yield-below {
-  color: #d42027;
+  color: #B11217;
 }
 
 .yield-card .yield-value.yield-near {
@@ -332,11 +338,11 @@ header .subtitle {
 
 .offer-box {
   background: #fef8f8;
-  border: 2.5px solid #d42027;
+  border: 2.5px solid #B11217;
   border-radius: 14px;
   padding: 24px;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(212,32,39,0.1);
+  box-shadow: 0 2px 12px rgba(177,18,23,0.1);
 }
 
 .offer-box .offer-label {
@@ -348,7 +354,7 @@ header .subtitle {
 .offer-box .offer-price {
   font-size: 2rem;
   font-weight: 800;
-  color: #d42027;
+  color: #B11217;
   letter-spacing: -0.5px;
 }
 
@@ -419,7 +425,7 @@ header .subtitle {
   padding-bottom: 10px;
   margin-bottom: 14px;
   border-bottom: 2px solid #f0f2f5;
-  color: #d42027;
+  color: #B11217;
 }
 
 .cost-item-row {
@@ -449,8 +455,8 @@ header .subtitle {
 .cost-item-row .cost-item-label:focus,
 .cost-item-row .cost-item-amount:focus {
   outline: none;
-  border-color: #d42027;
-  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
 .btn-remove-item {
@@ -458,7 +464,7 @@ header .subtitle {
   height: 28px;
   border: none;
   background: #fee;
-  color: #d42027;
+  color: #B11217;
   border-radius: 8px;
   font-size: 1.1rem;
   cursor: pointer;
@@ -492,9 +498,9 @@ header .subtitle {
 }
 
 .btn-add-item:hover {
-  border-color: #d42027;
+  border-color: #B11217;
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .cost-total-row {
@@ -569,7 +575,7 @@ header .subtitle {
 
 .address-dropdown-item:hover {
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .btn-save-pdf {
@@ -669,7 +675,7 @@ header .subtitle {
 }
 
 .mortgage-header:hover {
-  color: #d42027;
+  color: #B11217;
 }
 
 .mortgage-arrow {
@@ -710,7 +716,7 @@ header .subtitle {
 }
 
 .buyer-type-btn.active {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
@@ -740,7 +746,7 @@ header .subtitle {
 }
 
 .purchase-type-btn.active {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
@@ -797,7 +803,7 @@ header .subtitle {
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background: #d42027;
+  background: #B11217;
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
@@ -809,8 +815,8 @@ header .subtitle {
   padding: 12px;
   margin-top: 8px;
   background: #fff;
-  color: #d42027;
-  border: 2px solid #d42027;
+  color: #B11217;
+  border: 2px solid #B11217;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -819,7 +825,7 @@ header .subtitle {
 }
 
 .btn-start-again:hover {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
@@ -881,7 +887,7 @@ header .subtitle {
 
 .borrowing-total .borrowing-value {
   font-size: 1.05rem;
-  color: #d42027;
+  color: #B11217;
 }
 
 .toggle-checkbox {
@@ -898,7 +904,7 @@ header .subtitle {
 .toggle-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #d42027;
+  accent-color: #B11217;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -924,8 +930,8 @@ header .subtitle {
 
 .letting-agent-row input[type="number"]:focus {
   outline: none;
-  border-color: #d42027;
-  box-shadow: 0 0 0 3px rgba(212,32,39,0.1);
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
 .vat-checkbox {
@@ -942,9 +948,9 @@ header .subtitle {
 }
 
 .vat-checkbox:has(input:checked) {
-  border-color: #d42027;
+  border-color: #B11217;
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .cash-flow-indicator {
@@ -963,7 +969,7 @@ header .subtitle {
 
 .cash-flow-indicator.cash-flow-negative {
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .cash-flow-positive {
@@ -971,7 +977,7 @@ header .subtitle {
 }
 
 .cash-flow-negative {
-  color: #d42027;
+  color: #B11217;
 }
 
 .print-report {
@@ -997,13 +1003,13 @@ header .subtitle {
 }
 
 .mode-btn.active {
-  border-color: #d42027;
+  border-color: #B11217;
   background: #fef2f2;
-  color: #d42027;
+  color: #B11217;
 }
 
 .mode-btn:hover {
-  border-color: #d42027;
+  border-color: #B11217;
 }
 
 .yield-basis-note {
@@ -1077,7 +1083,7 @@ header .subtitle {
 }
 
 .sdlt-bar-investor {
-  background: #d42027;
+  background: #B11217;
 }
 
 .sdlt-bar-ftb {
@@ -1204,8 +1210,8 @@ body.sdlt-mode .analyser-only {
 .btn-clear-history {
   padding: 6px 14px;
   background: #fee;
-  color: #d42027;
-  border: 1.5px solid #d42027;
+  color: #B11217;
+  border: 1.5px solid #B11217;
   border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -1273,7 +1279,7 @@ body.sdlt-mode .analyser-only {
   height: 28px;
   border: none;
   background: #fee;
-  color: #d42027;
+  color: #B11217;
   border-radius: 8px;
   font-size: 1.1rem;
   cursor: pointer;
@@ -1531,7 +1537,7 @@ body.sdlt-mode .analyser-only {
 
   .print-report .print-header {
     text-align: center;
-    border-bottom: 3px solid #d42027;
+    border-bottom: 3px solid #B11217;
     padding-bottom: 16px;
     margin-bottom: 20px;
   }
@@ -1575,8 +1581,8 @@ body.sdlt-mode .analyser-only {
 
   .print-report h2 {
     font-size: 14pt;
-    color: #d42027;
-    border-bottom: 1.5px solid #d42027;
+    color: #B11217;
+    border-bottom: 1.5px solid #B11217;
     padding-bottom: 4px;
     margin-bottom: 10px;
     margin-top: 0;
@@ -1720,8 +1726,8 @@ body.dark .form-group input {
 }
 
 body.dark .form-group input:focus {
-  border-color: #d42027;
-  box-shadow: 0 0 0 3px rgba(212,32,39,0.2);
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.2);
 }
 
 body.dark .cost-item-row .cost-item-label,
@@ -1733,8 +1739,8 @@ body.dark .cost-item-row .cost-item-amount {
 
 body.dark .cost-item-row .cost-item-label:focus,
 body.dark .cost-item-row .cost-item-amount:focus {
-  border-color: #d42027;
-  box-shadow: 0 0 0 3px rgba(212,32,39,0.2);
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.2);
 }
 
 body.dark .cost-total-row {
@@ -1749,17 +1755,17 @@ body.dark .btn-add-item {
 }
 
 body.dark .btn-add-item:hover {
-  border-color: #d42027;
-  background: rgba(212,32,39,0.1);
-  color: #d42027;
+  border-color: #B11217;
+  background: rgba(177,18,23,0.1);
+  color: #B11217;
 }
 
 body.dark .btn-remove-item {
-  background: rgba(212,32,39,0.15);
+  background: rgba(177,18,23,0.15);
 }
 
 body.dark .btn-remove-item:hover {
-  background: rgba(212,32,39,0.3);
+  background: rgba(177,18,23,0.3);
 }
 
 body.dark .dark-mode-toggle {
@@ -1780,13 +1786,13 @@ body.dark .mode-btn {
 }
 
 body.dark .mode-btn.active {
-  border-color: #d42027;
-  background: rgba(212,32,39,0.15);
-  color: #d42027;
+  border-color: #B11217;
+  background: rgba(177,18,23,0.15);
+  color: #B11217;
 }
 
 body.dark .mode-btn:hover {
-  border-color: #d42027;
+  border-color: #B11217;
 }
 
 body.dark .tooltip {
@@ -1818,13 +1824,13 @@ body.dark .scenario-tab {
 }
 
 body.dark .scenario-tab.active {
-  border-color: #d42027;
-  background: rgba(212,32,39,0.15);
-  color: #d42027;
+  border-color: #B11217;
+  background: rgba(177,18,23,0.15);
+  color: #B11217;
 }
 
 body.dark .scenario-tab:hover {
-  border-color: #d42027;
+  border-color: #B11217;
 }
 
 body.dark .result-section h3 {
@@ -1916,8 +1922,8 @@ body.dark .sdlt-band-table td {
 }
 
 body.dark .offer-box {
-  background: rgba(212,32,39,0.08);
-  border-color: #d42027;
+  background: rgba(177,18,23,0.08);
+  border-color: #B11217;
 }
 
 body.dark .offer-box .offer-label {
@@ -1981,7 +1987,7 @@ body.dark .buyer-type-btn {
 }
 
 body.dark .buyer-type-btn.active {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
@@ -1999,7 +2005,7 @@ body.dark .purchase-type-btn {
 }
 
 body.dark .purchase-type-btn.active {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
@@ -2013,17 +2019,17 @@ body.dark .toggle-slider {
 
 body.dark .btn-start-again {
   background: transparent;
-  color: #d42027;
-  border-color: #d42027;
+  color: #B11217;
+  border-color: #B11217;
 }
 
 body.dark .btn-start-again:hover {
-  background: #d42027;
+  background: #B11217;
   color: #fff;
 }
 
 body.dark .btn-mortgage-calc {
-  background: #d42027;
+  background: #B11217;
 }
 
 body.dark .btn-mortgage-calc:hover {
@@ -2058,9 +2064,9 @@ body.dark .vat-checkbox {
 }
 
 body.dark .vat-checkbox:has(input:checked) {
-  border-color: #d42027;
-  background: rgba(212,32,39,0.1);
-  color: #d42027;
+  border-color: #B11217;
+  background: rgba(177,18,23,0.1);
+  color: #B11217;
 }
 
 body.dark .letting-agent-row input[type="number"] {
@@ -2074,7 +2080,7 @@ body.dark .mortgage-header {
 }
 
 body.dark .mortgage-header:hover {
-  color: #d42027;
+  color: #B11217;
 }
 
 body.dark .mortgage-arrow {
@@ -2086,7 +2092,7 @@ body.dark .cash-flow-indicator.cash-flow-positive {
 }
 
 body.dark .cash-flow-indicator.cash-flow-negative {
-  background: rgba(212,32,39,0.15);
+  background: rgba(177,18,23,0.15);
 }
 
 body.dark .address-dropdown {
@@ -2101,8 +2107,8 @@ body.dark .address-dropdown-item {
 }
 
 body.dark .address-dropdown-item:hover {
-  background: rgba(212,32,39,0.1);
-  color: #d42027;
+  background: rgba(177,18,23,0.1);
+  color: #B11217;
 }
 
 body.dark #mapContainer {
@@ -2121,7 +2127,7 @@ body.dark .history-card {
 }
 
 body.dark .history-card:hover {
-  background: rgba(212,32,39,0.08);
+  background: rgba(177,18,23,0.08);
 }
 
 body.dark .history-card-address {
@@ -2133,19 +2139,19 @@ body.dark .history-card-details {
 }
 
 body.dark .history-card-delete {
-  background: rgba(212,32,39,0.15);
+  background: rgba(177,18,23,0.15);
 }
 
 body.dark .history-card-delete:hover {
-  background: rgba(212,32,39,0.3);
+  background: rgba(177,18,23,0.3);
 }
 
 body.dark .btn-clear-history {
-  background: rgba(212,32,39,0.15);
+  background: rgba(177,18,23,0.15);
 }
 
 body.dark .btn-clear-history:hover {
-  background: rgba(212,32,39,0.3);
+  background: rgba(177,18,23,0.3);
 }
 
 body.dark .history-empty {
