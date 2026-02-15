@@ -19,6 +19,7 @@
   <main class="container">
     <div class="mode-toggle-row">
       <div class="mode-toggle">
+        <button type="button" class="mode-btn" data-mode="simple">Simple Analyser</button>
         <button type="button" class="mode-btn active" data-mode="analyser">Deal Analyser</button>
         <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
       </div>
@@ -71,7 +72,7 @@
             <input type="number" id="monthlyRent" min="0" step="any" required placeholder="e.g. £900">
           </div>
 
-          <div class="form-group analyser-only">
+          <div class="form-group analyser-only full-only">
             <label for="solicitorFees">
               Solicitor Fees (&pound;)
               <span class="tooltip" data-tip="Legal fees for the purchase. Default is &pound;1,500.">?</span>
@@ -79,21 +80,29 @@
             <input type="number" id="solicitorFees" min="0" step="any" value="1500">
           </div>
 
-          <h3 class="analyser-only">
+          <div class="form-group analyser-only simple-only">
+            <label for="simpleAdditionalCosts">
+              Additional Costs (&pound;)
+              <span class="tooltip" data-tip="Total additional costs such as solicitor fees, refurb, surveys, etc.">?</span>
+            </label>
+            <input type="number" id="simpleAdditionalCosts" min="0" step="any" placeholder="e.g. £5,000">
+          </div>
+
+          <h3 class="analyser-only full-only">
             Additional Costs
             <span class="tooltip" data-tip="Add itemised costs such as refurb, repairs, decorating, EPC, EICR, surveys, etc.">?</span>
           </h3>
 
-          <div id="costItemsList" class="analyser-only"></div>
-          <button type="button" id="addCostItem" class="btn-add-item analyser-only">+ Add Cost Item</button>
-          <div class="cost-total-row analyser-only">
+          <div id="costItemsList" class="analyser-only full-only"></div>
+          <button type="button" id="addCostItem" class="btn-add-item analyser-only full-only">+ Add Cost Item</button>
+          <div class="cost-total-row analyser-only full-only">
             <span>Total Additional Costs:</span>
             <span id="costItemsTotal">&pound;0</span>
           </div>
 
-          <h3 class="analyser-only">Yield Adjustments</h3>
+          <h3 class="analyser-only full-only">Yield Adjustments</h3>
 
-          <div class="form-group analyser-only">
+          <div class="form-group analyser-only full-only">
             <label for="voidAllowance">
               Void Allowance (%)
               <span class="tooltip" data-tip="Allowance for empty periods between tenants. 5% means rent is reduced by 5% across the year.">?</span>
@@ -101,7 +110,7 @@
             <input type="number" id="voidAllowance" min="0" max="100" step="any" value="0" placeholder="e.g. 5">
           </div>
 
-          <div class="form-group analyser-only">
+          <div class="form-group analyser-only full-only">
             <label>
               Maintenance Allowance
               <span class="tooltip" data-tip="Ongoing repairs and maintenance allowance. Many investors budget 5-10% of rent. Switch between percentage of rent or a fixed annual amount.">?</span>
@@ -118,18 +127,18 @@
             </div>
           </div>
 
-          <h3 class="analyser-only">
+          <h3 class="analyser-only full-only">
             Monthly Running Costs
             <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are separate below.">?</span>
           </h3>
-          <div id="runningCostItemsList" class="analyser-only"></div>
-          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only">+ Add Running Cost</button>
-          <div class="cost-total-row analyser-only">
+          <div id="runningCostItemsList" class="analyser-only full-only"></div>
+          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Running Cost</button>
+          <div class="cost-total-row analyser-only full-only">
             <span>Total Monthly Running Costs:</span>
             <span id="runningCostItemsTotal">&pound;0</span>
           </div>
 
-          <div class="form-group analyser-only">
+          <div class="form-group analyser-only full-only">
             <label for="lettingAgentFee">
               Letting Agent Fee (%)
               <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
@@ -143,7 +152,7 @@
             </div>
           </div>
 
-          <div class="form-group analyser-only target-offer-group">
+          <div class="form-group analyser-only full-only target-offer-group">
             <label>
               Target Offer Price
               <span class="tooltip" data-tip="Toggle to show/hide target offer price calculation in results.">?</span>
