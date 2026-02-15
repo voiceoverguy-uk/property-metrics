@@ -1097,6 +1097,7 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 
 function renderSDLTStandaloneResults(data, price) {
   const address = document.getElementById('address').value || 'Property';
+  const buyerType = getSelectedBuyerType();
 
   const renderSDLTSection = (label, info) => {
     let bandHtml = '';
@@ -1117,79 +1118,23 @@ function renderSDLTStandaloneResults(data, price) {
     `;
   };
 
-  const maxSDLT = Math.max(data.additional.total, data.standard.total, data.ftb.total, 1);
+  const sdltLabel = buyerType === 'ftb' ? 'First-time Buyer' : 'Additional Property';
+  const sdltData = buyerType === 'ftb' ? data.ftb : data.additional;
 
   const html = `
     <div class="results-content">
       <div class="results-header-row">
         <div>
           <h2>SDLT Calculation</h2>
-          <p class="address-line">${address} — ${fmt(price)}</p>
+          <p class="address-line">${escHtml(address)} — ${fmt(price)}</p>
         </div>
       </div>
 
-      <div class="sdlt-comparison-chart">
-        <h3>SDLT Comparison</h3>
-        <div class="sdlt-bar-row">
-          <span class="sdlt-bar-label">Additional</span>
-          <div class="sdlt-bar-track">
-            <div class="sdlt-bar-fill sdlt-bar-investor" style="width:${Math.max((data.additional.total / maxSDLT) * 100, 2)}%"></div>
-          </div>
-          <span class="sdlt-bar-amount">${fmt(data.additional.total)}</span>
-        </div>
-        <div class="sdlt-bar-row">
-          <span class="sdlt-bar-label">Standard</span>
-          <div class="sdlt-bar-track">
-            <div class="sdlt-bar-fill sdlt-bar-standard" style="width:${Math.max((data.standard.total / maxSDLT) * 100, 2)}%"></div>
-          </div>
-          <span class="sdlt-bar-amount">${fmt(data.standard.total)}</span>
-        </div>
-        <div class="sdlt-bar-row">
-          <span class="sdlt-bar-label">FTB</span>
-          <div class="sdlt-bar-track">
-            <div class="sdlt-bar-fill sdlt-bar-ftb" style="width:${Math.max((data.ftb.total / maxSDLT) * 100, 2)}%"></div>
-          </div>
-          <span class="sdlt-bar-amount">${fmt(data.ftb.total)}</span>
-        </div>
-      </div>
-
-      <div class="sdlt-standalone-tabs">
-        <div class="scenario-tab active" data-sdlt-view="all">All Buyer Types</div>
-        <div class="scenario-tab" data-sdlt-view="additional">Additional</div>
-        <div class="scenario-tab" data-sdlt-view="standard">Standard</div>
-        <div class="scenario-tab" data-sdlt-view="ftb">First-time Buyer</div>
-      </div>
-
-      <div id="sdlt-view-all" class="view-content">
-        ${renderSDLTSection('Additional Property', data.additional)}
-        ${renderSDLTSection('Standard', data.standard)}
-        ${renderSDLTSection('First-time Buyer', data.ftb)}
-      </div>
-      <div id="sdlt-view-additional" class="view-content" style="display:none;">
-        ${renderSDLTSection('Additional Property', data.additional)}
-      </div>
-      <div id="sdlt-view-standard" class="view-content" style="display:none;">
-        ${renderSDLTSection('Standard', data.standard)}
-      </div>
-      <div id="sdlt-view-ftb" class="view-content" style="display:none;">
-        ${renderSDLTSection('First-time Buyer', data.ftb)}
-      </div>
+      ${renderSDLTSection(sdltLabel, sdltData)}
     </div>
   `;
 
   resultsPanel.innerHTML = html;
-
-  const tabs = resultsPanel.querySelectorAll('.sdlt-standalone-tabs .scenario-tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const view = tab.getAttribute('data-sdlt-view');
-      ['all', 'additional', 'standard', 'ftb'].forEach(v => {
-        document.getElementById('sdlt-view-' + v).style.display = v === view ? '' : 'none';
-      });
-    });
-  });
 }
 
 document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
