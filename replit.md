@@ -1,7 +1,7 @@
 # RentalMetrics – UK Property Deal & Yield Analysis Tool
 
 ## Overview
-A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#d42027 red, #1a1a1a charcoal).
+A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#B11217 deep red, #1a1a1a charcoal).
 
 ## Recent Changes
 - 2026-02-15: Purchase type persisted in history entries and share URLs; applyHistoryEntry and checkUrlParams restore purchase type toggle and mortgage section visibility
@@ -11,7 +11,7 @@ A web-based UK property investment deal analyser for England & Northern Ireland 
 - 2026-02-15: Added "Start Again" reset button and Target Offer Price show/hide toggle switch
 - 2026-02-15: Leveraged yield calculations — when mortgage is checked, gross/net yields recalculate based on cash invested (deposit + SDLT + fees + costs) instead of total purchase price; mortgage payments deducted from net annual rent; deal rating adjusts accordingly
 - 2026-02-15: Replaced logo image with Manrope Semi Bold text heading "Rental Metrics"; custom @font-face loaded from public/fonts/
-- 2026-02-15: Header background changed to red (#d42027); subtitle font increased ~20%, spacing improved
+- 2026-02-15: Header background changed to deep red (#B11217); subtitle font increased ~20%, spacing improved
 - 2026-02-15: Updated placeholders: address "e.g. WF2", price "e.g. £200,000", rent "e.g. £900", running costs "e.g. £150"
 - 2026-02-15: Rebranded to RentalMetrics; mortgage summary shows Cash Deposit, SDLT, Solicitor Fees, then Amount to Borrow as bottom-line total
 - 2026-02-14: Added buyer type toggle (Investor/FTB) at top of form, defaulting to Investor; Calculate Mortgage button in mortgage section
@@ -87,4 +87,4 @@ Server binds to 0.0.0.0:5000.
 - Currency: GBP with £ and commas
 - V1: England & NI only (no Scotland LBTT / Wales LTT)
 - Clean, modern UI with tooltips
-- RentalMetrics branding: red #d42027, charcoal #1a1a1a
+- RentalMetrics branding: deep red #B11217, charcoal #1a1a1a

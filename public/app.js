@@ -365,7 +365,7 @@ function getDealRating(netYield, targetYield) {
   if (diff >= 0.5) return { grade: 'B', label: 'Fair Deal', color: '#0d7377' };
   if (diff >= -0.5) return { grade: 'C', label: 'Below Target', color: '#b8860b' };
   if (diff >= -2) return { grade: 'D', label: 'Poor Deal', color: '#cc5500' };
-  return { grade: 'F', label: 'Avoid', color: '#d42027' };
+  return { grade: 'F', label: 'Avoid', color: '#B11217' };
 }
 
 function calculateMortgage(price, data) {
@@ -591,7 +591,7 @@ function renderYieldGauge(netYield, targetYield) {
   const largeArc = fillPct > 0.5 ? 1 : 0;
   const fillPath = fillPct > 0 ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${largeArc} 1 ${fillEnd.x} ${fillEnd.y}` : '';
 
-  let fillColor = '#d42027';
+  let fillColor = '#B11217';
   const diff = netYield - targetYield;
   if (diff >= 0) fillColor = '#1a9a4a';
   else if (diff >= -1) fillColor = '#b8860b';
@@ -834,7 +834,7 @@ async function runCalculation() {
       addToHistory(result);
     }
   } catch (err) {
-    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#d42027;">Error: ${err.message}</p></div>`;
+    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
   }
 }
 
@@ -1154,7 +1154,7 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     const data = await res.json();
     renderSDLTStandaloneResults(data, price);
   } catch (err) {
-    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#d42027;">Error: ${err.message}</p></div>`;
+    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
   }
 });
 
