@@ -4,6 +4,8 @@
 A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#B11217 deep red, #1a1a1a charcoal).
 
 ## Recent Changes
+- 2026-02-15: Simple mode Additional Costs — replaced single input with 2 itemised cost boxes (label + amount pairs); placeholders "e.g. Solicitor Fees" and "e.g. Electrics"; integrated into results, PDF, history, share URL (scitems param), URL restoration; no remove buttons (fixed 2 rows for simplicity)
+- 2026-02-15: Fixed phantom solicitor fees in Simple mode — server.js now respects solicitorFees=0 instead of defaulting to £1,500; renderCostBreakdownRows shows only user-entered items in Simple mode
 - 2026-02-15: Fixed PDF generation — replaced off-screen rendering with in-viewport wrapper (z-index overlay, pointer-events:none) so html2canvas captures reliably; double rAF + forced reflow before capture
 - 2026-02-15: Changed void allowance default from 5% to 0% (HTML, reset, URL fallback)
 - 2026-02-15: Updated Deal Reference placeholder to "e.g. house with mortgage"
