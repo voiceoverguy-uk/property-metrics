@@ -1,10 +1,11 @@
-# UK Property Deal Analyser
+# RentalMetrics – UK Property Deal & Yield Analysis Tool
 
 ## Overview
-A web-based UK property investment deal analyser for England & Northern Ireland. Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. Studio Finder branding (#d42027 red, #1a1a1a charcoal).
+A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#d42027 red, #1a1a1a charcoal).
 
 ## Recent Changes
-- 2026-02-14: Added buyer type toggle (Investor/FTB) at top of form, defaulting to Investor; Calculate Mortgage button in mortgage section shows Amount Borrowed + SDLT + Solicitor Fees + Total Cash Required
+- 2026-02-15: Rebranded to RentalMetrics; mortgage summary shows Cash Deposit, SDLT, Solicitor Fees, then Amount to Borrow as bottom-line total
+- 2026-02-14: Added buyer type toggle (Investor/FTB) at top of form, defaulting to Investor; Calculate Mortgage button in mortgage section
 - 2026-02-14: Changed letting agent fee to percentage input (% of monthly rent) instead of flat £ amount; +20% VAT checkbox; integrated into running costs, yield calcs, mortgage cash flow, PDF, history, and share URL
 - 2026-02-14: Added mortgage include/exclude checkbox inside expanded mortgage section for cash vs mortgage purchase toggle
 - 2026-02-14: Added dark mode toggle (moon/sun icon, localStorage persistence), mobile responsive improvements
@@ -76,4 +77,4 @@ Server binds to 0.0.0.0:5000.
 - Currency: GBP with £ and commas
 - V1: England & NI only (no Scotland LBTT / Wales LTT)
 - Clean, modern UI with tooltips
-- Studio Finder branding: red #d42027, charcoal #1a1a1a
+- RentalMetrics branding: red #d42027, charcoal #1a1a1a
