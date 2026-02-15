@@ -36,24 +36,24 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
+  <header id="siteHeader">
     <div class="container header-inner">
       <div class="header-brand">
         <img src="/rental-metrics-logo-primary-600x60.png" alt="RentalMetrics" class="header-logo" srcset="/rental-metrics-logo-primary-600x60.png 600w, /rental-metrics-logo-primary-1200x120.png 1200w, /rental-metrics-logo-primary-2400x240.png 2400w" sizes="(max-width: 600px) 280px, 360px">
         <p class="subtitle">UK Buy-to-Let Yield Calculator</p>
       </div>
+      <div class="header-nav">
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn" data-mode="simple">Simple Analyser</button>
+          <button type="button" class="mode-btn active" data-mode="analyser">Deal Analyser</button>
+          <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
+        </div>
+        <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
+      </div>
     </div>
   </header>
 
   <main class="container">
-    <div class="mode-toggle-row">
-      <div class="mode-toggle">
-        <button type="button" class="mode-btn" data-mode="simple">Simple Analyser</button>
-        <button type="button" class="mode-btn active" data-mode="analyser">Deal Analyser</button>
-        <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
-      </div>
-      <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
-    </div>
     <div class="layout">
       <section class="input-panel">
         <h2>Property Details</h2>

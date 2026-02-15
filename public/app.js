@@ -2682,6 +2682,18 @@ function initDarkMode() {
 
 initDarkMode();
 
+(function initStickyHeader() {
+  const header = document.getElementById('siteHeader');
+  if (!header) return;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+})();
+
 function checkUrlParams() {
   const params = new URLSearchParams(window.location.search);
   if (!params.has('price')) return;

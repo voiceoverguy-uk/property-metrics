@@ -4,6 +4,7 @@
 A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (primary red #d42027, charcoal #1a1a1a).
 
 ## Recent Changes
+- 2026-02-15: Header redesign — single-row layout with logo+tagline left, pill-style mode tabs (Simple Analyser, Deal Analyser, SDLT Calculator Only) + dark mode toggle right; light grey bg (#f5f6f7), 2px red underline (#d42027), sticky with blur/shadow on scroll (20px threshold); red outlined pills with filled active state; circular dark mode toggle with red border; responsive wrapping at 860px/480px breakpoints; dark mode compatible
 - 2026-02-15: Full branding & SEO overhaul — logo image header (responsive srcset, white bg, tagline "UK Buy-to-Let Yield Calculator"), favicons (16/32), apple-touch-icon (192), PWA web manifest, Open Graph + Twitter cards, JSON-LD SoftwareApplication schema, canonical URL, robots.txt, sitemap.xml with correct Express content types
 - 2026-02-15: All form fields use placeholders instead of hardcoded defaults (solicitor fees "e.g. £1,500", target yield "e.g. 7", void allowance "e.g. 5", maintenance "e.g. 8" / "e.g. £1,000")
 - 2026-02-15: Default mode set to Deal Analyser; default theme set to light mode
