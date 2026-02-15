@@ -11,7 +11,7 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'depositAmount'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'depositAmount', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -95,6 +95,18 @@ document.querySelectorAll('.purchase-type-btn').forEach(btn => {
     btn.classList.add('active');
     selectedPurchaseType = btn.dataset.purchase;
     syncMortgageInputsVisibility();
+  });
+});
+
+let maintenanceMode = 'pct';
+
+document.querySelectorAll('.maint-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.maint-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    maintenanceMode = btn.dataset.maint;
+    document.getElementById('maintPctInput').style.display = maintenanceMode === 'pct' ? '' : 'none';
+    document.getElementById('maintFixedInput').style.display = maintenanceMode === 'fixed' ? '' : 'none';
   });
 });
 
@@ -374,7 +386,8 @@ function calculateMortgage(price, data) {
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
   const baseRunningCosts = getCurrencyFieldValue('runningCosts');
   const lettingAgentFee = getLettingAgentFeeMonthly();
-  const runningCosts = baseRunningCosts + lettingAgentFee;
+  const maintenanceMonthly = getMaintenanceAnnual() / 12;
+  const runningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
   const solicitorFees = getCurrencyFieldValue('solicitorFees');
   const refurbCosts = getCostItemsTotal();
 
@@ -390,11 +403,21 @@ function calculateMortgage(price, data) {
     monthlyPayment = mortgageAmount / totalMonths;
   }
 
-  const monthlyRent = data.annualRent / 12;
-  const monthlyCashFlow = monthlyRent - monthlyPayment - runningCosts;
+  const effectiveMonthlyRent = (data.effectiveAnnualRent || data.annualRent) / 12;
+  const monthlyCashFlow = effectiveMonthlyRent - monthlyPayment - runningCosts;
   const annualCashFlow = monthlyCashFlow * 12;
   const totalCashInvested = depositAmount + data.sdlt + solicitorFees + refurbCosts;
   const cashOnCashReturn = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
+
+  const stressRate = parseFloat(document.getElementById('stressTestRate').value) || 7.0;
+  const stressMonthlyRate = (stressRate / 100) / 12;
+  let stressMonthlyPayment = 0;
+  if (stressMonthlyRate > 0 && totalMonths > 0 && mortgageAmount > 0) {
+    stressMonthlyPayment = mortgageAmount * (stressMonthlyRate * Math.pow(1 + stressMonthlyRate, totalMonths)) / (Math.pow(1 + stressMonthlyRate, totalMonths) - 1);
+  } else if (mortgageAmount > 0 && totalMonths > 0) {
+    stressMonthlyPayment = mortgageAmount / totalMonths;
+  }
+  const stressMonthlyCashFlow = effectiveMonthlyRent - stressMonthlyPayment - runningCosts;
 
   return {
     depositPct,
@@ -408,6 +431,10 @@ function calculateMortgage(price, data) {
     totalCashInvested,
     cashOnCashReturn,
     cashFlowPositive: monthlyCashFlow >= 0,
+    stressRate,
+    stressMonthlyPayment,
+    stressMonthlyCashFlow,
+    stressCashFlowPositive: stressMonthlyCashFlow >= 0,
   };
 }
 
@@ -425,6 +452,19 @@ function getLettingAgentFeeMonthly() {
   const fee = monthlyRent * (pct / 100);
   const includeVat = document.getElementById('lettingAgentVat').checked;
   return includeVat ? fee * 1.2 : fee;
+}
+
+function getMaintenanceAnnual() {
+  if (maintenanceMode === 'pct') {
+    const pct = parseFloat(document.getElementById('maintenancePct').value) || 0;
+    const monthlyRent = getCurrencyFieldValue('monthlyRent');
+    const annualRent = monthlyRent * 12;
+    const voidPct = parseFloat(document.getElementById('voidAllowance').value) || 0;
+    const effectiveAnnualRent = annualRent * (1 - voidPct / 100);
+    return effectiveAnnualRent * (pct / 100);
+  } else {
+    return getCurrencyFieldValue('maintenanceFixed');
+  }
 }
 
 function renderCostItems() {
@@ -514,12 +554,14 @@ function renderRunningCostsBreakdown() {
   const agentPct = getLettingAgentPct();
   const vatChecked = document.getElementById('lettingAgentVat').checked;
   const agentFeeTotal = getLettingAgentFeeMonthly();
-  const totalMonthly = baseRunning + agentFeeTotal;
+  const maintenanceAnnual = getMaintenanceAnnual();
+  const maintenanceMonthly = maintenanceAnnual / 12;
+  const totalMonthly = baseRunning + agentFeeTotal + maintenanceMonthly;
 
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
 
   let html = '';
-  if (baseRunning > 0 || agentPct > 0) {
+  if (baseRunning > 0 || agentPct > 0 || maintenanceAnnual > 0) {
     html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
     html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
     if (baseRunning > 0) {
@@ -529,6 +571,12 @@ function renderRunningCostsBreakdown() {
       let agentLabel = `Letting Agent (${agentPct}%)`;
       if (vatChecked) agentLabel += ' inc. VAT';
       html += `<div class="result-row"><span class="label">${agentLabel}</span><span class="value">${fmt(agentFeeTotal)}/mo</span></div>`;
+    }
+    if (maintenanceAnnual > 0) {
+      let maintLabel = maintenanceMode === 'pct'
+        ? `Maintenance (${parseFloat(document.getElementById('maintenancePct').value) || 0}% of rent)`
+        : 'Maintenance (fixed)';
+      html += `<div class="result-row"><span class="label">${maintLabel}</span><span class="value">${fmt(maintenanceMonthly)}/mo</span></div>`;
     }
     html += `<div class="result-row total"><span class="label">Total Monthly Costs</span><span class="value">${fmt(totalMonthly)}/mo</span></div>`;
     html += `<div class="result-row"><span class="label">Annual Running Costs</span><span class="value">${fmt(totalMonthly * 12)}/yr</span></div>`;
@@ -553,6 +601,8 @@ function renderDealRating(netYield, targetYield) {
 function renderMortgageSection(mortgage) {
   const cfClass = mortgage.cashFlowPositive ? 'cash-flow-positive' : 'cash-flow-negative';
   const cfLabel = mortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
+  const stressCfClass = mortgage.stressCashFlowPositive ? 'cash-flow-positive' : 'cash-flow-negative';
+  const stressCfLabel = mortgage.stressCashFlowPositive ? 'Cash Flow Positive at Stress Rate' : 'Cash Flow Negative at Stress Rate';
   return `
     <div class="result-section">
       <h3>Mortgage Analysis</h3>
@@ -563,6 +613,12 @@ function renderMortgageSection(mortgage) {
       <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
       <div class="result-row"><span class="label">Total Cash Invested</span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
       <div class="cash-flow-indicator ${cfClass}">${cfLabel}</div>
+      <div class="stress-test-section">
+        <h4>Stress Test (${mortgage.stressRate}%)</h4>
+        <div class="result-row"><span class="label">Monthly Payment at ${mortgage.stressRate}%</span><span class="value">${fmt(mortgage.stressMonthlyPayment)}</span></div>
+        <div class="result-row"><span class="label">Monthly Cash Flow at ${mortgage.stressRate}%</span><span class="value ${stressCfClass}">${fmt(mortgage.stressMonthlyCashFlow)}</span></div>
+        <div class="cash-flow-indicator ${stressCfClass}">${stressCfLabel}</div>
+      </div>
     </div>
   `;
 }
@@ -653,6 +709,82 @@ function adjustYieldsForMortgage(data, mortgage) {
   };
 }
 
+function renderRefinanceScenario(price, mortgage) {
+  if (!mortgage) return '';
+
+  const defaultYears = 2;
+  const defaultGrowth = 3;
+  const defaultLtv = 75;
+
+  return `
+    <div class="result-section refinance-section">
+      <h3 class="refinance-header" onclick="toggleRefinanceSection()">
+        Refinance Scenario
+        <span class="tooltip" data-tip="Simple refinance model for BRR-style investing. For guidance only.">?</span>
+        <span class="refinance-arrow" id="refinanceArrow">&#9660;</span>
+      </h3>
+      <div id="refinanceContent" style="display:none;">
+        <div class="refinance-inputs">
+          <div class="form-row">
+            <div class="form-group half">
+              <label>Years until Refinance</label>
+              <input type="number" id="refiYears" min="1" max="30" step="1" value="${defaultYears}" onchange="recalcRefinance()" oninput="recalcRefinance()">
+            </div>
+            <div class="form-group half">
+              <label>Annual Growth (%)</label>
+              <input type="number" id="refiGrowth" min="-20" max="30" step="any" value="${defaultGrowth}" onchange="recalcRefinance()" oninput="recalcRefinance()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Refinance LTV (%)</label>
+            <input type="number" id="refiLtv" min="1" max="100" step="any" value="${defaultLtv}" onchange="recalcRefinance()" oninput="recalcRefinance()">
+          </div>
+        </div>
+        <div id="refinanceResults"></div>
+      </div>
+    </div>
+  `;
+}
+
+window.toggleRefinanceSection = function() {
+  const content = document.getElementById('refinanceContent');
+  const arrow = document.getElementById('refinanceArrow');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? '' : 'none';
+  arrow.innerHTML = isHidden ? '&#9650;' : '&#9660;';
+  if (isHidden) recalcRefinance();
+};
+
+window.recalcRefinance = function() {
+  const resultsDiv = document.getElementById('refinanceResults');
+  if (!resultsDiv || !lastResult || !lastMortgageData) return;
+
+  const price = getCurrencyFieldValue('price');
+  const buyerType = getSelectedBuyerType();
+  const mortgage = lastMortgageData[buyerType];
+  if (!mortgage) return;
+
+  const years = parseFloat(document.getElementById('refiYears').value) || 2;
+  const growth = parseFloat(document.getElementById('refiGrowth').value) || 0;
+  const ltv = parseFloat(document.getElementById('refiLtv').value) || 75;
+
+  const projectedValue = price * Math.pow(1 + growth / 100, years);
+  const newMortgage = projectedValue * (ltv / 100);
+  const equityReleased = newMortgage - mortgage.mortgageAmount;
+  const updatedCashInvested = Math.max(mortgage.totalCashInvested - equityReleased, 0);
+  const updatedCashOnCash = updatedCashInvested > 0 ? (mortgage.annualCashFlow / updatedCashInvested) * 100 : 0;
+
+  resultsDiv.innerHTML = `
+    <div class="result-row"><span class="label">Projected Value (${years}yr at ${growth}%)</span><span class="value">${fmt(Math.round(projectedValue))}</span></div>
+    <div class="result-row"><span class="label">New Mortgage at ${ltv}% LTV</span><span class="value">${fmt(Math.round(newMortgage))}</span></div>
+    <div class="result-row"><span class="label">Equity Released</span><span class="value ${equityReleased >= 0 ? 'cash-flow-positive' : 'cash-flow-negative'}">${fmt(Math.round(equityReleased))}</span></div>
+    <div class="result-row"><span class="label">Updated Cash Invested</span><span class="value">${fmt(Math.round(updatedCashInvested))}</span></div>
+    <div class="result-row"><span class="label">Updated Cash-on-Cash Return</span><span class="value">${fmtPct(Math.round(updatedCashOnCash * 100) / 100)}</span></div>
+    ${equityReleased > 0 ? `<div class="cash-flow-indicator cash-flow-positive">Capital Released</div>` : equityReleased < 0 ? `<div class="cash-flow-indicator cash-flow-negative">Additional Capital Required</div>` : ''}
+  `;
+};
+
 function renderScenario(data, label, targetYield, mortgage) {
   const displayData = adjustYieldsForMortgage(data, mortgage);
   const offer = data.targetOffer;
@@ -715,6 +847,7 @@ function renderScenario(data, label, targetYield, mortgage) {
         </div>
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
+      ${(parseFloat(document.getElementById('voidAllowance').value) || 0) > 0 ? `<div class="result-row"><span class="label">Effective Annual Rent (after ${parseFloat(document.getElementById('voidAllowance').value) || 0}% void)</span><span class="value">${fmt(data.effectiveAnnualRent || data.annualRent)}</span></div>` : ''}
       ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(displayData.annualMortgageCost)}</span></div>` : ''}
       <div class="result-row"><span class="label">Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</span><span class="value">${fmt(displayData.netAnnualRent)}</span></div>
       ${mortgage ? `<div class="result-row"><span class="label">Cash Invested</span><span class="value">${fmt(displayData.cashInvested)}</span></div>` : ''}
@@ -724,6 +857,8 @@ function renderScenario(data, label, targetYield, mortgage) {
     ${renderRunningCostsBreakdown()}
 
     ${mortgageHtml}
+
+    ${mortgage ? renderRefinanceScenario(data.breakdown.price, mortgage) : ''}
 
     ${document.getElementById('showTargetOffer').checked ? `
     <div class="result-section">
@@ -796,7 +931,9 @@ async function runCalculation() {
 
   const lettingAgentFee = getLettingAgentFeeMonthly();
   const baseRunningCosts = getCurrencyFieldValue('runningCosts') || 0;
-  const totalRunningCosts = baseRunningCosts + lettingAgentFee;
+  const maintenanceAnnual = getMaintenanceAnnual();
+  const maintenanceMonthly = maintenanceAnnual / 12;
+  const totalRunningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
 
   const body = {
     price,
@@ -805,7 +942,7 @@ async function runCalculation() {
     refurbCosts: totalAdditionalCosts,
     otherCosts: 0,
     costItems: costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
-    voidMonths: 0,
+    voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
     runningCosts: totalRunningCosts,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
     lettingAgentPct: getLettingAgentPct(),
@@ -852,9 +989,19 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   });
   document.getElementById('solicitorFees').dataset.rawValue = '1500';
   document.getElementById('solicitorFees').value = formatCurrencyDisplay(1500);
+  document.getElementById('voidAllowance').value = '5';
+  document.getElementById('maintenancePct').value = '0';
+  document.getElementById('maintenanceFixed').value = '';
+  document.getElementById('maintenanceFixed').dataset.rawValue = '';
+  maintenanceMode = 'pct';
+  document.querySelectorAll('.maint-mode-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.maint-mode-btn[data-maint="pct"]').classList.add('active');
+  document.getElementById('maintPctInput').style.display = '';
+  document.getElementById('maintFixedInput').style.display = 'none';
   document.getElementById('targetYield').value = '7.0';
   document.getElementById('interestRate').value = '4.5';
   document.getElementById('mortgageTerm').value = '25';
+  document.getElementById('stressTestRate').value = '7.0';
   selectedBuyerType = 'investor';
   document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.buyer-type-btn[data-buyer="investor"]').classList.add('active');
@@ -902,6 +1049,7 @@ function printDealRating(netYield, targetYield) {
 function printMortgageSection(mortgage) {
   if (!mortgage) return '';
   const cfLabel = mortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
+  const stressCfLabel = mortgage.stressCashFlowPositive ? 'Cash Flow Positive at Stress Rate' : 'Cash Flow Negative at Stress Rate';
   return `
     <h4>Mortgage Analysis</h4>
     <table>
@@ -915,9 +1063,13 @@ function printMortgageSection(mortgage) {
         <tr><td>Annual Cash Flow</td><td>${fmt(mortgage.annualCashFlow)}</td></tr>
         <tr><td>Total Cash Invested</td><td>${fmt(mortgage.totalCashInvested)}</td></tr>
         <tr><td>Cash-on-Cash Return</td><td>${fmtPct(mortgage.cashOnCashReturn)}</td></tr>
+        <tr><td colspan="2" style="padding-top:10px;font-weight:700;">Stress Test (${mortgage.stressRate}%)</td></tr>
+        <tr><td>Monthly Payment at Stress Rate</td><td>${fmt(mortgage.stressMonthlyPayment)}</td></tr>
+        <tr><td>Monthly Cash Flow at Stress Rate</td><td>${fmt(mortgage.stressMonthlyCashFlow)}</td></tr>
       </tbody>
     </table>
     <p><strong>${cfLabel}</strong></p>
+    <p><strong>${stressCfLabel}</strong></p>
   `;
 }
 
@@ -965,6 +1117,7 @@ function printScenario(data, label, targetYield, mortgage) {
       <table>
         <tbody>
           <tr><td>Annual Rent</td><td>${fmt(data.annualRent)}</td></tr>
+          ${(parseFloat(document.getElementById('voidAllowance').value) || 0) > 0 ? `<tr><td>Effective Annual Rent (after ${parseFloat(document.getElementById('voidAllowance').value) || 0}% void)</td><td>${fmt(data.effectiveAnnualRent || data.annualRent)}</td></tr>` : ''}
           ${mortgage ? `<tr><td>Annual Mortgage Cost</td><td>${fmt(displayData.annualMortgageCost)}</td></tr>` : ''}
           <tr><td>Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</td><td>${fmt(displayData.netAnnualRent)}</td></tr>
           <tr><td>Gross Yield</td><td>${fmtPct(displayData.grossYield)}</td></tr>
@@ -974,6 +1127,8 @@ function printScenario(data, label, targetYield, mortgage) {
       </table>
 
       ${printMortgageSection(mortgage)}
+
+      ${mortgage ? '<p><em>Refinance scenario available in the interactive tool.</em></p>' : ''}
 
       ${offerText}
     </div>
@@ -1046,8 +1201,10 @@ function printReport() {
           <tr><td>Asking Price</td><td>${fmt(price)}</td></tr>
           <tr><td>Expected Monthly Rent</td><td>${fmt(monthlyRent)}</td></tr>
           <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
+          <tr><td>Void Allowance</td><td>${parseFloat(document.getElementById('voidAllowance').value) || 0}%</td></tr>
           <tr><td>Monthly Running Costs</td><td>${fmt(runningCosts)}</td></tr>
           ${lettingAgentRow}
+          ${getMaintenanceAnnual() > 0 ? `<tr><td>Maintenance Allowance</td><td>${maintenanceMode === 'pct' ? (parseFloat(document.getElementById('maintenancePct').value) || 0) + '% of rent' : fmt(getMaintenanceAnnual()) + '/yr'}</td></tr>` : ''}
           <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
         </tbody>
       </table>
@@ -1190,12 +1347,15 @@ function addToHistory(result) {
     investorRating: investorRating.grade,
     solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
     refurbCosts: getCostItemsTotal(),
-    voidMonths: 0,
+    voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
     runningCosts: getCurrencyFieldValue('runningCosts') || 0,
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
     purchaseType: selectedPurchaseType,
+    maintenanceMode: maintenanceMode,
+    maintenancePct: parseFloat(document.getElementById('maintenancePct').value) || 0,
+    maintenanceFixed: parseFloat(document.getElementById('maintenanceFixed').value) || 0,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
 
@@ -1266,6 +1426,29 @@ function applyHistoryEntry(entry) {
   if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
     costItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }, { label: '', amount: 0 }];
     renderCostItems();
+  }
+
+  if (entry.voidPct !== undefined) {
+    document.getElementById('voidAllowance').value = entry.voidPct;
+  }
+
+  if (entry.maintenanceMode) {
+    maintenanceMode = entry.maintenanceMode;
+    document.querySelectorAll('.maint-mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.maint === entry.maintenanceMode);
+    });
+    document.getElementById('maintPctInput').style.display = maintenanceMode === 'pct' ? '' : 'none';
+    document.getElementById('maintFixedInput').style.display = maintenanceMode === 'fixed' ? '' : 'none';
+  }
+
+  if (entry.maintenancePct !== undefined) {
+    document.getElementById('maintenancePct').value = entry.maintenancePct;
+  }
+
+  if (entry.maintenanceFixed !== undefined) {
+    const mfInput = document.getElementById('maintenanceFixed');
+    mfInput.dataset.rawValue = entry.maintenanceFixed;
+    mfInput.value = entry.maintenanceFixed ? formatCurrencyDisplay(entry.maintenanceFixed) : '';
   }
 
   if (entry.purchaseType) {
@@ -1342,6 +1525,11 @@ function shareDeal() {
   const agentPct = getLettingAgentPct();
   const agentVat = document.getElementById('lettingAgentVat').checked;
 
+  const voidPct = parseFloat(document.getElementById('voidAllowance').value) || 0;
+  const maintMode = maintenanceMode;
+  const maintPct = parseFloat(document.getElementById('maintenancePct').value) || 0;
+  const maintFixed = parseFloat(document.getElementById('maintenanceFixed').value) || 0;
+
   const params = new URLSearchParams();
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
@@ -1350,6 +1538,10 @@ function shareDeal() {
   if (running) params.set('running', running);
   if (agentPct) params.set('agentpct', agentPct);
   if (agentVat) params.set('agentvat', '1');
+  if (voidPct) params.set('void', voidPct);
+  if (maintMode === 'fixed') params.set('maintmode', 'fixed');
+  if (maintPct) params.set('maintpct', maintPct);
+  if (maintFixed) params.set('maintfixed', maintFixed);
   params.set('target', target);
   if (addr) params.set('addr', addr);
   params.set('buyer', getSelectedBuyerType());
@@ -1457,6 +1649,31 @@ function checkUrlParams() {
 
   if (params.has('agentvat') && params.get('agentvat') === '1') {
     document.getElementById('lettingAgentVat').checked = true;
+  }
+
+  if (params.has('void')) {
+    document.getElementById('voidAllowance').value = parseFloat(params.get('void')) || 5;
+  }
+
+  if (params.has('maintmode')) {
+    const mm = params.get('maintmode');
+    maintenanceMode = mm;
+    document.querySelectorAll('.maint-mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.maint === mm);
+    });
+    document.getElementById('maintPctInput').style.display = mm === 'pct' ? '' : 'none';
+    document.getElementById('maintFixedInput').style.display = mm === 'fixed' ? '' : 'none';
+  }
+
+  if (params.has('maintpct')) {
+    document.getElementById('maintenancePct').value = parseFloat(params.get('maintpct')) || 0;
+  }
+
+  if (params.has('maintfixed')) {
+    const mf = parseFloat(params.get('maintfixed')) || 0;
+    const mfInput = document.getElementById('maintenanceFixed');
+    mfInput.dataset.rawValue = mf;
+    mfInput.value = mf ? formatCurrencyDisplay(mf) : '';
   }
 
   if (params.has('addr')) {

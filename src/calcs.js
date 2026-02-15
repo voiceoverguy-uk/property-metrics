@@ -7,7 +7,7 @@ function calculateDeal(params) {
     solicitorFees = 1500,
     refurbCosts = 0,
     otherCosts = 0,
-    voidMonths = 0,
+    voidPct = 0,
     runningCosts = 0,
     buyerType = 'additional',
   } = params;
@@ -15,16 +15,18 @@ function calculateDeal(params) {
   const sdlt = calculateSDLT(price, buyerType);
   const totalCost = price + sdlt + solicitorFees + refurbCosts + otherCosts;
   const annualRent = monthlyRent * 12;
-  const grossYield = price > 0 ? (annualRent / price) * 100 : 0;
+  const effectiveAnnualRent = annualRent * (1 - voidPct / 100);
+  const grossYield = price > 0 ? (effectiveAnnualRent / price) * 100 : 0;
 
   const netAnnualRent =
-    annualRent - monthlyRent * voidMonths - runningCosts * 12;
+    effectiveAnnualRent - runningCosts * 12;
   const netYield = totalCost > 0 ? (netAnnualRent / totalCost) * 100 : 0;
 
   return {
     sdlt,
     totalCost,
     annualRent,
+    effectiveAnnualRent,
     grossYield: Math.round(grossYield * 100) / 100,
     netAnnualRent,
     netYield: Math.round(netYield * 100) / 100,
@@ -45,13 +47,13 @@ function calculateTargetOfferPrice(params) {
     solicitorFees = 1500,
     refurbCosts = 0,
     otherCosts = 0,
-    voidMonths = 0,
+    voidPct = 0,
     runningCosts = 0,
     buyerType = 'additional',
   } = params;
 
   const netAnnualRent =
-    monthlyRent * 12 - monthlyRent * voidMonths - runningCosts * 12;
+    monthlyRent * 12 * (1 - voidPct / 100) - runningCosts * 12;
 
   if (targetYield <= 0 || netAnnualRent <= 0) {
     return { offerPrice: 0, achievable: false };

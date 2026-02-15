@@ -46,7 +46,7 @@ app.get('/api/sdlt', (req, res) => {
 
 app.post('/api/calculate', (req, res) => {
   try {
-    const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, costItems, voidMonths, runningCosts, targetYield } = req.body;
+    const { price, monthlyRent, solicitorFees, refurbCosts, otherCosts, costItems, voidPct, runningCosts, targetYield } = req.body;
 
     if (!price || price <= 0 || !monthlyRent || monthlyRent <= 0) {
       return res.status(400).json({ error: 'Price and monthly rent are required and must be positive.' });
@@ -58,7 +58,7 @@ app.post('/api/calculate', (req, res) => {
       solicitorFees: Number(solicitorFees) || 1500,
       refurbCosts: Number(refurbCosts) || 0,
       otherCosts: Number(otherCosts) || 0,
-      voidMonths: Number(voidMonths) || 0,
+      voidPct: Number(voidPct) || 0,
       runningCosts: Number(runningCosts) || 0,
     };
 
