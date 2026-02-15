@@ -121,9 +121,7 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     return;
   }
 
-  const borrowed = Math.max(price - deposit, 0);
   document.getElementById('borrowingDeposit').textContent = fmt(deposit);
-  document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
 
   try {
@@ -134,10 +132,14 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
     const totalCash = deposit + sdlt + solicitorFees;
     document.getElementById('borrowingTotal').textContent = fmt(totalCash);
+    const borrowed = Math.max(price - deposit + sdlt + solicitorFees, 0);
+    document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   } catch (e) {
     document.getElementById('borrowingSDLT').textContent = '-';
     const totalCash = deposit + solicitorFees;
     document.getElementById('borrowingTotal').textContent = fmt(totalCash);
+    const borrowed = Math.max(price - deposit + solicitorFees, 0);
+    document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   }
 
   summary.style.display = '';
