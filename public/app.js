@@ -635,7 +635,26 @@ function renderSDLTComparison(investorSDLT, ftbSDLT) {
   `;
 }
 
+function adjustYieldsForMortgage(data, mortgage) {
+  if (!mortgage) return data;
+  const totalCashInvested = mortgage.totalCashInvested;
+  if (totalCashInvested <= 0) return data;
+  const grossYield = (data.annualRent / totalCashInvested) * 100;
+  const annualMortgageCost = mortgage.monthlyPayment * 12;
+  const netAnnualRent = data.netAnnualRent - annualMortgageCost;
+  const netYield = (netAnnualRent / totalCashInvested) * 100;
+  return {
+    ...data,
+    grossYield: Math.round(grossYield * 100) / 100,
+    netYield: Math.round(netYield * 100) / 100,
+    netAnnualRent: Math.round(netAnnualRent * 100) / 100,
+    totalCost: totalCashInvested,
+    mortgageAdjusted: true,
+  };
+}
+
 function renderScenario(data, label, targetYield, mortgage) {
+  const displayData = adjustYieldsForMortgage(data, mortgage);
   const offer = data.targetOffer;
 
   let offerHtml;
@@ -660,8 +679,13 @@ function renderScenario(data, label, targetYield, mortgage) {
     mortgageHtml = renderMortgageSection(mortgage);
   }
 
+  const yieldBasis = mortgage ? 'Cash Invested' : 'Total Cost';
+  const yieldNote = mortgage
+    ? `<div class="yield-basis-note">Yields based on ${fmt(mortgage.totalCashInvested)} cash invested (incl. mortgage costs)</div>`
+    : '';
+
   return `
-    ${renderDealRating(data.netYield, targetYield)}
+    ${renderDealRating(displayData.netYield, targetYield)}
 
     <div class="result-section">
       <h3>SDLT \u2014 ${label}</h3>
@@ -679,19 +703,22 @@ function renderScenario(data, label, targetYield, mortgage) {
 
     <div class="result-section">
       <h3>Yield Analysis</h3>
-      ${renderYieldGauge(data.netYield, targetYield)}
+      ${yieldNote}
+      ${renderYieldGauge(displayData.netYield, targetYield)}
       <div class="yield-cards">
         <div class="yield-card">
           <div class="yield-label">Gross Yield</div>
-          <div class="yield-value ${yieldClass(data.grossYield, targetYield)}">${fmtPct(data.grossYield)}</div>
+          <div class="yield-value ${yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
         </div>
         <div class="yield-card">
           <div class="yield-label">Net Yield</div>
-          <div class="yield-value ${yieldClass(data.netYield, targetYield)}">${fmtPct(data.netYield)}</div>
+          <div class="yield-value ${yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
         </div>
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
-      <div class="result-row"><span class="label">Net Annual Rent</span><span class="value">${fmt(data.netAnnualRent)}</span></div>
+      <div class="result-row"><span class="label">Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</span><span class="value">${fmt(displayData.netAnnualRent)}</span></div>
+      ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(mortgage.monthlyPayment * 12)}</span></div>` : ''}
+      <div class="result-row"><span class="label">${yieldBasis}</span><span class="value">${fmt(displayData.totalCost)}</span></div>
     </div>
 
     ${renderRunningCostsBreakdown()}
