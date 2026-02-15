@@ -6,6 +6,8 @@ A web-based UK property investment deal analyser for England & Northern Ireland 
 ## Recent Changes
 - 2026-02-15: Added Compare Deals feature — "Compare Deals" button in history section (shown when 2+ entries); opens full-screen overlay with deals ranked by rating/yield; shows price, rent, gross yield, net yield, annual cash flow, SDLT, buyer type; sortable by rating, net yield, gross yield, price, rent; gold/silver/bronze rank badges; "Best Deal" label; close via button, Escape key, or overlay click; dark mode and mobile responsive
 - 2026-02-15: Fixed mobile wobble on additional cost inputs — set font-size 16px on cost-item-label and cost-item-amount to prevent iOS zoom
+- 2026-02-15: Replaced single Monthly Running Costs input with itemised list (label + amount pairs, like Additional Costs); items shown in results breakdown, PDF, history, and URL sharing; backward compatible with old history entries
+- 2026-02-15: Results Monthly Running Costs section now shows itemised breakdown: rent, each running cost by name, letting agent (with VAT), maintenance, mortgage payment (if active), then total
 - 2026-02-15: Enhanced history entries — now stores investorGrossYield, ftbGrossYield, annualCashFlow, hasMortgage, depositAmount for richer comparison data
 - 2026-02-15: Added Capital Growth Projection — collapsible section showing 5yr/10yr projected value and estimated equity using amortisation; growth% input (default 3%)
 - 2026-02-15: Added Section 24 Tax Impact toggle — collapsible section with tax band dropdown (20%/40%/45%, default 40%); shows estimated tax, 20% mortgage interest credit, after-tax cash flow
