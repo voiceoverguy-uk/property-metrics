@@ -15,7 +15,7 @@ function calculateDeal(params) {
   const sdlt = calculateSDLT(price, buyerType);
   const totalCost = price + sdlt + solicitorFees + refurbCosts + otherCosts;
   const annualRent = monthlyRent * 12;
-  const grossYield = totalCost > 0 ? (annualRent / totalCost) * 100 : 0;
+  const grossYield = price > 0 ? (annualRent / price) * 100 : 0;
 
   const netAnnualRent =
     annualRent - monthlyRent * voidMonths - runningCosts * 12;
