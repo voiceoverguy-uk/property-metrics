@@ -130,14 +130,10 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     const buyerType = getSelectedBuyerType();
     const sdlt = buyerType === 'ftb' ? data.ftb.total : data.additional.total;
     document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
-    const totalCash = deposit + sdlt + solicitorFees;
-    document.getElementById('borrowingTotal').textContent = fmt(totalCash);
     const borrowed = Math.max(price - deposit + sdlt + solicitorFees, 0);
     document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   } catch (e) {
     document.getElementById('borrowingSDLT').textContent = '-';
-    const totalCash = deposit + solicitorFees;
-    document.getElementById('borrowingTotal').textContent = fmt(totalCash);
     const borrowed = Math.max(price - deposit + solicitorFees, 0);
     document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   }
@@ -1008,7 +1004,7 @@ function printReport() {
   const reportHtml = `
     <div class="print-header">
       <p class="print-filename">Suggested filename: ${suggestedFilename}</p>
-      <h1>UK Property Deal Report</h1>
+      <h1>RentalMetrics &ndash; Property Deal Report</h1>
       <p class="print-date">Generated: ${timestamp}</p>
       <p class="print-address">${address}</p>
     </div>
