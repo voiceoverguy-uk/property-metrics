@@ -1287,7 +1287,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   });
   document.getElementById('solicitorFees').dataset.rawValue = '1500';
   document.getElementById('solicitorFees').value = formatCurrencyDisplay(1500);
-  document.getElementById('voidAllowance').value = '5';
+  document.getElementById('voidAllowance').value = '0';
   document.getElementById('maintenancePct').value = '0';
   document.getElementById('maintenanceFixed').value = '';
   document.getElementById('maintenanceFixed').dataset.rawValue = '';
@@ -1539,8 +1539,10 @@ function printReport() {
 
 async function generatePdfFromHtml(html, filename, landscape) {
   const containerWidth = landscape ? 1100 : 800;
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:99999;overflow:auto;pointer-events:none;background:rgba(255,255,255,0.01);`;
   const container = document.createElement('div');
-  container.style.cssText = `position:absolute;left:-9999px;top:0;width:${containerWidth}px;background:#fff;color:#000;padding:40px 36px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.5;overflow:visible;pointer-events:none;`;
+  container.style.cssText = `position:relative;width:${containerWidth}px;background:#fff;color:#000;padding:40px 36px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.5;visibility:visible;`;
   container.innerHTML = `<style>
     .pdf-render-container h1 { font-size:22pt; color:#000; margin:0 0 4px; }
     .pdf-render-container h2 { font-size:14pt; color:#B11217; border-bottom:1.5px solid #B11217; padding-bottom:4px; margin:16px 0 10px 0; }
@@ -1568,16 +1570,19 @@ async function generatePdfFromHtml(html, filename, landscape) {
     .pdf-render-container strong { color:#000; }
   </style><div class="pdf-render-container">${html}</div>`;
 
-  document.body.appendChild(container);
+  wrapper.appendChild(container);
+  document.body.appendChild(wrapper);
 
   try {
-    await new Promise(r => setTimeout(r, 150));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    container.getBoundingClientRect();
+    await new Promise(r => setTimeout(r, 200));
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
-      windowWidth: containerWidth
+      width: containerWidth
     });
 
     const orientation = landscape ? 'l' : 'p';
@@ -1603,7 +1608,7 @@ async function generatePdfFromHtml(html, filename, landscape) {
     console.error('PDF generation failed:', err);
     alert('PDF generation failed. Please try again.');
   } finally {
-    document.body.removeChild(container);
+    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
   }
 }
 
@@ -2275,7 +2280,7 @@ function checkUrlParams() {
   }
 
   if (params.has('void')) {
-    document.getElementById('voidAllowance').value = parseFloat(params.get('void')) || 5;
+    document.getElementById('voidAllowance').value = parseFloat(params.get('void')) || 0;
   }
 
   if (params.has('maintmode')) {
