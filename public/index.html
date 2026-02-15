@@ -110,12 +110,15 @@
             </div>
           </div>
 
-          <div class="form-group analyser-only">
-            <label for="runningCosts">
-              Monthly Running Costs (&pound;)
-              <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, ground rent, service charge, etc). Letting agent fee is separate below.">?</span>
-            </label>
-            <input type="number" id="runningCosts" min="0" step="any" placeholder="e.g. £150">
+          <h3 class="analyser-only">
+            Monthly Running Costs
+            <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are separate below.">?</span>
+          </h3>
+          <div id="runningCostItemsList" class="analyser-only"></div>
+          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only">+ Add Running Cost</button>
+          <div class="cost-total-row analyser-only">
+            <span>Total Monthly Running Costs:</span>
+            <span id="runningCostItemsTotal">&pound;0</span>
           </div>
 
           <div class="form-group analyser-only">

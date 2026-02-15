@@ -7,11 +7,12 @@ const mapSection = document.getElementById('mapSection');
 const mapContainer = document.getElementById('mapContainer');
 
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
+let runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'runningCosts', 'depositAmount', 'maintenanceFixed'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'depositAmount', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -69,6 +70,25 @@ function applyCurrencyToCostAmount(input) {
     const idx = parseInt(input.dataset.index);
     costItems[idx].amount = num;
     updateCostTotal();
+  });
+}
+
+function applyCurrencyToRunningCostAmount(input) {
+  input.setAttribute('type', 'text');
+  input.setAttribute('inputmode', 'numeric');
+
+  input.addEventListener('focus', () => {
+    const rv = input.dataset.rawValue || '';
+    input.value = rv;
+  });
+
+  input.addEventListener('blur', () => {
+    const num = parseCurrencyValue(input.value);
+    input.dataset.rawValue = num || '';
+    input.value = num ? formatCurrencyDisplay(num) : '';
+    const idx = parseInt(input.dataset.index);
+    runningCostItems[idx].amount = num;
+    updateRunningCostTotal();
   });
 }
 
@@ -429,7 +449,7 @@ function calculateMortgage(price, data) {
   const depositAmount = getCurrencyFieldValue('depositAmount') || 0;
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
-  const baseRunningCosts = getCurrencyFieldValue('runningCosts');
+  const baseRunningCosts = getRunningCostItemsTotal();
   const lettingAgentFee = getLettingAgentFeeMonthly();
   const maintenanceMonthly = getMaintenanceAnnual() / 12;
   const runningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
@@ -560,6 +580,62 @@ addCostItemBtn.addEventListener('click', () => {
 
 renderCostItems();
 
+const runningCostItemsList = document.getElementById('runningCostItemsList');
+const runningCostItemsTotalEl = document.getElementById('runningCostItemsTotal');
+const addRunningCostItemBtn = document.getElementById('addRunningCostItem');
+
+function getRunningCostItemsTotal() {
+  return runningCostItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+}
+
+function renderRunningCostItems() {
+  runningCostItemsList.innerHTML = '';
+  runningCostItems.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'cost-item-row';
+    const placeholders = ['e.g. Insurance', 'e.g. Ground Rent'];
+    const placeholder = placeholders[index] || 'e.g. Service charge';
+    row.innerHTML = `
+      <input type="text" class="cost-item-label" value="${escHtml(item.label)}" placeholder="${placeholder}" data-index="${index}">
+      <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
+      <button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>
+    `;
+    runningCostItemsList.appendChild(row);
+  });
+
+  runningCostItemsList.querySelectorAll('.cost-item-label').forEach(input => {
+    input.addEventListener('input', (e) => {
+      runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
+    });
+  });
+
+  runningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
+    applyCurrencyToRunningCostAmount(input);
+  });
+
+  runningCostItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      runningCostItems.splice(parseInt(e.target.dataset.index), 1);
+      renderRunningCostItems();
+    });
+  });
+
+  updateRunningCostTotal();
+}
+
+function updateRunningCostTotal() {
+  runningCostItemsTotalEl.textContent = fmt(getRunningCostItemsTotal()) + '/mo';
+}
+
+addRunningCostItemBtn.addEventListener('click', () => {
+  runningCostItems.push({ label: '', amount: 0 });
+  renderRunningCostItems();
+  const labels = runningCostItemsList.querySelectorAll('.cost-item-label');
+  if (labels.length > 0) labels[labels.length - 1].focus();
+});
+
+renderRunningCostItems();
+
 function renderSDLTTable(breakdown) {
   if (!breakdown || !breakdown.bands || breakdown.bands.length === 0) {
     return '<p style="font-size:0.85rem;color:#777;">No SDLT due</p>';
@@ -595,22 +671,33 @@ function renderCostBreakdownRows(data) {
 }
 
 function renderRunningCostsBreakdown() {
-  const baseRunning = getCurrencyFieldValue('runningCosts');
+  const runningItems = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+  const baseRunning = getRunningCostItemsTotal();
   const agentPct = getLettingAgentPct();
   const vatChecked = document.getElementById('lettingAgentVat').checked;
   const agentFeeTotal = getLettingAgentFeeMonthly();
   const maintenanceAnnual = getMaintenanceAnnual();
   const maintenanceMonthly = maintenanceAnnual / 12;
-  const totalMonthly = baseRunning + agentFeeTotal + maintenanceMonthly;
+  let mortgageMonthly = 0;
+  if (lastMortgageData) {
+    const buyerType = getSelectedBuyerType();
+    const mortgageInfo = lastMortgageData[buyerType];
+    if (mortgageInfo && mortgageInfo.monthlyPayment > 0) {
+      mortgageMonthly = mortgageInfo.monthlyPayment;
+    }
+  }
+  const totalMonthly = baseRunning + agentFeeTotal + maintenanceMonthly + mortgageMonthly;
 
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
 
   let html = '';
-  if (baseRunning > 0 || agentPct > 0 || maintenanceAnnual > 0) {
+  if (baseRunning > 0 || agentPct > 0 || maintenanceAnnual > 0 || mortgageMonthly > 0) {
     html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
     html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
-    if (baseRunning > 0) {
-      html += `<div class="result-row"><span class="label">Other Running Costs</span><span class="value">${fmt(baseRunning)}/mo</span></div>`;
+    if (runningItems.length > 0) {
+      runningItems.forEach(item => {
+        html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Running cost')}</span><span class="value">${fmt(item.amount)}/mo</span></div>`;
+      });
     }
     if (agentPct > 0) {
       let agentLabel = `Letting Agent (${agentPct}%)`;
@@ -622,6 +709,9 @@ function renderRunningCostsBreakdown() {
         ? `Maintenance (${parseFloat(document.getElementById('maintenancePct').value) || 0}% of rent)`
         : 'Maintenance (fixed)';
       html += `<div class="result-row"><span class="label">${maintLabel}</span><span class="value">${fmt(maintenanceMonthly)}/mo</span></div>`;
+    }
+    if (mortgageMonthly > 0) {
+      html += `<div class="result-row"><span class="label">Mortgage Payment</span><span class="value">${fmt(mortgageMonthly)}/mo</span></div>`;
     }
     html += `<div class="result-row total"><span class="label">Total Monthly Costs</span><span class="value">${fmt(totalMonthly)}/mo</span></div>`;
     html += `<div class="result-row"><span class="label">Annual Running Costs</span><span class="value">${fmt(totalMonthly * 12)}/yr</span></div>`;
@@ -858,7 +948,7 @@ window.recalcSection24 = function() {
   const taxRate = parseFloat(document.getElementById('s24TaxBand').value) / 100;
   const annualMortgageInterest = mortgage.mortgageAmount * (mortgage.interestRate / 100);
   const effectiveRent = (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].effectiveAnnualRent) || (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].annualRent);
-  const taxableProfit = Math.max(effectiveRent - (getCurrencyFieldValue('runningCosts') * 12) - (getLettingAgentFeeMonthly() * 12) - (getMaintenanceAnnual()), 0);
+  const taxableProfit = Math.max(effectiveRent - (getRunningCostItemsTotal() * 12) - (getLettingAgentFeeMonthly() * 12) - (getMaintenanceAnnual()), 0);
   const taxDue = taxableProfit * taxRate;
   const s24TaxCredit = annualMortgageInterest * 0.20;
   const netTaxDue = Math.max(taxDue - s24TaxCredit, 0);
@@ -1133,7 +1223,7 @@ async function runCalculation() {
   const totalAdditionalCosts = getCostItemsTotal();
 
   const lettingAgentFee = getLettingAgentFeeMonthly();
-  const baseRunningCosts = getCurrencyFieldValue('runningCosts') || 0;
+  const baseRunningCosts = getRunningCostItemsTotal() || 0;
   const maintenanceAnnual = getMaintenanceAnnual();
   const maintenanceMonthly = maintenanceAnnual / 12;
   const totalRunningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
@@ -1186,6 +1276,8 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   form.reset();
   costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
   renderCostItems();
+  runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
+  renderRunningCostItems();
   CURRENCY_FIELDS.forEach(id => {
     const input = document.getElementById(id);
     if (input) { input.dataset.rawValue = ''; input.value = ''; }
@@ -1352,7 +1444,7 @@ function printReport() {
   const price = getCurrencyFieldValue('price');
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
   const solicitorFees = getCurrencyFieldValue('solicitorFees');
-  const runningCosts = getCurrencyFieldValue('runningCosts');
+  const runningCosts = getRunningCostItemsTotal();
   const targetYield = document.getElementById('targetYield').value;
   const now = new Date();
   const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -1409,7 +1501,8 @@ function printReport() {
           <tr><td>Expected Monthly Rent</td><td>${fmt(monthlyRent)}</td></tr>
           <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
           <tr><td>Void Allowance</td><td>${parseFloat(document.getElementById('voidAllowance').value) || 0}%</td></tr>
-          <tr><td>Monthly Running Costs</td><td>${fmt(runningCosts)}</td></tr>
+          ${runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => `<tr><td>${escHtml(i.label || 'Running cost')}</td><td>${fmt(i.amount)}/mo</td></tr>`).join('')}
+          ${runningCosts > 0 ? `<tr class="total-row"><td><strong>Total Monthly Running Costs</strong></td><td><strong>${fmt(runningCosts)}/mo</strong></td></tr>` : '<tr><td>Monthly Running Costs</td><td>None</td></tr>'}
           ${lettingAgentRow}
           ${getMaintenanceAnnual() > 0 ? `<tr><td>Maintenance Allowance</td><td>${maintenanceMode === 'pct' ? (parseFloat(document.getElementById('maintenancePct').value) || 0) + '% of rent' : fmt(getMaintenanceAnnual()) + '/yr'}</td></tr>` : ''}
           <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
@@ -1554,13 +1647,14 @@ function addToHistory(result) {
     investorRating: investorRating.grade,
     investorGrossYield: result.investor.grossYield,
     ftbGrossYield: result.ftb.grossYield,
-    annualCashFlow: (result.investor.effectiveAnnualRent || result.investor.annualRent) - (getCurrencyFieldValue('runningCosts') || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual(),
+    annualCashFlow: (result.investor.effectiveAnnualRent || result.investor.annualRent) - (getRunningCostItemsTotal() || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual(),
     hasMortgage: selectedPurchaseType === 'mortgage',
     depositAmount: getCurrencyFieldValue('depositAmount') || 0,
     solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
     refurbCosts: getCostItemsTotal(),
     voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
-    runningCosts: getCurrencyFieldValue('runningCosts') || 0,
+    runningCosts: getRunningCostItemsTotal(),
+    runningCostItems: runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
@@ -1606,10 +1700,12 @@ function applyHistoryEntry(entry) {
   }
 
 
-  if (entry.runningCosts !== undefined) {
-    const rcInput = document.getElementById('runningCosts');
-    rcInput.dataset.rawValue = entry.runningCosts;
-    rcInput.value = formatCurrencyDisplay(entry.runningCosts);
+  if (entry.runningCostItems && entry.runningCostItems.length > 0) {
+    runningCostItems = entry.runningCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
+    renderRunningCostItems();
+  } else if (entry.runningCosts !== undefined && entry.runningCosts > 0) {
+    runningCostItems = [{ label: '', amount: entry.runningCosts }, { label: '', amount: 0 }];
+    renderRunningCostItems();
   }
 
   if (entry.targetYield !== undefined) {
@@ -1861,7 +1957,7 @@ function shareDeal() {
   const rent = getCurrencyFieldValue('monthlyRent');
   const sol = getCurrencyFieldValue('solicitorFees');
   const refurb = getCostItemsTotal();
-  const running = getCurrencyFieldValue('runningCosts');
+  const running = getRunningCostItemsTotal();
   const target = parseFloat(document.getElementById('targetYield').value) || 7;
   const addr = document.getElementById('address').value || '';
 
@@ -1977,9 +2073,10 @@ function checkUrlParams() {
 
   if (params.has('running')) {
     const running = parseFloat(params.get('running'));
-    const rcInput = document.getElementById('runningCosts');
-    rcInput.dataset.rawValue = running;
-    rcInput.value = formatCurrencyDisplay(running);
+    if (running > 0) {
+      runningCostItems = [{ label: '', amount: running }, { label: '', amount: 0 }];
+      renderRunningCostItems();
+    }
   }
 
   if (params.has('target')) {
