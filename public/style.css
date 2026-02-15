@@ -1364,11 +1364,23 @@ header .subtitle {
   display: none !important;
 }
 
+.simple-only {
+  display: none !important;
+}
+
 body.sdlt-mode .sdlt-only {
   display: block !important;
 }
 
 body.sdlt-mode .analyser-only {
+  display: none !important;
+}
+
+body.simple-mode .simple-only {
+  display: block !important;
+}
+
+body.simple-mode .full-only {
   display: none !important;
 }
 
