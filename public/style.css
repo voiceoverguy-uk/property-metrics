@@ -203,6 +203,14 @@ header .subtitle {
   color: #1a1a1a;
 }
 
+.sdlt-rates-note {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+}
+
 .results-content .address-line {
   font-size: 0.85rem;
   color: #777;
@@ -1793,6 +1801,10 @@ body.dark .tooltip:hover::after {
 
 body.dark .results-placeholder {
   color: #a0a0b0;
+}
+
+body.dark .sdlt-rates-note {
+  color: #666;
 }
 
 body.dark .results-content .address-line {
