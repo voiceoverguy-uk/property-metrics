@@ -1,0 +1,56 @@
+Please update the site header UI to match the uploaded mock image exactly (white/very light grey header with thin red underline, logo left, 3 nav tabs right, dark mode toggle). Do not change the existing calculator UI/logic.
+
+BRAND
+- Primary red: #d42027
+- Background: #f5f6f7 (very light grey) or white
+- Header should feel like a clean SaaS app (similar to Voiceover Studio Finder).
+
+HEADER LAYOUT
+Left side:
+- Use logo image: /rental-metrics-logo-primary-600x60.png
+- Display height ~42px desktop, ~34px mobile (keep aspect ratio).
+- Under logo, small subheading text:
+  "UK Buy-to-Let Yield Calculator"
+  Use a muted grey (#666), font-weight 500, and smaller size than the logo (e.g. 14–16px).
+
+Right side:
+- Nav tabs in the header (pill style):
+  1) Simple Analyser
+  2) Deal Analyser
+  3) SDLT Calculator
+- These should switch the existing modes you already have (same functionality as current buttons).
+- Style: outlined pill tabs with red border and red text by default.
+- Active tab: filled red background (#d42027) with white text.
+- Add subtle hover state for inactive tabs (light red background with red text).
+
+Dark mode toggle:
+- Keep the moon button on the far right.
+- Make it circular with red outline, and on hover fill lightly.
+
+HEADER STYLING
+- Header background: #f5f6f7 (or white) with subtle bottom shadow OR none.
+- Add a thin red underline beneath the header: 2px solid #d42027 across full width.
+- Keep header height compact (don’t waste vertical space).
+
+STICKY BEHAVIOUR
+- Header should be sticky at top while scrolling.
+- After scrolling ~20px:
+  - Apply slight transparency (e.g. background rgba(245,246,247,0.92))
+  - Add subtle blur (backdrop-filter: blur(8px))
+  - Add a very soft shadow (e.g. 0 2px 8px rgba(0,0,0,0.06))
+- Make sure this works on mobile too.
+
+RESPONSIVE
+- On mobile:
+  - Keep logo + subheading left aligned
+  - Tabs should either wrap onto a second line or collapse into a hamburger (simpler: allow wrap).
+  - Maintain spacing and avoid horizontal scrolling.
+
+DO NOT
+- Do not add extra marketing sections
+- Do not remove existing functionality
+- Do not change colours away from #d42027
+
+OUTPUT
+- Update the relevant header component + CSS.
+- Ensure no layout shift and no overflow issues.
