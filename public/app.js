@@ -588,8 +588,7 @@ function renderYieldGauge(netYield, targetYield) {
   const bgPath = `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 1 1 ${bgEnd.x} ${bgEnd.y}`;
 
   const fillEnd = arcPoint(fillEndAngle);
-  const largeArc = fillPct > 0.5 ? 1 : 0;
-  const fillPath = fillPct > 0 ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${largeArc} 1 ${fillEnd.x} ${fillEnd.y}` : '';
+  const fillPath = fillPct > 0 ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 0 1 ${fillEnd.x} ${fillEnd.y}` : '';
 
   let fillColor = '#B11217';
   const diff = netYield - targetYield;
@@ -641,16 +640,15 @@ function adjustYieldsForMortgage(data, mortgage) {
   if (!mortgage) return data;
   const totalCashInvested = mortgage.totalCashInvested;
   if (totalCashInvested <= 0) return data;
-  const grossYield = (data.annualRent / totalCashInvested) * 100;
   const annualMortgageCost = mortgage.monthlyPayment * 12;
   const netAnnualRent = data.netAnnualRent - annualMortgageCost;
   const netYield = (netAnnualRent / totalCashInvested) * 100;
   return {
     ...data,
-    grossYield: Math.round(grossYield * 100) / 100,
     netYield: Math.round(netYield * 100) / 100,
     netAnnualRent: Math.round(netAnnualRent * 100) / 100,
-    totalCost: totalCashInvested,
+    cashInvested: totalCashInvested,
+    annualMortgageCost: Math.round(annualMortgageCost * 100) / 100,
     mortgageAdjusted: true,
   };
 }
@@ -681,9 +679,8 @@ function renderScenario(data, label, targetYield, mortgage) {
     mortgageHtml = renderMortgageSection(mortgage);
   }
 
-  const yieldBasis = mortgage ? 'Cash Invested' : 'Total Cost';
   const yieldNote = mortgage
-    ? `<div class="yield-basis-note">Yields based on ${fmt(mortgage.totalCashInvested)} cash invested (incl. mortgage costs)</div>`
+    ? `<div class="yield-basis-note">Net yield based on ${fmt(mortgage.totalCashInvested)} cash invested (after mortgage costs)</div>`
     : '';
 
   return `
@@ -713,14 +710,15 @@ function renderScenario(data, label, targetYield, mortgage) {
           <div class="yield-value ${yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
         </div>
         <div class="yield-card">
-          <div class="yield-label">Net Yield</div>
+          <div class="yield-label">${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'}</div>
           <div class="yield-value ${yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
         </div>
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
+      ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(displayData.annualMortgageCost)}</span></div>` : ''}
       <div class="result-row"><span class="label">Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</span><span class="value">${fmt(displayData.netAnnualRent)}</span></div>
-      ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(mortgage.monthlyPayment * 12)}</span></div>` : ''}
-      <div class="result-row"><span class="label">${yieldBasis}</span><span class="value">${fmt(displayData.totalCost)}</span></div>
+      ${mortgage ? `<div class="result-row"><span class="label">Cash Invested</span><span class="value">${fmt(displayData.cashInvested)}</span></div>` : ''}
+      <div class="result-row"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>
     </div>
 
     ${renderRunningCostsBreakdown()}
@@ -924,6 +922,7 @@ function printMortgageSection(mortgage) {
 }
 
 function printScenario(data, label, targetYield, mortgage) {
+  const displayData = adjustYieldsForMortgage(data, mortgage);
   const offer = data.targetOffer;
   let offerText = '';
   if (offer && offer.achievable) {
@@ -945,7 +944,7 @@ function printScenario(data, label, targetYield, mortgage) {
     <div class="print-scenario">
       <h3>${label}</h3>
 
-      ${printDealRating(data.netYield, targetYield)}
+      ${printDealRating(displayData.netYield, targetYield)}
 
       <h4>SDLT Breakdown</h4>
       ${printSDLTTable(data.sdltBreakdown)}
@@ -966,9 +965,11 @@ function printScenario(data, label, targetYield, mortgage) {
       <table>
         <tbody>
           <tr><td>Annual Rent</td><td>${fmt(data.annualRent)}</td></tr>
-          <tr><td>Net Annual Rent</td><td>${fmt(data.netAnnualRent)}</td></tr>
-          <tr><td>Gross Yield</td><td>${fmtPct(data.grossYield)}</td></tr>
-          <tr><td>Net Yield</td><td>${fmtPct(data.netYield)}</td></tr>
+          ${mortgage ? `<tr><td>Annual Mortgage Cost</td><td>${fmt(displayData.annualMortgageCost)}</td></tr>` : ''}
+          <tr><td>Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</td><td>${fmt(displayData.netAnnualRent)}</td></tr>
+          <tr><td>Gross Yield</td><td>${fmtPct(displayData.grossYield)}</td></tr>
+          <tr><td>${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'}</td><td>${fmtPct(displayData.netYield)}</td></tr>
+          ${mortgage ? `<tr><td>Cash Invested</td><td>${fmt(displayData.cashInvested)}</td></tr>` : ''}
         </tbody>
       </table>
 
