@@ -1,9 +1,12 @@
 # RentalMetrics – UK Property Deal & Yield Analysis Tool
 
 ## Overview
-A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#B11217 deep red, #1a1a1a charcoal).
+A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (primary red #d42027, charcoal #1a1a1a).
 
 ## Recent Changes
+- 2026-02-15: Full branding & SEO overhaul — logo image header (responsive srcset, white bg, tagline "UK Buy-to-Let Yield Calculator"), favicons (16/32), apple-touch-icon (192), PWA web manifest, Open Graph + Twitter cards, JSON-LD SoftwareApplication schema, canonical URL, robots.txt, sitemap.xml with correct Express content types
+- 2026-02-15: All form fields use placeholders instead of hardcoded defaults (solicitor fees "e.g. £1,500", target yield "e.g. 7", void allowance "e.g. 5", maintenance "e.g. 8" / "e.g. £1,000")
+- 2026-02-15: Default mode set to Deal Analyser; default theme set to light mode
 - 2026-02-15: Simple mode Additional Costs — replaced single input with 2 itemised cost boxes (label + amount pairs); placeholders "e.g. Solicitor Fees" and "e.g. Electrics"; integrated into results, PDF, history, share URL (scitems param), URL restoration; no remove buttons (fixed 2 rows for simplicity)
 - 2026-02-15: Fixed phantom solicitor fees in Simple mode — server.js now respects solicitorFees=0 instead of defaulting to £1,500; renderCostBreakdownRows shows only user-entered items in Simple mode
 - 2026-02-15: Fixed PDF generation — replaced off-screen rendering with in-viewport wrapper (z-index overlay, pointer-events:none) so html2canvas captures reliably; double rAF + forced reflow before capture
