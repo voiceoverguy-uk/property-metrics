@@ -1,0 +1,51 @@
+) Make Cash-on-Cash Return a first-class metric
+
+In results, add a dedicated card/row:
+	•	Cash-on-Cash Return (%) = (Annual Cash Flow ÷ Cash Invested) × 100
+Define cash invested clearly as: Deposit + SDLT + solicitor fees + additional costs (minus equity released if refinance enabled).
+Tooltip: “Return on the actual cash you put in.”
+
+6) Section 24 (UK) tax impact toggle (simple estimate)
+
+Add a toggle: Include estimated tax impact (Section 24)
+When enabled, show an additional “After-tax cash flow” estimate using simple inputs:
+	•	Tax band dropdown: Basic (20%) / Higher (40%) / Additional (45%) default Higher (40%)
+	•	Assumption: mortgage interest receives 20% tax credit (Section 24).
+Display:
+	•	Estimated annual tax due
+	•	Estimated after-tax annual cash flow
+Tooltip: “Simplified estimate. Does not replace professional tax advice.”
+
+7) Capital Growth Projection (5yr / 10yr)
+
+Add a small projection card in results:
+	•	Using the same Annual price growth (%) (default 3%) show:
+	•	Projected value in 5 years and 10 years
+	•	Estimated equity (value − mortgage balance) for those timepoints (use amortisation schedule or approximate).
+Tooltip: “Illustrative projection, not a prediction.”
+
+8) ROI Timeline (Payback period)
+
+Add: Payback Period (years)
+	•	Cash invested ÷ annual cash flow (if annual cash flow <= 0, show “N/A”).
+Tooltip: “How long it may take to recover your cash invested from cash flow alone.”
+
+⸻
+
+Tooltips (global)
+
+Add consistent tooltip icons next to these labels with short plain-English explanations:
+	•	Gross Yield: “Annual rent ÷ purchase price.”
+	•	Net Yield: “Net annual rent ÷ total acquisition cost (purchase + SDLT + fees + costs).”
+	•	Cash Flow: “Monthly rent minus monthly costs (and mortgage if used).”
+	•	Cash Invested: “Deposit + buying costs + any refurb/extra costs (minus equity release if refinance enabled).”
+Keep tooltips small, clean, and accessible on mobile (tap to show).
+
+⸻
+
+UI/Design
+	•	Keep the current deep red style. No yellow outlines.
+	•	New sections should use the same card styling and spacing as existing ones.
+	•	Use collapsible sections for advanced features (Refinance, Tax, Projections) so the default view stays simple.
+
+Please implement all of the above and sanity-check with an example property to confirm yields/cash flow update correctly.
