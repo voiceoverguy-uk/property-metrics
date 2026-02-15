@@ -1373,8 +1373,8 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   });
   document.getElementById('solicitorFees').dataset.rawValue = '';
   document.getElementById('solicitorFees').value = '';
-  document.getElementById('voidAllowance').value = '0';
-  document.getElementById('maintenancePct').value = '0';
+  document.getElementById('voidAllowance').value = '';
+  document.getElementById('maintenancePct').value = '';
   document.getElementById('maintenanceFixed').value = '';
   document.getElementById('maintenanceFixed').dataset.rawValue = '';
   maintenanceMode = 'pct';
