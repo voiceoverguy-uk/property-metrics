@@ -436,11 +436,12 @@ function yieldClass(yieldVal, targetYield) {
 }
 
 function getDealRating(netYield, targetYield) {
-  const diff = netYield - targetYield;
+  const diff = parseFloat(netYield) - parseFloat(targetYield);
   if (diff >= 3) return { grade: 'A+', label: 'Excellent Deal', color: '#0a7a2e' };
-  if (diff >= 1.5) return { grade: 'A', label: 'Good Deal', color: '#1a9a4a' };
-  if (diff >= 0.5) return { grade: 'B', label: 'Fair Deal', color: '#0d7377' };
-  if (diff >= -0.5) return { grade: 'C', label: 'Below Target', color: '#b8860b' };
+  if (diff >= 1.5) return { grade: 'A', label: 'Great Deal', color: '#1a9a4a' };
+  if (diff >= 0.5) return { grade: 'B', label: 'Good Deal', color: '#0d7377' };
+  if (diff >= 0) return { grade: 'B-', label: 'On Target', color: '#2e8b57' };
+  if (diff >= -1) return { grade: 'C', label: 'Below Target', color: '#b8860b' };
   if (diff >= -2) return { grade: 'D', label: 'Poor Deal', color: '#cc5500' };
   return { grade: 'F', label: 'Avoid', color: '#B11217' };
 }
@@ -1187,12 +1188,14 @@ function renderResults(result) {
 
   document.getElementById('savePdfBtn').style.display = '';
 
+  const dealRef = escHtml(document.getElementById('dealReference').value || '');
   const html = `
     <div class="results-content">
       <div class="results-header-row">
         <div>
           <h2>Deal Analysis</h2>
           <p class="address-line">${address}</p>
+          ${dealRef ? `<p class="deal-ref-line">${dealRef}</p>` : ''}
         </div>
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareDeal()">Share</button>
@@ -1305,6 +1308,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.querySelector('.purchase-type-btn[data-purchase="cash"]').classList.add('active');
   syncMortgageInputsVisibility();
   document.getElementById('borrowingSummary').style.display = 'none';
+  document.getElementById('dealReference').value = '';
   document.getElementById('showTargetOffer').checked = true;
   document.getElementById('targetYieldGroup').style.display = '';
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
@@ -1491,6 +1495,7 @@ function printReport() {
       <h1>RentalMetrics &ndash; Property Deal Report</h1>
       <p class="print-date">Generated: ${timestamp}</p>
       <p class="print-address">${address}</p>
+      ${(document.getElementById('dealReference').value || '') ? `<p class="print-deal-ref">${escHtml(document.getElementById('dealReference').value)}</p>` : ''}
     </div>
 
     <div class="print-section">
@@ -1634,9 +1639,11 @@ function addToHistory(result) {
   const investorRating = getDealRating(result.investor.netYield, targetYield);
   const now = new Date();
 
+  const dealReference = document.getElementById('dealReference').value || '';
   const entry = {
     id: Date.now(),
     address: address,
+    dealReference: dealReference,
     price: price,
     monthlyRent: monthlyRent,
     targetYield: targetYield,
@@ -1715,6 +1722,8 @@ function applyHistoryEntry(entry) {
   if (entry.address) {
     document.getElementById('address').value = entry.address;
   }
+
+  document.getElementById('dealReference').value = entry.dealReference || '';
 
   if (entry.lettingAgentPct !== undefined) {
     document.getElementById('lettingAgentFee').value = entry.lettingAgentPct || 0;
@@ -1798,11 +1807,12 @@ function renderHistory() {
   history.forEach(entry => {
     const rating = getDealRating(entry.investorNetYield, entry.targetYield);
     const displayAddress = escHtml(entry.address || 'No address');
+    const displayRef = entry.dealReference ? escHtml(entry.dealReference) : '';
     html += `
       <div class="history-card" onclick="loadHistoryItem(${entry.id})">
         <div class="history-card-grade" style="background:${rating.color};">${rating.grade}</div>
         <div class="history-card-info">
-          <div class="history-card-address">${displayAddress}</div>
+          <div class="history-card-address">${displayAddress}${displayRef ? ` <span class="history-card-ref">— ${displayRef}</span>` : ''}</div>
           <div class="history-card-details">${fmt(entry.price)} &middot; Net ${fmtPct(entry.investorNetYield)} &middot; ${entry.date}</div>
         </div>
         <button type="button" class="history-card-delete" onclick="event.stopPropagation(); deleteHistoryItem(${entry.id});">&times;</button>
@@ -1897,7 +1907,7 @@ function renderCompareTable() {
         <div class="compare-card-header">
           <div class="compare-card-grade" style="background:${entry.rating.color};">${entry.rating.grade}</div>
           <div class="compare-card-title">
-            <div class="compare-card-address">${escHtml(entry.address || 'No address')}</div>
+            <div class="compare-card-address">${escHtml(entry.address || 'No address')}${entry.dealReference ? ` <span class="compare-card-ref">— ${escHtml(entry.dealReference)}</span>` : ''}</div>
             <div class="compare-card-label">${entry.rating.label} ${bestBadge}</div>
           </div>
         </div>
@@ -1969,6 +1979,8 @@ function shareDeal() {
   const maintPct = parseFloat(document.getElementById('maintenancePct').value) || 0;
   const maintFixed = parseFloat(document.getElementById('maintenanceFixed').value) || 0;
 
+  const dealRef = document.getElementById('dealReference').value || '';
+
   const params = new URLSearchParams();
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
@@ -1983,6 +1995,7 @@ function shareDeal() {
   if (maintFixed) params.set('maintfixed', maintFixed);
   params.set('target', target);
   if (addr) params.set('addr', addr);
+  if (dealRef) params.set('ref', dealRef);
   params.set('buyer', getSelectedBuyerType());
   params.set('purchase', selectedPurchaseType);
 
@@ -2118,6 +2131,10 @@ function checkUrlParams() {
 
   if (params.has('addr')) {
     document.getElementById('address').value = decodeURIComponent(params.get('addr'));
+  }
+
+  if (params.has('ref')) {
+    document.getElementById('dealReference').value = decodeURIComponent(params.get('ref'));
   }
 
   if (params.has('buyer')) {
