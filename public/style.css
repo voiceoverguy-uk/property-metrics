@@ -581,7 +581,8 @@ header .subtitle {
   border-bottom: none;
 }
 
-.address-dropdown-item:hover {
+.address-dropdown-item:hover,
+.address-dropdown-item.active {
   background: #fef2f2;
   color: #B11217;
 }
@@ -2692,7 +2693,8 @@ body.dark .address-dropdown-item {
   border-bottom-color: #2a2a4a;
 }
 
-body.dark .address-dropdown-item:hover {
+body.dark .address-dropdown-item:hover,
+body.dark .address-dropdown-item.active {
   background: rgba(177,18,23,0.1);
   color: #B11217;
 }

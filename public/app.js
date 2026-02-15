@@ -213,13 +213,51 @@ function setupAutocomplete(placesLib) {
 
   let debounceTimer = null;
   let sessionToken = new AutocompleteSessionToken();
+  let activeIndex = -1;
 
   console.log('Google Maps: autocomplete ready (new API)');
+
+  function updateActiveItem() {
+    const items = dropdown.querySelectorAll('.address-dropdown-item');
+    items.forEach((item, i) => {
+      item.classList.toggle('active', i === activeIndex);
+    });
+    if (activeIndex >= 0 && items[activeIndex]) {
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function selectItem(item) {
+    if (!item || !item._prediction) return;
+    const pred = item._prediction;
+    addressInput.value = pred.text.text;
+    dropdown.style.display = 'none';
+    activeIndex = -1;
+
+    (async () => {
+      try {
+        const place = pred.toPlace();
+        await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location'] });
+        if (place.location) {
+          selectedLocation = {
+            lat: place.location.lat(),
+            lng: place.location.lng(),
+            address: place.formattedAddress || pred.text.text,
+          };
+          showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
+        }
+        sessionToken = new AutocompleteSessionToken();
+      } catch (err) {
+        console.error('Google Maps: place details error:', err);
+      }
+    })();
+  }
 
   addressInput.addEventListener('input', () => {
     const query = addressInput.value.trim();
     if (query.length < 3) {
       dropdown.style.display = 'none';
+      activeIndex = -1;
       return;
     }
 
@@ -248,8 +286,32 @@ function setupAutocomplete(placesLib) {
     }, 300);
   });
 
+  addressInput.addEventListener('keydown', (e) => {
+    const items = dropdown.querySelectorAll('.address-dropdown-item');
+    if (!items.length || dropdown.style.display === 'none') return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+      updateActiveItem();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+      updateActiveItem();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0 && items[activeIndex]) {
+        selectItem(items[activeIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+      activeIndex = -1;
+    }
+  });
+
   function renderDropdown(suggestions) {
     dropdown.innerHTML = '';
+    activeIndex = -1;
     suggestions.forEach((suggestion) => {
       const pred = suggestion.placePrediction;
       if (!pred) return;
@@ -257,27 +319,10 @@ function setupAutocomplete(placesLib) {
       const item = document.createElement('div');
       item.className = 'address-dropdown-item';
       item.textContent = pred.text.text;
-      item.addEventListener('mousedown', async (e) => {
+      item._prediction = pred;
+      item.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        addressInput.value = pred.text.text;
-        dropdown.style.display = 'none';
-
-        try {
-          const place = pred.toPlace();
-          await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location'] });
-
-          if (place.location) {
-            selectedLocation = {
-              lat: place.location.lat(),
-              lng: place.location.lng(),
-              address: place.formattedAddress || pred.text.text,
-            };
-            showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
-          }
-          sessionToken = new AutocompleteSessionToken();
-        } catch (err) {
-          console.error('Google Maps: place details error:', err);
-        }
+        selectItem(item);
       });
       dropdown.appendChild(item);
     });
@@ -285,7 +330,7 @@ function setupAutocomplete(placesLib) {
   }
 
   addressInput.addEventListener('blur', () => {
-    setTimeout(() => { dropdown.style.display = 'none'; }, 200);
+    setTimeout(() => { dropdown.style.display = 'none'; activeIndex = -1; }, 200);
   });
 
   addressInput.addEventListener('focus', () => {
