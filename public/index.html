@@ -10,8 +10,8 @@
   <header>
     <div class="container header-inner">
       <div>
-        <h1>RentalMetrics</h1>
-        <p class="subtitle">UK Property Deal &amp; Yield Analysis Tool</p>
+        <img src="rentalmetrics-logo.jpg" alt="Rental Metrics" class="header-logo">
+        <p class="subtitle">UK Property Deal Analysis</p>
       </div>
       <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
     </div>
@@ -83,21 +83,12 @@
 
           <h3 class="analyser-only">Yield Adjustments</h3>
 
-          <div class="form-row analyser-only">
-            <div class="form-group half">
-              <label for="voidMonths">
-                Void Months / Year
-                <span class="tooltip" data-tip="Expected empty months per year with no rental income.">?</span>
-              </label>
-              <input type="number" id="voidMonths" min="0" max="12" step="1" placeholder="e.g. 1">
-            </div>
-            <div class="form-group half">
-              <label for="runningCosts">
-                Monthly Running Costs (&pound;)
-                <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, ground rent, service charge, etc). Letting agent fee is separate below.">?</span>
-              </label>
-              <input type="number" id="runningCosts" min="0" step="any" placeholder="e.g. 150">
-            </div>
+          <div class="form-group analyser-only">
+            <label for="runningCosts">
+              Monthly Running Costs (&pound;)
+              <span class="tooltip" data-tip="Ongoing monthly costs (insurance, maintenance, ground rent, service charge, etc). Letting agent fee is separate below.">?</span>
+            </label>
+            <input type="number" id="runningCosts" min="0" step="any" placeholder="e.g. 150">
           </div>
 
           <div class="form-group analyser-only">

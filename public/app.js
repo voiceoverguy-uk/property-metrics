@@ -6,7 +6,7 @@ const costItemsTotalEl = document.getElementById('costItemsTotal');
 const mapSection = document.getElementById('mapSection');
 const mapContainer = document.getElementById('mapContainer');
 
-let costItems = [{ label: 'Refurb / Repairs', amount: 0 }];
+let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
@@ -430,10 +430,12 @@ function renderCostItems() {
   costItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
+    const placeholders = ['e.g. Refurb / Repairs', 'e.g. Decorating', 'e.g. New Boiler'];
+    const placeholder = placeholders[index] || 'e.g. Cost item';
     row.innerHTML = `
-      <input type="text" class="cost-item-label" value="${item.label}" placeholder="e.g. Decorating" data-index="${index}">
+      <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
-      ${costItems.length > 1 ? `<button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>` : '<span class="btn-remove-placeholder"></span>'}
+      <button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>
     `;
     costItemsList.appendChild(row);
   });
@@ -812,7 +814,7 @@ async function runCalculation() {
     refurbCosts: totalAdditionalCosts,
     otherCosts: 0,
     costItems: costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
-    voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
+    voidMonths: 0,
     runningCosts: totalRunningCosts,
     targetYield: parseFloat(document.getElementById('targetYield').value) || 7.0,
     lettingAgentPct: getLettingAgentPct(),
@@ -959,7 +961,6 @@ function printReport() {
   const price = getCurrencyFieldValue('price');
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
   const solicitorFees = getCurrencyFieldValue('solicitorFees');
-  const voidMonths = document.getElementById('voidMonths').value;
   const runningCosts = getCurrencyFieldValue('runningCosts');
   const targetYield = document.getElementById('targetYield').value;
   const now = new Date();
@@ -1016,7 +1017,6 @@ function printReport() {
           <tr><td>Asking Price</td><td>${fmt(price)}</td></tr>
           <tr><td>Expected Monthly Rent</td><td>${fmt(monthlyRent)}</td></tr>
           <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
-          <tr><td>Void Months / Year</td><td>${voidMonths}</td></tr>
           <tr><td>Monthly Running Costs</td><td>${fmt(runningCosts)}</td></tr>
           ${lettingAgentRow}
           <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
@@ -1220,7 +1220,7 @@ function addToHistory(result) {
     investorRating: investorRating.grade,
     solicitorFees: getCurrencyFieldValue('solicitorFees') || 1500,
     refurbCosts: getCostItemsTotal(),
-    voidMonths: parseFloat(document.getElementById('voidMonths').value) || 0,
+    voidMonths: 0,
     runningCosts: getCurrencyFieldValue('runningCosts') || 0,
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
@@ -1262,9 +1262,6 @@ function applyHistoryEntry(entry) {
     solInput.value = formatCurrencyDisplay(entry.solicitorFees);
   }
 
-  if (entry.voidMonths !== undefined) {
-    document.getElementById('voidMonths').value = entry.voidMonths;
-  }
 
   if (entry.runningCosts !== undefined) {
     const rcInput = document.getElementById('runningCosts');
@@ -1296,7 +1293,7 @@ function applyHistoryEntry(entry) {
   }
 
   if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
-    costItems = [{ label: 'Refurb / Repairs', amount: entry.refurbCosts }];
+    costItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }, { label: '', amount: 0 }];
     renderCostItems();
   }
 
@@ -1356,7 +1353,6 @@ function shareDeal() {
   const rent = getCurrencyFieldValue('monthlyRent');
   const sol = getCurrencyFieldValue('solicitorFees');
   const refurb = getCostItemsTotal();
-  const voidMonths = parseFloat(document.getElementById('voidMonths').value) || 0;
   const running = getCurrencyFieldValue('runningCosts');
   const target = parseFloat(document.getElementById('targetYield').value) || 7;
   const addr = document.getElementById('address').value || '';
@@ -1369,7 +1365,6 @@ function shareDeal() {
   if (rent) params.set('rent', rent);
   if (sol) params.set('sol', sol);
   if (refurb) params.set('refurb', refurb);
-  if (voidMonths) params.set('void', voidMonths);
   if (running) params.set('running', running);
   if (agentPct) params.set('agentpct', agentPct);
   if (agentVat) params.set('agentvat', '1');
@@ -1456,14 +1451,11 @@ function checkUrlParams() {
   if (params.has('refurb')) {
     const refurb = parseFloat(params.get('refurb'));
     if (refurb > 0) {
-      costItems = [{ label: 'Refurb / Repairs', amount: refurb }];
+      costItems = [{ label: '', amount: refurb }, { label: '', amount: 0 }, { label: '', amount: 0 }];
       renderCostItems();
     }
   }
 
-  if (params.has('void')) {
-    document.getElementById('voidMonths').value = parseFloat(params.get('void')) || 0;
-  }
 
   if (params.has('running')) {
     const running = parseFloat(params.get('running'));
