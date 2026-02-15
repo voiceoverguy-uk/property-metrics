@@ -1080,6 +1080,103 @@ header .subtitle {
   box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
+.collapsible-section {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fafbfc;
+}
+
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapsible-header:hover {
+  color: #B11217;
+}
+
+.collapsible-arrow {
+  font-size: 0.7rem;
+  margin-left: auto;
+  transition: transform 0.2s;
+}
+
+.s24-inputs,
+.cg-inputs {
+  padding: 12px 0;
+}
+
+.s24-inputs .form-group,
+.cg-inputs .form-group {
+  margin-bottom: 10px;
+}
+
+.s24-inputs label,
+.cg-inputs label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.s24-inputs select,
+.cg-inputs input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: #fff;
+}
+
+.s24-inputs select:focus,
+.cg-inputs input:focus {
+  outline: none;
+  border-color: #B11217;
+  box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
+}
+
+.cg-projection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cg-projection-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid #eee;
+}
+
+.cg-projection-period {
+  font-size: 0.78rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.cg-projection-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.cg-projection-equity {
+  font-size: 0.85rem;
+  color: #1a9a4a;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
 .print-report {
   display: none;
 }
@@ -2283,3 +2380,11 @@ body.dark .stress-test-section h4 { color: #999; }
 body.dark .refinance-section { background: #2a2a2a; border-color: #444; }
 body.dark .refinance-inputs input { background: #333; border-color: #555; color: #e0e0e0; }
 body.dark .refinance-inputs label { color: #bbb; }
+body.dark .collapsible-section { background: #2a2a2a; border-color: #444; }
+body.dark .s24-inputs select,
+body.dark .cg-inputs input { background: #333; border-color: #555; color: #e0e0e0; }
+body.dark .s24-inputs label,
+body.dark .cg-inputs label { color: #bbb; }
+body.dark .cg-projection-card { background: #333; border-color: #444; }
+body.dark .cg-projection-value { color: #e0e0e0; }
+body.dark .cg-projection-period { color: #999; }

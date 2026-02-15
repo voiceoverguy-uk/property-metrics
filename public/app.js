@@ -609,9 +609,9 @@ function renderMortgageSection(mortgage) {
       <div class="result-row"><span class="label">Deposit (${fmtPct(mortgage.depositPct)})</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
       <div class="result-row"><span class="label">Mortgage Amount</span><span class="value">${fmt(mortgage.mortgageAmount)}</span></div>
       <div class="result-row"><span class="label">Monthly Mortgage Payment</span><span class="value">${fmt(mortgage.monthlyPayment)}</span></div>
-      <div class="result-row"><span class="label">Monthly Cash Flow</span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
+      <div class="result-row"><span class="label">Monthly Cash Flow <span class="tooltip" data-tip="Monthly rent minus monthly costs (and mortgage if used).">?</span></span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
       <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
-      <div class="result-row"><span class="label">Total Cash Invested</span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
+      <div class="result-row"><span class="label">Cash Invested <span class="tooltip" data-tip="Deposit + buying costs + any refurb/extra costs.">?</span></span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
       <div class="cash-flow-indicator ${cfClass}">${cfLabel}</div>
       <div class="stress-test-section">
         <h4>Stress Test (${mortgage.stressRate}%)</h4>
@@ -746,6 +746,151 @@ function renderRefinanceScenario(price, mortgage) {
   `;
 }
 
+function renderSection24(mortgage, data) {
+  if (!mortgage) return '';
+  return `
+    <div class="result-section collapsible-section">
+      <h3 class="collapsible-header" onclick="toggleSection24()">
+        Section 24 Tax Estimate
+        <span class="tooltip" data-tip="Simplified estimate. Does not replace professional tax advice.">?</span>
+        <span class="collapsible-arrow" id="s24Arrow">&#9660;</span>
+      </h3>
+      <div id="section24Content" style="display:none;">
+        <div class="s24-inputs">
+          <div class="form-group">
+            <label>Tax Band</label>
+            <select id="s24TaxBand" onchange="recalcSection24()">
+              <option value="20">Basic Rate (20%)</option>
+              <option value="40" selected>Higher Rate (40%)</option>
+              <option value="45">Additional Rate (45%)</option>
+            </select>
+          </div>
+        </div>
+        <div id="section24Results"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCapitalGrowth(price, mortgage) {
+  return `
+    <div class="result-section collapsible-section">
+      <h3 class="collapsible-header" onclick="toggleCapitalGrowth()">
+        Capital Growth Projection
+        <span class="tooltip" data-tip="Illustrative projection, not a prediction.">?</span>
+        <span class="collapsible-arrow" id="cgArrow">&#9660;</span>
+      </h3>
+      <div id="capitalGrowthContent" style="display:none;">
+        <div class="cg-inputs">
+          <div class="form-group">
+            <label>Annual Price Growth (%)</label>
+            <input type="number" id="cgGrowth" min="-10" max="20" step="any" value="3" onchange="recalcCapitalGrowth()" oninput="recalcCapitalGrowth()">
+          </div>
+        </div>
+        <div id="capitalGrowthResults"></div>
+      </div>
+    </div>
+  `;
+}
+
+window.toggleSection24 = function() {
+  const content = document.getElementById('section24Content');
+  const arrow = document.getElementById('s24Arrow');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? '' : 'none';
+  arrow.innerHTML = isHidden ? '&#9650;' : '&#9660;';
+  if (isHidden) recalcSection24();
+};
+
+window.recalcSection24 = function() {
+  const resultsDiv = document.getElementById('section24Results');
+  if (!resultsDiv || !lastResult || !lastMortgageData) return;
+  const buyerType = getSelectedBuyerType();
+  const mortgage = lastMortgageData[buyerType];
+  if (!mortgage) return;
+
+  const taxRate = parseFloat(document.getElementById('s24TaxBand').value) / 100;
+  const annualMortgageInterest = mortgage.mortgageAmount * (mortgage.interestRate / 100);
+  const effectiveRent = (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].effectiveAnnualRent) || (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].annualRent);
+  const taxableProfit = Math.max(effectiveRent - (getCurrencyFieldValue('runningCosts') * 12) - (getLettingAgentFeeMonthly() * 12) - (getMaintenanceAnnual()), 0);
+  const taxDue = taxableProfit * taxRate;
+  const s24TaxCredit = annualMortgageInterest * 0.20;
+  const netTaxDue = Math.max(taxDue - s24TaxCredit, 0);
+  const afterTaxCashFlow = mortgage.annualCashFlow - netTaxDue;
+
+  resultsDiv.innerHTML = `
+    <div class="result-row"><span class="label">Rental Profit (pre-mortgage)</span><span class="value">${fmt(Math.round(taxableProfit))}</span></div>
+    <div class="result-row"><span class="label">Tax at ${(taxRate * 100).toFixed(0)}%</span><span class="value">${fmt(Math.round(taxDue))}</span></div>
+    <div class="result-row"><span class="label">Section 24 Tax Credit (20%)</span><span class="value cash-flow-positive">-${fmt(Math.round(s24TaxCredit))}</span></div>
+    <div class="result-row total"><span class="label">Estimated Annual Tax Due</span><span class="value">${fmt(Math.round(netTaxDue))}</span></div>
+    <div class="result-row"><span class="label">After-tax Annual Cash Flow</span><span class="value ${afterTaxCashFlow >= 0 ? 'cash-flow-positive' : 'cash-flow-negative'}">${fmt(Math.round(afterTaxCashFlow))}</span></div>
+    <div class="result-row"><span class="label">After-tax Monthly Cash Flow</span><span class="value ${afterTaxCashFlow >= 0 ? 'cash-flow-positive' : 'cash-flow-negative'}">${fmt(Math.round(afterTaxCashFlow / 12))}</span></div>
+  `;
+};
+
+window.toggleCapitalGrowth = function() {
+  const content = document.getElementById('capitalGrowthContent');
+  const arrow = document.getElementById('cgArrow');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? '' : 'none';
+  arrow.innerHTML = isHidden ? '&#9650;' : '&#9660;';
+  if (isHidden) recalcCapitalGrowth();
+};
+
+window.recalcCapitalGrowth = function() {
+  const resultsDiv = document.getElementById('capitalGrowthResults');
+  if (!resultsDiv) return;
+  const price = getCurrencyFieldValue('price');
+  const growth = parseFloat(document.getElementById('cgGrowth').value) || 0;
+  const buyerType = getSelectedBuyerType();
+  const mortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
+
+  const val5 = price * Math.pow(1 + growth / 100, 5);
+  const val10 = price * Math.pow(1 + growth / 100, 10);
+
+  let eq5 = val5, eq10 = val10;
+  let mortgageRows = '';
+  if (mortgage && mortgage.mortgageAmount > 0) {
+    const r = (mortgage.interestRate / 100) / 12;
+    const n = mortgage.mortgageTerm * 12;
+    const P = mortgage.mortgageAmount;
+
+    function remainingBalance(months) {
+      const m = Math.min(months, n);
+      if (r === 0) return Math.max(P - (P / n) * m, 0);
+      return Math.max(P * (Math.pow(1 + r, n) - Math.pow(1 + r, m)) / (Math.pow(1 + r, n) - 1), 0);
+    }
+
+    const bal5 = remainingBalance(60);
+    const bal10 = remainingBalance(120);
+    eq5 = val5 - bal5;
+    eq10 = val10 - bal10;
+
+    mortgageRows = `
+      <div class="result-row"><span class="label">Mortgage Balance (5yr)</span><span class="value">${fmt(Math.round(bal5))}</span></div>
+      <div class="result-row"><span class="label">Mortgage Balance (10yr)</span><span class="value">${fmt(Math.round(bal10))}</span></div>
+    `;
+  }
+
+  resultsDiv.innerHTML = `
+    <div class="cg-projection-grid">
+      <div class="cg-projection-card">
+        <div class="cg-projection-period">5 Years</div>
+        <div class="cg-projection-value">${fmt(Math.round(val5))}</div>
+        <div class="cg-projection-equity">Equity: ${fmt(Math.round(eq5))}</div>
+      </div>
+      <div class="cg-projection-card">
+        <div class="cg-projection-period">10 Years</div>
+        <div class="cg-projection-value">${fmt(Math.round(val10))}</div>
+        <div class="cg-projection-equity">Equity: ${fmt(Math.round(eq10))}</div>
+      </div>
+    </div>
+    ${mortgageRows}
+  `;
+};
+
 window.toggleRefinanceSection = function() {
   const content = document.getElementById('refinanceContent');
   const arrow = document.getElementById('refinanceArrow');
@@ -838,13 +983,23 @@ function renderScenario(data, label, targetYield, mortgage) {
       ${renderYieldGauge(displayData.netYield, targetYield)}
       <div class="yield-cards">
         <div class="yield-card">
-          <div class="yield-label">Gross Yield</div>
+          <div class="yield-label">Gross Yield <span class="tooltip" data-tip="Annual rent ÷ purchase price.">?</span></div>
           <div class="yield-value ${yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
         </div>
         <div class="yield-card">
-          <div class="yield-label">${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'}</div>
+          <div class="yield-label">${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'} <span class="tooltip" data-tip="Net annual rent ÷ total acquisition cost (purchase + SDLT + fees + costs).">?</span></div>
           <div class="yield-value ${yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
         </div>
+        ${mortgage ? `
+        <div class="yield-card">
+          <div class="yield-label">Cash-on-Cash Return <span class="tooltip" data-tip="Return on the actual cash you put in: annual cash flow ÷ cash invested.">?</span></div>
+          <div class="yield-value">${fmtPct(mortgage.cashOnCashReturn)}</div>
+        </div>
+        <div class="yield-card">
+          <div class="yield-label">Payback Period <span class="tooltip" data-tip="How long it may take to recover your cash invested from cash flow alone.">?</span></div>
+          <div class="yield-value">${mortgage.annualCashFlow > 0 ? (mortgage.totalCashInvested / mortgage.annualCashFlow).toFixed(1) + ' yrs' : 'N/A'}</div>
+        </div>
+        ` : ''}
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
       ${(parseFloat(document.getElementById('voidAllowance').value) || 0) > 0 ? `<div class="result-row"><span class="label">Effective Annual Rent (after ${parseFloat(document.getElementById('voidAllowance').value) || 0}% void)</span><span class="value">${fmt(data.effectiveAnnualRent || data.annualRent)}</span></div>` : ''}
@@ -859,6 +1014,9 @@ function renderScenario(data, label, targetYield, mortgage) {
     ${mortgageHtml}
 
     ${mortgage ? renderRefinanceScenario(data.breakdown.price, mortgage) : ''}
+
+    ${mortgage ? renderSection24(mortgage, data) : ''}
+    ${renderCapitalGrowth(data.breakdown.price, mortgage)}
 
     ${document.getElementById('showTargetOffer').checked ? `
     <div class="result-section">
@@ -1063,6 +1221,7 @@ function printMortgageSection(mortgage) {
         <tr><td>Annual Cash Flow</td><td>${fmt(mortgage.annualCashFlow)}</td></tr>
         <tr><td>Total Cash Invested</td><td>${fmt(mortgage.totalCashInvested)}</td></tr>
         <tr><td>Cash-on-Cash Return</td><td>${fmtPct(mortgage.cashOnCashReturn)}</td></tr>
+        <tr><td>Payback Period</td><td>${mortgage.annualCashFlow > 0 ? (mortgage.totalCashInvested / mortgage.annualCashFlow).toFixed(1) + ' years' : 'N/A'}</td></tr>
         <tr><td colspan="2" style="padding-top:10px;font-weight:700;">Stress Test (${mortgage.stressRate}%)</td></tr>
         <tr><td>Monthly Payment at Stress Rate</td><td>${fmt(mortgage.stressMonthlyPayment)}</td></tr>
         <tr><td>Monthly Cash Flow at Stress Rate</td><td>${fmt(mortgage.stressMonthlyCashFlow)}</td></tr>
@@ -1129,6 +1288,9 @@ function printScenario(data, label, targetYield, mortgage) {
       ${printMortgageSection(mortgage)}
 
       ${mortgage ? '<p><em>Refinance scenario available in the interactive tool.</em></p>' : ''}
+
+      ${mortgage ? '<p><em>Section 24 tax estimate available in the interactive tool.</em></p>' : ''}
+      <p><em>Capital growth projection available in the interactive tool.</em></p>
 
       ${offerText}
     </div>

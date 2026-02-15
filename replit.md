@@ -4,6 +4,10 @@
 A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#B11217 deep red, #1a1a1a charcoal).
 
 ## Recent Changes
+- 2026-02-15: Added Capital Growth Projection — collapsible section showing 5yr/10yr projected value and estimated equity using amortisation; growth% input (default 3%)
+- 2026-02-15: Added Section 24 Tax Impact toggle — collapsible section with tax band dropdown (20%/40%/45%, default 40%); shows estimated tax, 20% mortgage interest credit, after-tax cash flow
+- 2026-02-15: Added Cash-on-Cash Return and Payback Period as dedicated yield cards (shown when mortgage active)
+- 2026-02-15: Added tooltips to Gross Yield, Net Yield, Cash Flow, Cash Invested labels in results
 - 2026-02-15: Added Refinance Scenario — collapsible interactive section in results with inputs for years, growth%, LTV%; shows projected value, equity released, updated cash-on-cash return
 - 2026-02-15: Added Stress Test Interest Rate (default 7%) — calculates alternative mortgage payment and cash flow at stress rate with positive/negative indicator
 - 2026-02-15: Added Maintenance Allowance — toggle between % of effective rent or fixed £/year; integrated as running cost across yields, mortgage, PDF, history, URL sharing
