@@ -1322,120 +1322,215 @@ document.getElementById('showTargetOffer').addEventListener('change', function()
   document.getElementById('targetYieldGroup').style.display = this.checked ? '' : 'none';
 });
 
-function printSDLTTable(breakdown) {
-  if (!breakdown || !breakdown.bands || breakdown.bands.length === 0) {
-    return '<p>No SDLT due</p>';
-  }
-  let html = '<table><thead><tr><th>Band</th><th>Rate</th><th>Tax</th></tr></thead><tbody>';
-  for (const b of breakdown.bands) {
-    html += `<tr><td>${fmt(b.from)} \u2013 ${fmt(b.to)}</td><td>${(b.rate * 100).toFixed(0)}%</td><td>${fmt(b.tax)}</td></tr>`;
-  }
-  html += '</tbody></table>';
-  return html;
-}
+function pdfHelper(pdf, margins) {
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const contentW = pageW - margins.left - margins.right;
+  let y = margins.top;
 
-function printDealRating(netYield, targetYield) {
-  const rating = getDealRating(netYield, targetYield);
-  return `
-    <div class="print-deal-rating">
-      <span class="print-deal-grade" style="color:${rating.color};">${rating.grade}</span>
-      <span class="print-deal-label">${rating.label}</span>
-      <span class="print-deal-detail">(Net yield ${fmtPct(netYield)} vs ${fmtPct(targetYield)} target)</span>
-    </div>
-  `;
-}
-
-function printMortgageSection(mortgage) {
-  if (!mortgage) return '';
-  const cfLabel = mortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
-  const stressCfLabel = mortgage.stressCashFlowPositive ? 'Cash Flow Positive at Stress Rate' : 'Cash Flow Negative at Stress Rate';
-  return `
-    <h4>Mortgage Analysis</h4>
-    <table>
-      <tbody>
-        <tr><td>Deposit (${fmtPct(mortgage.depositPct)})</td><td>${fmt(mortgage.depositAmount)}</td></tr>
-        <tr><td>Mortgage Amount</td><td>${fmt(mortgage.mortgageAmount)}</td></tr>
-        <tr><td>Interest Rate</td><td>${mortgage.interestRate}%</td></tr>
-        <tr><td>Term</td><td>${mortgage.mortgageTerm} years</td></tr>
-        <tr><td>Monthly Mortgage Payment</td><td>${fmt(mortgage.monthlyPayment)}</td></tr>
-        <tr><td>Monthly Cash Flow</td><td>${fmt(mortgage.monthlyCashFlow)}</td></tr>
-        <tr><td>Annual Cash Flow</td><td>${fmt(mortgage.annualCashFlow)}</td></tr>
-        <tr><td>Total Cash Invested</td><td>${fmt(mortgage.totalCashInvested)}</td></tr>
-        <tr><td>Cash-on-Cash Return</td><td>${fmtPct(mortgage.cashOnCashReturn)}</td></tr>
-        <tr><td>Payback Period</td><td>${mortgage.annualCashFlow > 0 ? (mortgage.totalCashInvested / mortgage.annualCashFlow).toFixed(1) + ' years' : 'N/A'}</td></tr>
-        <tr><td colspan="2" style="padding-top:10px;font-weight:700;">Stress Test (${mortgage.stressRate}%)</td></tr>
-        <tr><td>Monthly Payment at Stress Rate</td><td>${fmt(mortgage.stressMonthlyPayment)}</td></tr>
-        <tr><td>Monthly Cash Flow at Stress Rate</td><td>${fmt(mortgage.stressMonthlyCashFlow)}</td></tr>
-      </tbody>
-    </table>
-    <p><strong>${cfLabel}</strong></p>
-    <p><strong>${stressCfLabel}</strong></p>
-  `;
-}
-
-function printScenario(data, label, targetYield, mortgage) {
-  const displayData = adjustYieldsForMortgage(data, mortgage);
-  const offer = data.targetOffer;
-  let offerText = '';
-  if (offer && offer.achievable) {
-    offerText = `<p><strong>Target Offer Price (for ${fmtPct(targetYield)} yield):</strong> ${fmt(offer.offerPrice)}</p>`;
-  } else {
-    offerText = `<p><strong>Target Offer Price (for ${fmtPct(targetYield)} yield):</strong> Not achievable with current inputs</p>`;
-  }
-
-  let costItemsHtml = '';
-  if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
-    for (const item of data.breakdown.costItems) {
-      if (item.amount > 0) {
-        costItemsHtml += `<tr><td>${escHtml(item.label || 'Cost item')}</td><td>${fmt(item.amount)}</td></tr>`;
-      }
+  function checkPage(needed) {
+    if (y + needed > pageH - margins.bottom) {
+      pdf.addPage();
+      y = margins.top;
     }
   }
 
-  return `
-    <div class="print-scenario">
-      <h3>${label}</h3>
+  function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    return [parseInt(hex.substring(0, 2), 16), parseInt(hex.substring(2, 4), 16), parseInt(hex.substring(4, 6), 16)];
+  }
 
-      ${printDealRating(displayData.netYield, targetYield)}
+  function title(text) {
+    checkPage(14);
+    pdf.setFontSize(18);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(text, pageW / 2, y, { align: 'center' });
+    y += 8;
+  }
 
-      <h4>SDLT Breakdown</h4>
-      ${printSDLTTable(data.sdltBreakdown)}
-      <p class="print-total"><strong>Total SDLT:</strong> ${fmt(data.sdlt)}</p>
+  function subtitle(text) {
+    checkPage(8);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(text, pageW / 2, y, { align: 'center' });
+    y += 5;
+  }
 
-      <h4>Cost Breakdown</h4>
-      <table>
-        <tbody>
-          <tr><td>Purchase Price</td><td>${fmt(data.breakdown.price)}</td></tr>
-          <tr><td>SDLT</td><td>${fmt(data.breakdown.sdlt)}</td></tr>
-          <tr><td>Solicitor Fees</td><td>${fmt(data.breakdown.solicitorFees)}</td></tr>
-          ${costItemsHtml}
-        </tbody>
-        <tfoot><tr class="total-row"><td><strong>Total Acquisition Cost</strong></td><td><strong>${fmt(data.totalCost)}</strong></td></tr></tfoot>
-      </table>
+  function heading(text) {
+    checkPage(12);
+    y += 4;
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...hexToRgb('#B11217'));
+    pdf.text(text, margins.left, y);
+    y += 1;
+    pdf.setDrawColor(...hexToRgb('#B11217'));
+    pdf.setLineWidth(0.5);
+    pdf.line(margins.left, y, margins.left + contentW, y);
+    y += 6;
+  }
 
-      <h4>Yield Analysis</h4>
-      <table>
-        <tbody>
-          <tr><td>Annual Rent</td><td>${fmt(data.annualRent)}</td></tr>
-          ${(parseFloat(document.getElementById('voidAllowance').value) || 0) > 0 ? `<tr><td>Effective Annual Rent (after ${parseFloat(document.getElementById('voidAllowance').value) || 0}% void)</td><td>${fmt(data.effectiveAnnualRent || data.annualRent)}</td></tr>` : ''}
-          ${mortgage ? `<tr><td>Annual Mortgage Cost</td><td>${fmt(displayData.annualMortgageCost)}</td></tr>` : ''}
-          <tr><td>Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</td><td>${fmt(displayData.netAnnualRent)}</td></tr>
-          <tr><td>Gross Yield</td><td>${fmtPct(displayData.grossYield)}</td></tr>
-          <tr><td>${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'}</td><td>${fmtPct(displayData.netYield)}</td></tr>
-          ${mortgage ? `<tr><td>Cash Invested</td><td>${fmt(displayData.cashInvested)}</td></tr>` : ''}
-        </tbody>
-      </table>
+  function subheading(text) {
+    checkPage(10);
+    y += 2;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(80, 80, 80);
+    pdf.text(text.toUpperCase(), margins.left, y);
+    y += 5;
+  }
 
-      ${printMortgageSection(mortgage)}
+  function textLine(text, opts) {
+    opts = opts || {};
+    pdf.setFontSize(opts.size || 10);
+    pdf.setFont('helvetica', opts.bold ? 'bold' : opts.italic ? 'italic' : 'normal');
+    pdf.setTextColor(...(opts.color ? hexToRgb(opts.color) : [0, 0, 0]));
+    const maxW = opts.maxWidth || contentW;
+    const lines = pdf.splitTextToSize(text, maxW);
+    const lineH = opts.lineHeight || 5;
+    lines.forEach(line => {
+      checkPage(lineH + 1);
+      if (opts.align === 'center') {
+        pdf.text(line, pageW / 2, y, { align: 'center' });
+      } else {
+        pdf.text(line, opts.x || margins.left, y);
+      }
+      y += lineH;
+    });
+  }
 
-      ${mortgage ? '<p><em>Refinance scenario available in the interactive tool.</em></p>' : ''}
+  function table(rows, opts) {
+    opts = opts || {};
+    const colWidths = opts.colWidths || [contentW * 0.65, contentW * 0.35];
+    const rowH = 6;
 
-      ${mortgage ? '<p><em>Section 24 tax estimate available in the interactive tool.</em></p>' : ''}
-      <p><em>Capital growth projection available in the interactive tool.</em></p>
+    if (opts.headers) {
+      checkPage(rowH + 2);
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margins.left, y - 4, contentW, rowH, 'F');
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(80, 80, 80);
+      let hx = margins.left + 2;
+      opts.headers.forEach((h, i) => {
+        const align = i === opts.headers.length - 1 ? 'right' : 'left';
+        if (align === 'right') {
+          pdf.text(h, margins.left + colWidths.slice(0, i + 1).reduce((a, b) => a + b, 0) - 2, y, { align: 'right' });
+        } else {
+          pdf.text(h, hx, y);
+        }
+        hx += colWidths[i];
+      });
+      y += 2;
+      pdf.setDrawColor(180, 180, 180);
+      pdf.setLineWidth(0.3);
+      pdf.line(margins.left, y, margins.left + contentW, y);
+      y += 4;
+    }
 
-      ${offerText}
-    </div>
-  `;
+    rows.forEach(row => {
+      const isBold = row.bold || false;
+      const isTotal = row.total || false;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', isBold || isTotal ? 'bold' : 'normal');
+      let dynH = rowH;
+      row.cells.forEach((cell, i) => {
+        if (i < row.cells.length - 1) {
+          const wrapped = pdf.splitTextToSize(String(cell), colWidths[i] - 4);
+          dynH = Math.max(dynH, wrapped.length * 4 + 2);
+        }
+      });
+      checkPage(dynH + 1);
+
+      if (isTotal) {
+        pdf.setDrawColor(0, 0, 0);
+        pdf.setLineWidth(0.4);
+        pdf.line(margins.left, y - 4, margins.left + contentW, y - 4);
+        y += 1;
+      }
+
+      pdf.setFontSize(isBold || isTotal ? 9 : 9);
+      pdf.setFont('helvetica', isBold || isTotal ? 'bold' : 'normal');
+      pdf.setTextColor(...(row.color ? hexToRgb(row.color) : [0, 0, 0]));
+
+      let cx = margins.left + 2;
+      let extraLines = 0;
+      row.cells.forEach((cell, i) => {
+        const cellStr = String(cell);
+        const align = i === row.cells.length - 1 ? 'right' : 'left';
+        if (align === 'right') {
+          pdf.text(cellStr, margins.left + colWidths.slice(0, i + 1).reduce((a, b) => a + b, 0) - 2, y, { align: 'right' });
+        } else {
+          const wrapped = pdf.splitTextToSize(cellStr, colWidths[i] - 4);
+          pdf.text(wrapped[0], cx, y);
+          for (let wi = 1; wi < wrapped.length; wi++) {
+            pdf.text(wrapped[wi], cx, y + wi * 4);
+            extraLines = Math.max(extraLines, wi);
+          }
+        }
+        cx += colWidths[i];
+      });
+
+      y += extraLines * 4 + 1;
+      if (!isTotal) {
+        pdf.setDrawColor(230, 230, 230);
+        pdf.setLineWidth(0.15);
+        pdf.line(margins.left, y, margins.left + contentW, y);
+      }
+      y += 4;
+    });
+    y += 2;
+  }
+
+  function dealRating(grade, label, detail, color) {
+    checkPage(10);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...hexToRgb(color));
+    pdf.text(grade, margins.left, y);
+    const gradeW = pdf.getTextWidth(grade);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('  ' + label, margins.left + gradeW + 2, y);
+    const labelW = pdf.getTextWidth('  ' + label);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('  ' + detail, margins.left + gradeW + 2 + labelW + 2, y);
+    y += 7;
+  }
+
+  function separator() {
+    checkPage(4);
+    pdf.setDrawColor(210, 210, 210);
+    pdf.setLineWidth(0.2);
+    pdf.line(margins.left, y, margins.left + contentW, y);
+    y += 4;
+  }
+
+  function disclaimer(text) {
+    checkPage(20);
+    y += 4;
+    pdf.setDrawColor(180, 180, 180);
+    pdf.setLineWidth(0.3);
+    pdf.rect(margins.left, y - 4, contentW, 18);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    const lines = pdf.splitTextToSize(text, contentW - 8);
+    pdf.text(lines, margins.left + 4, y);
+    y += Math.max(18, lines.length * 3.5);
+  }
+
+  function gap(n) { y += (n || 3); }
+
+  function getY() { return y; }
+  function setY(val) { y = val; }
+
+  return { title, subtitle, heading, subheading, textLine, table, dealRating, separator, disclaimer, gap, checkPage, getY, setY, contentW, pageW, pageH, margins, hexToRgb };
 }
 
 function printReport() {
@@ -1444,171 +1539,184 @@ function printReport() {
     return;
   }
 
-  const address = escHtml(document.getElementById('address').value || 'Not specified');
-  const price = getCurrencyFieldValue('price');
-  const monthlyRent = getCurrencyFieldValue('monthlyRent');
-  const solicitorFees = getCurrencyFieldValue('solicitorFees');
-  const runningCosts = getRunningCostItemsTotal();
-  const targetYield = document.getElementById('targetYield').value;
-  const now = new Date();
-  const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-    + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-  const dateStr = now.getFullYear() + '-'
-    + String(now.getMonth() + 1).padStart(2, '0') + '-'
-    + String(now.getDate()).padStart(2, '0');
-  const sanitisedAddress = address
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .substring(0, 40) || 'Property';
-  const priceInt = Math.round(parseFloat(price) || 0);
-  const suggestedFilename = `${sanitisedAddress}-${priceInt}-Deal-Report-${dateStr}.pdf`;
-
-  let costItemsHtml = '';
-  const activeCosts = costItems.filter(i => i.amount > 0);
-  if (activeCosts.length > 0) {
-    costItemsHtml = '<table><tbody>';
-    activeCosts.forEach(item => {
-      costItemsHtml += `<tr><td>${escHtml(item.label || 'Cost item')}</td><td>${fmt(item.amount)}</td></tr>`;
-    });
-    costItemsHtml += `</tbody><tfoot><tr class="total-row"><td><strong>Total Additional Costs</strong></td><td><strong>${fmt(getCostItemsTotal())}</strong></td></tr></tfoot></table>`;
-  } else {
-    costItemsHtml = '<p>None</p>';
-  }
-
-  const buyerType = getSelectedBuyerType();
-  const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
-
-  const lettingAgentPct = getLettingAgentPct();
-  const lettingAgentVat = document.getElementById('lettingAgentVat').checked;
-  const lettingAgentTotal = getLettingAgentFeeMonthly();
-
-  let lettingAgentRow = '';
-  if (lettingAgentPct > 0) {
-    let label = `Letting Agent (${lettingAgentPct}%)`;
-    if (lettingAgentVat) label += ' inc. VAT';
-    lettingAgentRow = `<tr><td>${label}</td><td>${fmt(lettingAgentTotal)}/mo</td></tr>`;
-  }
-
-  const reportHtml = `
-    <div class="print-header">
-      <p class="print-filename">Suggested filename: ${suggestedFilename}</p>
-      <h1>RentalMetrics &ndash; Property Deal Report</h1>
-      <p class="print-date">Generated: ${timestamp}</p>
-      <p class="print-address">${address}</p>
-      ${(document.getElementById('dealReference').value || '') ? `<p class="print-deal-ref">${escHtml(document.getElementById('dealReference').value)}</p>` : ''}
-    </div>
-
-    <div class="print-section">
-      <h2>Input Summary</h2>
-      <table>
-        <tbody>
-          <tr><td>Asking Price</td><td>${fmt(price)}</td></tr>
-          <tr><td>Expected Monthly Rent</td><td>${fmt(monthlyRent)}</td></tr>
-          <tr><td>Solicitor Fees</td><td>${fmt(solicitorFees)}</td></tr>
-          <tr><td>Void Allowance</td><td>${parseFloat(document.getElementById('voidAllowance').value) || 0}%</td></tr>
-          ${runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => `<tr><td>${escHtml(i.label || 'Running cost')}</td><td>${fmt(i.amount)}/mo</td></tr>`).join('')}
-          ${runningCosts > 0 ? `<tr class="total-row"><td><strong>Total Monthly Running Costs</strong></td><td><strong>${fmt(runningCosts)}/mo</strong></td></tr>` : '<tr><td>Monthly Running Costs</td><td>None</td></tr>'}
-          ${lettingAgentRow}
-          ${getMaintenanceAnnual() > 0 ? `<tr><td>Maintenance Allowance</td><td>${maintenanceMode === 'pct' ? (parseFloat(document.getElementById('maintenancePct').value) || 0) + '% of rent' : fmt(getMaintenanceAnnual()) + '/yr'}</td></tr>` : ''}
-          <tr><td>Target Yield</td><td>${targetYield}%</td></tr>
-        </tbody>
-      </table>
-
-      <h4>Additional Costs</h4>
-      ${costItemsHtml}
-    </div>
-
-    <div class="print-section">
-      <h2>${buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property'}</h2>
-      ${printScenario(buyerType === 'ftb' ? lastResult.ftb : lastResult.investor, buyerType === 'ftb' ? 'First-time Buyer' : 'Investor', lastResult.targetYield, selectedMortgage)}
-    </div>
-
-    <div class="print-disclaimer">
-      <p><strong>Disclaimer:</strong> These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.</p>
-    </div>
-  `;
-
   const btn = document.querySelector('.btn-save-pdf-inline') || document.getElementById('savePdfBtn');
   const origText = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Generating PDF...'; btn.disabled = true; }
 
-  generatePdfFromHtml(reportHtml, suggestedFilename).finally(() => {
-    if (btn) { btn.textContent = origText; btn.disabled = false; }
-  });
-}
-
-async function generatePdfFromHtml(html, filename, landscape) {
-  const containerWidth = landscape ? 1100 : 800;
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = `position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:99999;overflow:auto;pointer-events:none;background:rgba(255,255,255,0.01);`;
-  const container = document.createElement('div');
-  container.style.cssText = `position:relative;width:${containerWidth}px;background:#fff;color:#000;padding:40px 36px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.5;visibility:visible;`;
-  container.innerHTML = `<style>
-    .pdf-render-container h1 { font-size:22pt; color:#000; margin:0 0 4px; }
-    .pdf-render-container h2 { font-size:14pt; color:#B11217; border-bottom:1.5px solid #B11217; padding-bottom:4px; margin:16px 0 10px 0; }
-    .pdf-render-container h3 { font-size:12pt; color:#333; margin:12px 0 6px; }
-    .pdf-render-container h4 { font-size:10pt; color:#555; text-transform:uppercase; letter-spacing:0.5px; margin:10px 0 4px; }
-    .pdf-render-container table { width:100%; border-collapse:collapse; font-size:10pt; margin-bottom:8px; }
-    .pdf-render-container th { text-align:left; padding:4px 8px; background:#f5f5f5; border-bottom:1.5px solid #ccc; font-weight:600; color:#333; font-size:9pt; }
-    .pdf-render-container td { padding:4px 8px; border-bottom:1px solid #eee; color:#000; }
-    .pdf-render-container td:last-child, .pdf-render-container th:last-child { text-align:right; }
-    .pdf-render-container .total-row td { border-top:2px solid #000; border-bottom:none; padding-top:6px; font-weight:700; }
-    .pdf-render-container .print-header { text-align:center; border-bottom:3px solid #B11217; padding-bottom:16px; margin-bottom:20px; }
-    .pdf-render-container .print-filename { font-size:8.5pt; color:#888; font-family:'Courier New',monospace; margin-bottom:10px; word-break:break-all; }
-    .pdf-render-container .print-date { font-size:9pt; color:#555; margin-bottom:4px; }
-    .pdf-render-container .print-address { font-size:12pt; font-weight:600; color:#333; }
-    .pdf-render-container .print-deal-ref { font-size:11pt; font-weight:600; color:#333; margin-top:4px; }
-    .pdf-render-container .print-section { margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #ddd; }
-    .pdf-render-container .print-section:last-of-type { border-bottom:none; }
-    .pdf-render-container .print-total { font-size:10pt; margin:4px 0 8px; }
-    .pdf-render-container .print-disclaimer { margin-top:20px; padding:10px; border:1px solid #ccc; font-size:8pt; color:#555; }
-    .pdf-render-container .print-deal-rating { margin:6px 0 10px; padding:6px 0; font-size:11pt; }
-    .pdf-render-container .print-deal-grade { font-size:16pt; font-weight:800; margin-right:6px; }
-    .pdf-render-container .print-deal-label { font-weight:700; font-size:11pt; margin-right:6px; }
-    .pdf-render-container .print-deal-detail { font-size:9pt; color:#555; }
-    .pdf-render-container p { margin:4px 0; }
-    .pdf-render-container strong { color:#000; }
-  </style><div class="pdf-render-container">${html}</div>`;
-
-  wrapper.appendChild(container);
-  document.body.appendChild(wrapper);
-
   try {
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    container.getBoundingClientRect();
-    await new Promise(r => setTimeout(r, 200));
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      width: containerWidth
-    });
+    const address = document.getElementById('address').value || 'Not specified';
+    const dealRef = document.getElementById('dealReference').value || '';
+    const price = getCurrencyFieldValue('price');
+    const monthlyRent = getCurrencyFieldValue('monthlyRent');
+    const solicitorFees = getCurrencyFieldValue('solicitorFees');
+    const runningCosts = getRunningCostItemsTotal();
+    const targetYield = document.getElementById('targetYield').value;
+    const voidPct = parseFloat(document.getElementById('voidAllowance').value) || 0;
+    const now = new Date();
+    const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const sanitisedAddress = address.replace(/[^a-zA-Z0-9]/g, '').substring(0, 40) || 'Property';
+    const priceInt = Math.round(parseFloat(price) || 0);
+    const filename = `${sanitisedAddress}-${priceInt}-Deal-Report-${dateStr}.pdf`;
 
-    const orientation = landscape ? 'l' : 'p';
+    const buyerType = getSelectedBuyerType();
+    const scenarioData = buyerType === 'ftb' ? lastResult.ftb : lastResult.investor;
+    const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
+    const displayData = adjustYieldsForMortgage(scenarioData, selectedMortgage);
+    const rating = getDealRating(displayData.netYield, parseFloat(targetYield));
+
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF(orientation, 'mm', 'a4');
-    const pdfWidth = landscape ? 287 : 190;
-    const pageHeight = landscape ? 190 : 277;
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 15, right: 15 });
 
-    let yOffset = 0;
-    let page = 0;
-    while (yOffset < imgHeight) {
-      if (page > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 10, 10 - yOffset, imgWidth, imgHeight);
-      yOffset += pageHeight;
-      page++;
+    h.title('RentalMetrics \u2013 Property Deal Report');
+    h.subtitle('Generated: ' + timestamp);
+    h.gap(2);
+    h.textLine(address, { size: 11, bold: true, align: 'center' });
+    if (dealRef) h.textLine(dealRef, { size: 10, bold: true, align: 'center' });
+    h.gap(2);
+    pdf.setDrawColor(...h.hexToRgb('#B11217'));
+    pdf.setLineWidth(0.8);
+    pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
+    h.gap(6);
+
+    h.heading('Input Summary');
+    const inputRows = [
+      { cells: ['Asking Price', fmt(price)] },
+      { cells: ['Expected Monthly Rent', fmt(monthlyRent)] },
+      { cells: ['Solicitor Fees', fmt(solicitorFees)] },
+      { cells: ['Void Allowance', voidPct + '%'] },
+    ];
+    const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+    activeRunning.forEach(i => inputRows.push({ cells: [i.label || 'Running cost', fmt(i.amount) + '/mo'] }));
+    if (runningCosts > 0) {
+      inputRows.push({ cells: ['Total Monthly Running Costs', fmt(runningCosts) + '/mo'], bold: true });
     }
+    const lettingAgentPct = getLettingAgentPct();
+    if (lettingAgentPct > 0) {
+      const lettingAgentVat = document.getElementById('lettingAgentVat').checked;
+      let laLabel = 'Letting Agent (' + lettingAgentPct + '%)';
+      if (lettingAgentVat) laLabel += ' inc. VAT';
+      inputRows.push({ cells: [laLabel, fmt(getLettingAgentFeeMonthly()) + '/mo'] });
+    }
+    if (getMaintenanceAnnual() > 0) {
+      const maintLabel = maintenanceMode === 'pct'
+        ? (parseFloat(document.getElementById('maintenancePct').value) || 0) + '% of rent'
+        : fmt(getMaintenanceAnnual()) + '/yr';
+      inputRows.push({ cells: ['Maintenance Allowance', maintLabel] });
+    }
+    inputRows.push({ cells: ['Target Yield', targetYield + '%'] });
+    h.table(inputRows);
+
+    const activeCosts = costItems.filter(i => i.amount > 0);
+    if (activeCosts.length > 0) {
+      h.subheading('Additional Costs');
+      const costRows = activeCosts.map(i => ({ cells: [i.label || 'Cost item', fmt(i.amount)] }));
+      costRows.push({ cells: ['Total Additional Costs', fmt(getCostItemsTotal())], bold: true, total: true });
+      h.table(costRows);
+    }
+
+    h.separator();
+
+    h.heading(buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property');
+    h.dealRating(
+      rating.grade,
+      rating.label,
+      '(Net yield ' + fmtPct(displayData.netYield) + ' vs ' + fmtPct(parseFloat(targetYield)) + ' target)',
+      rating.color
+    );
+
+    h.subheading('SDLT Breakdown');
+    if (scenarioData.sdltBreakdown && scenarioData.sdltBreakdown.bands && scenarioData.sdltBreakdown.bands.length > 0) {
+      const sdltRows = scenarioData.sdltBreakdown.bands.map(b => ({
+        cells: [fmt(b.from) + ' \u2013 ' + fmt(b.to), (b.rate * 100).toFixed(0) + '%', fmt(b.tax)]
+      }));
+      h.table(sdltRows, { headers: ['Band', 'Rate', 'Tax'], colWidths: [h.contentW * 0.5, h.contentW * 0.2, h.contentW * 0.3] });
+    }
+    h.textLine('Total SDLT: ' + fmt(scenarioData.sdlt), { bold: true, size: 10 });
+    h.gap(3);
+
+    h.subheading('Cost Breakdown');
+    const costBreakdownRows = [
+      { cells: ['Purchase Price', fmt(scenarioData.breakdown.price)] },
+      { cells: ['SDLT', fmt(scenarioData.breakdown.sdlt)] },
+      { cells: ['Solicitor Fees', fmt(scenarioData.breakdown.solicitorFees)] },
+    ];
+    if (scenarioData.breakdown.costItems) {
+      scenarioData.breakdown.costItems.filter(i => i.amount > 0).forEach(i => {
+        costBreakdownRows.push({ cells: [i.label || 'Cost item', fmt(i.amount)] });
+      });
+    }
+    costBreakdownRows.push({ cells: ['Total Acquisition Cost', fmt(scenarioData.totalCost)], bold: true, total: true });
+    h.table(costBreakdownRows);
+
+    h.subheading('Yield Analysis');
+    const yieldRows = [{ cells: ['Annual Rent', fmt(scenarioData.annualRent)] }];
+    if (voidPct > 0) {
+      yieldRows.push({ cells: ['Effective Annual Rent (after ' + voidPct + '% void)', fmt(scenarioData.effectiveAnnualRent || scenarioData.annualRent)] });
+    }
+    if (selectedMortgage) {
+      yieldRows.push({ cells: ['Annual Mortgage Cost', fmt(displayData.annualMortgageCost)] });
+    }
+    yieldRows.push({ cells: ['Net Annual Rent' + (selectedMortgage ? ' (after mortgage)' : ''), fmt(displayData.netAnnualRent)] });
+    yieldRows.push({ cells: ['Gross Yield', fmtPct(displayData.grossYield)] });
+    yieldRows.push({ cells: [selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', fmtPct(displayData.netYield)] });
+    if (selectedMortgage) {
+      yieldRows.push({ cells: ['Cash Invested', fmt(displayData.cashInvested)] });
+    }
+    h.table(yieldRows);
+
+    if (selectedMortgage) {
+      h.subheading('Mortgage Analysis');
+      const mortRows = [
+        { cells: ['Deposit (' + fmtPct(selectedMortgage.depositPct) + ')', fmt(selectedMortgage.depositAmount)] },
+        { cells: ['Mortgage Amount', fmt(selectedMortgage.mortgageAmount)] },
+        { cells: ['Interest Rate', selectedMortgage.interestRate + '%'] },
+        { cells: ['Term', selectedMortgage.mortgageTerm + ' years'] },
+        { cells: ['Monthly Mortgage Payment', fmt(selectedMortgage.monthlyPayment)] },
+        { cells: ['Monthly Cash Flow', fmt(selectedMortgage.monthlyCashFlow)] },
+        { cells: ['Annual Cash Flow', fmt(selectedMortgage.annualCashFlow)] },
+        { cells: ['Total Cash Invested', fmt(selectedMortgage.totalCashInvested)] },
+        { cells: ['Cash-on-Cash Return', fmtPct(selectedMortgage.cashOnCashReturn)] },
+        { cells: ['Payback Period', selectedMortgage.annualCashFlow > 0 ? (selectedMortgage.totalCashInvested / selectedMortgage.annualCashFlow).toFixed(1) + ' years' : 'N/A'] },
+      ];
+      h.table(mortRows);
+
+      h.subheading('Stress Test (' + selectedMortgage.stressRate + '%)');
+      h.table([
+        { cells: ['Monthly Payment at Stress Rate', fmt(selectedMortgage.stressMonthlyPayment)] },
+        { cells: ['Monthly Cash Flow at Stress Rate', fmt(selectedMortgage.stressMonthlyCashFlow)] },
+      ]);
+      const cfLabel = selectedMortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
+      const stressCfLabel = selectedMortgage.stressCashFlowPositive ? 'Cash Flow Positive at Stress Rate' : 'Cash Flow Negative at Stress Rate';
+      h.textLine(cfLabel, { bold: true, color: selectedMortgage.cashFlowPositive ? '#0a7a2e' : '#B11217' });
+      h.textLine(stressCfLabel, { bold: true, color: selectedMortgage.stressCashFlowPositive ? '#0a7a2e' : '#B11217' });
+      h.gap(3);
+    }
+
+    const offer = scenarioData.targetOffer;
+    if (offer && offer.achievable) {
+      h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' yield): ' + fmt(offer.offerPrice), { bold: true });
+    } else {
+      h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' yield): Not achievable with current inputs', { bold: true });
+    }
+
+    h.gap(4);
+    h.textLine('Capital growth projection available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
+    if (selectedMortgage) {
+      h.textLine('Refinance scenario available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
+      h.textLine('Section 24 tax estimate available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
+    }
+
+    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
 
     pdf.save(filename);
   } catch (err) {
     console.error('PDF generation failed:', err);
     alert('PDF generation failed. Please try again.');
   } finally {
-    if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
 }
 
@@ -2037,96 +2145,163 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-async function downloadComparePdf() {
+function downloadComparePdf() {
   const history = getHistory();
   if (history.length < 2) return;
-
-  const sortBy = document.getElementById('compareSortBy').value;
-  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
-
-  const entries = history.map(entry => {
-    const isFtb = entry.buyerType === 'ftb';
-    const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
-    const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
-    const rating = getDealRating(netYield, entry.targetYield);
-    const annualRent = entry.monthlyRent * 12;
-    const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
-    const grossYield = isFtb
-      ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
-      : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
-    const lettingPct = entry.lettingAgentPct || 0;
-    let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
-    if (entry.lettingAgentVat) lettingMonthly *= 1.2;
-    const maintenanceAnnual = entry.maintenanceMode === 'fixed'
-      ? (entry.maintenanceFixed || 0)
-      : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
-    const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
-    return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, cashFlow: Math.round(annualCashFlow), ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6 };
-  });
-
-  entries.sort((a, b) => {
-    switch (sortBy) {
-      case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
-      case 'netYield': return b.displayNetYield - a.displayNetYield;
-      case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
-      case 'price': return a.price - b.price;
-      case 'rent': return b.monthlyRent - a.monthlyRent;
-      default: return 0;
-    }
-  });
-
-  let tableRows = '';
-  entries.forEach((e, idx) => {
-    const rank = idx + 1;
-    const ref = e.dealReference ? ` (${escHtml(e.dealReference)})` : '';
-    const cashClass = e.cashFlow >= 0 ? 'color:#0a7a2e;' : 'color:#B11217;';
-    tableRows += `<tr>
-      <td style="font-weight:700;">#${rank}</td>
-      <td><span style="display:inline-block;width:28px;height:28px;line-height:28px;border-radius:50%;background:${e.rating.color};color:#fff;text-align:center;font-weight:700;font-size:10pt;">${e.rating.grade}</span></td>
-      <td>${escHtml(e.address || 'No address')}${ref}</td>
-      <td>${fmt(e.price)}</td>
-      <td>${fmt(e.monthlyRent)}</td>
-      <td>${fmtPct(e.grossYieldCalc)}</td>
-      <td style="font-weight:700;">${fmtPct(e.displayNetYield)}</td>
-      <td style="${cashClass}font-weight:600;">${fmt(e.cashFlow)}</td>
-      <td>${fmt(e.displaySdlt)}</td>
-      <td>${e.buyerType === 'ftb' ? 'FTB' : 'Investor'}</td>
-    </tr>`;
-  });
-
-  const now = new Date();
-  const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-
-  const compareHtml = `
-    <div class="print-header">
-      <h1>RentalMetrics &ndash; Deal Comparison</h1>
-      <p class="print-date">Generated: ${timestamp}</p>
-      <p class="print-address">${entries.length} deals compared &middot; Sorted by ${sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield' : sortBy === 'grossYield' ? 'Gross Yield' : sortBy === 'price' ? 'Price' : 'Rent'}</p>
-    </div>
-    <div class="print-section">
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th><th>Grade</th><th>Property</th><th>Price</th><th>Rent/mo</th><th>Gross</th><th>Net</th><th>Cash Flow/yr</th><th>SDLT</th><th>Type</th>
-          </tr>
-        </thead>
-        <tbody>${tableRows}</tbody>
-      </table>
-    </div>
-    <div class="print-disclaimer">
-      <p><strong>Disclaimer:</strong> These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.</p>
-    </div>
-  `;
-
-  const filename = `RentalMetrics-Deal-Comparison-${dateStr}.pdf`;
 
   const pdfBtn = document.querySelector('.btn-compare-pdf');
   const origText = pdfBtn ? pdfBtn.textContent : '';
   if (pdfBtn) { pdfBtn.textContent = 'Generating...'; pdfBtn.disabled = true; }
 
   try {
-    await generatePdfFromHtml(compareHtml, filename, true);
+    const sortBy = document.getElementById('compareSortBy').value;
+    const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
+
+    const entries = history.map(entry => {
+      const isFtb = entry.buyerType === 'ftb';
+      const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
+      const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
+      const rating = getDealRating(netYield, entry.targetYield);
+      const annualRent = entry.monthlyRent * 12;
+      const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
+      const grossYield = isFtb
+        ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
+        : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
+      const lettingPct = entry.lettingAgentPct || 0;
+      let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
+      if (entry.lettingAgentVat) lettingMonthly *= 1.2;
+      const maintenanceAnnual = entry.maintenanceMode === 'fixed'
+        ? (entry.maintenanceFixed || 0)
+        : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
+      const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+      return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, cashFlow: Math.round(annualCashFlow), ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6 };
+    });
+
+    entries.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
+        case 'netYield': return b.displayNetYield - a.displayNetYield;
+        case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
+        case 'price': return a.price - b.price;
+        case 'rent': return b.monthlyRent - a.monthlyRent;
+        default: return 0;
+      }
+    });
+
+    const now = new Date();
+    const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const sortLabel = sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield' : sortBy === 'grossYield' ? 'Gross Yield' : sortBy === 'price' ? 'Price' : 'Rent';
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('l', 'mm', 'a4');
+    const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 10, right: 10 });
+
+    h.title('RentalMetrics \u2013 Deal Comparison');
+    h.subtitle('Generated: ' + timestamp);
+    h.textLine(entries.length + ' deals compared \u00b7 Sorted by ' + sortLabel, { size: 9, align: 'center', color: '#333333' });
+    h.gap(2);
+    pdf.setDrawColor(...h.hexToRgb('#B11217'));
+    pdf.setLineWidth(0.8);
+    pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
+    h.gap(6);
+
+    const headers = ['Rank', 'Grade', 'Property', 'Price', 'Rent/mo', 'Gross', 'Net', 'Cash Flow/yr', 'SDLT', 'Type'];
+    const colW = [12, 12, h.contentW - 12 - 12 - 24 - 22 - 16 - 16 - 26 - 22 - 16, 24, 22, 16, 16, 26, 22, 16];
+    const rowH = 7;
+
+    h.checkPage(rowH + 4);
+    pdf.setFillColor(240, 240, 240);
+    pdf.rect(h.margins.left, h.getY() - 4, h.contentW, rowH, 'F');
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(80, 80, 80);
+    let hx = h.margins.left + 2;
+    headers.forEach((header, i) => {
+      pdf.text(header, hx, h.getY());
+      hx += colW[i];
+    });
+    h.setY(h.getY() + 2);
+    pdf.setDrawColor(180, 180, 180);
+    pdf.setLineWidth(0.3);
+    pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
+    h.setY(h.getY() + 4);
+
+    entries.forEach((e, idx) => {
+      const rank = '#' + (idx + 1);
+      const prop = (e.address || 'No address') + (e.dealReference ? ' (' + e.dealReference + ')' : '');
+      const cashColor = e.cashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
+
+      pdf.setFontSize(8);
+      const propLines = pdf.splitTextToSize(prop, colW[2] - 2);
+      const dynRowH = Math.max(rowH, propLines.length * 4 + 3);
+      h.checkPage(dynRowH + 2);
+
+      let cx = h.margins.left + 2;
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(rank, cx, h.getY());
+      cx += colW[0];
+
+      const gradeRgb = h.hexToRgb(e.rating.color);
+      pdf.setFillColor(...gradeRgb);
+      pdf.circle(cx + 4, h.getY() - 1.5, 3.5, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(7);
+      pdf.text(e.rating.grade, cx + 4, h.getY() - 0.5, { align: 'center' });
+      cx += colW[1];
+
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      propLines.forEach((line, li) => {
+        pdf.setFontSize(li === 0 ? 8 : 6.5);
+        pdf.text(line, cx, h.getY() + li * 3.5);
+      });
+      cx += colW[2];
+
+      pdf.text(fmt(e.price), cx, h.getY());
+      cx += colW[3];
+
+      pdf.text(fmt(e.monthlyRent), cx, h.getY());
+      cx += colW[4];
+
+      pdf.text(fmtPct(e.grossYieldCalc), cx, h.getY());
+      cx += colW[5];
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(fmtPct(e.displayNetYield), cx, h.getY());
+      cx += colW[6];
+
+      pdf.setTextColor(...cashColor);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(fmt(e.cashFlow), cx, h.getY());
+      cx += colW[7];
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(fmt(e.displaySdlt), cx, h.getY());
+      cx += colW[8];
+
+      pdf.text(e.buyerType === 'ftb' ? 'FTB' : 'Investor', cx, h.getY());
+
+      h.setY(h.getY() + dynRowH - 5);
+      pdf.setDrawColor(230, 230, 230);
+      pdf.setLineWidth(0.15);
+      pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
+      h.setY(h.getY() + 2);
+    });
+
+    h.gap(6);
+    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
+
+    const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '.pdf';
+    pdf.save(filename);
+  } catch (err) {
+    console.error('Compare PDF generation failed:', err);
+    alert('PDF generation failed. Please try again.');
   } finally {
     if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
   }
