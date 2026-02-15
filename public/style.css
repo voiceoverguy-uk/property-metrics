@@ -1817,6 +1817,33 @@ body.sdlt-mode .analyser-only {
   color: #1a1a1a;
 }
 
+.compare-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-compare-pdf {
+  padding: 6px 16px;
+  background: #B11217;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare-pdf:hover {
+  background: #8e0f13;
+}
+
+.btn-compare-pdf:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .compare-close {
   width: 36px;
   height: 36px;
@@ -2022,6 +2049,15 @@ body.dark .compare-container {
 
 body.dark .compare-header h2 {
   color: #eee;
+}
+
+body.dark .btn-compare-pdf {
+  background: #B11217;
+  color: #fff;
+}
+
+body.dark .btn-compare-pdf:hover {
+  background: #d41920;
 }
 
 body.dark .compare-close {

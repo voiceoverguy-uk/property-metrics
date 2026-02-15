@@ -1528,9 +1528,83 @@ function printReport() {
     </div>
   `;
 
-  document.getElementById('printReport').innerHTML = reportHtml;
+  const btn = document.querySelector('.btn-save-pdf-inline') || document.getElementById('savePdfBtn');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Generating PDF...'; btn.disabled = true; }
 
-  setTimeout(() => { window.print(); }, 100);
+  generatePdfFromHtml(reportHtml, suggestedFilename).finally(() => {
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+  });
+}
+
+async function generatePdfFromHtml(html, filename, landscape) {
+  const containerWidth = landscape ? 1100 : 800;
+  const container = document.createElement('div');
+  container.style.cssText = `position:absolute;left:-9999px;top:0;width:${containerWidth}px;background:#fff;color:#000;padding:40px 36px;font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.5;overflow:visible;pointer-events:none;`;
+  container.innerHTML = `<style>
+    .pdf-render-container h1 { font-size:22pt; color:#000; margin:0 0 4px; }
+    .pdf-render-container h2 { font-size:14pt; color:#B11217; border-bottom:1.5px solid #B11217; padding-bottom:4px; margin:16px 0 10px 0; }
+    .pdf-render-container h3 { font-size:12pt; color:#333; margin:12px 0 6px; }
+    .pdf-render-container h4 { font-size:10pt; color:#555; text-transform:uppercase; letter-spacing:0.5px; margin:10px 0 4px; }
+    .pdf-render-container table { width:100%; border-collapse:collapse; font-size:10pt; margin-bottom:8px; }
+    .pdf-render-container th { text-align:left; padding:4px 8px; background:#f5f5f5; border-bottom:1.5px solid #ccc; font-weight:600; color:#333; font-size:9pt; }
+    .pdf-render-container td { padding:4px 8px; border-bottom:1px solid #eee; color:#000; }
+    .pdf-render-container td:last-child, .pdf-render-container th:last-child { text-align:right; }
+    .pdf-render-container .total-row td { border-top:2px solid #000; border-bottom:none; padding-top:6px; font-weight:700; }
+    .pdf-render-container .print-header { text-align:center; border-bottom:3px solid #B11217; padding-bottom:16px; margin-bottom:20px; }
+    .pdf-render-container .print-filename { font-size:8.5pt; color:#888; font-family:'Courier New',monospace; margin-bottom:10px; word-break:break-all; }
+    .pdf-render-container .print-date { font-size:9pt; color:#555; margin-bottom:4px; }
+    .pdf-render-container .print-address { font-size:12pt; font-weight:600; color:#333; }
+    .pdf-render-container .print-deal-ref { font-size:11pt; font-weight:600; color:#333; margin-top:4px; }
+    .pdf-render-container .print-section { margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #ddd; }
+    .pdf-render-container .print-section:last-of-type { border-bottom:none; }
+    .pdf-render-container .print-total { font-size:10pt; margin:4px 0 8px; }
+    .pdf-render-container .print-disclaimer { margin-top:20px; padding:10px; border:1px solid #ccc; font-size:8pt; color:#555; }
+    .pdf-render-container .print-deal-rating { margin:6px 0 10px; padding:6px 0; font-size:11pt; }
+    .pdf-render-container .print-deal-grade { font-size:16pt; font-weight:800; margin-right:6px; }
+    .pdf-render-container .print-deal-label { font-weight:700; font-size:11pt; margin-right:6px; }
+    .pdf-render-container .print-deal-detail { font-size:9pt; color:#555; }
+    .pdf-render-container p { margin:4px 0; }
+    .pdf-render-container strong { color:#000; }
+  </style><div class="pdf-render-container">${html}</div>`;
+
+  document.body.appendChild(container);
+
+  try {
+    await new Promise(r => setTimeout(r, 150));
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: containerWidth
+    });
+
+    const orientation = landscape ? 'l' : 'p';
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF(orientation, 'mm', 'a4');
+    const pdfWidth = landscape ? 287 : 190;
+    const pageHeight = landscape ? 190 : 277;
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    let yOffset = 0;
+    let page = 0;
+    while (yOffset < imgHeight) {
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 10, 10 - yOffset, imgWidth, imgHeight);
+      yOffset += pageHeight;
+      page++;
+    }
+
+    pdf.save(filename);
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    alert('PDF generation failed. Please try again.');
+  } finally {
+    document.body.removeChild(container);
+  }
 }
 
 let currentMode = 'analyser';
@@ -1849,7 +1923,7 @@ function renderCompareTable() {
   if (history.length === 0) return;
   
   const sortBy = document.getElementById('compareSortBy').value;
-  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'F': 5 };
+  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
   
   const entries = history.map(entry => {
     const isFtb = entry.buyerType === 'ftb';
@@ -1958,9 +2032,105 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+async function downloadComparePdf() {
+  const history = getHistory();
+  if (history.length < 2) return;
+
+  const sortBy = document.getElementById('compareSortBy').value;
+  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
+
+  const entries = history.map(entry => {
+    const isFtb = entry.buyerType === 'ftb';
+    const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
+    const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
+    const rating = getDealRating(netYield, entry.targetYield);
+    const annualRent = entry.monthlyRent * 12;
+    const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
+    const grossYield = isFtb
+      ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
+      : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
+    const lettingPct = entry.lettingAgentPct || 0;
+    let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
+    if (entry.lettingAgentVat) lettingMonthly *= 1.2;
+    const maintenanceAnnual = entry.maintenanceMode === 'fixed'
+      ? (entry.maintenanceFixed || 0)
+      : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
+    const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+    return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, cashFlow: Math.round(annualCashFlow), ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6 };
+  });
+
+  entries.sort((a, b) => {
+    switch (sortBy) {
+      case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
+      case 'netYield': return b.displayNetYield - a.displayNetYield;
+      case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
+      case 'price': return a.price - b.price;
+      case 'rent': return b.monthlyRent - a.monthlyRent;
+      default: return 0;
+    }
+  });
+
+  let tableRows = '';
+  entries.forEach((e, idx) => {
+    const rank = idx + 1;
+    const ref = e.dealReference ? ` (${escHtml(e.dealReference)})` : '';
+    const cashClass = e.cashFlow >= 0 ? 'color:#0a7a2e;' : 'color:#B11217;';
+    tableRows += `<tr>
+      <td style="font-weight:700;">#${rank}</td>
+      <td><span style="display:inline-block;width:28px;height:28px;line-height:28px;border-radius:50%;background:${e.rating.color};color:#fff;text-align:center;font-weight:700;font-size:10pt;">${e.rating.grade}</span></td>
+      <td>${escHtml(e.address || 'No address')}${ref}</td>
+      <td>${fmt(e.price)}</td>
+      <td>${fmt(e.monthlyRent)}</td>
+      <td>${fmtPct(e.grossYieldCalc)}</td>
+      <td style="font-weight:700;">${fmtPct(e.displayNetYield)}</td>
+      <td style="${cashClass}font-weight:600;">${fmt(e.cashFlow)}</td>
+      <td>${fmt(e.displaySdlt)}</td>
+      <td>${e.buyerType === 'ftb' ? 'FTB' : 'Investor'}</td>
+    </tr>`;
+  });
+
+  const now = new Date();
+  const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+  const compareHtml = `
+    <div class="print-header">
+      <h1>RentalMetrics &ndash; Deal Comparison</h1>
+      <p class="print-date">Generated: ${timestamp}</p>
+      <p class="print-address">${entries.length} deals compared &middot; Sorted by ${sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield' : sortBy === 'grossYield' ? 'Gross Yield' : sortBy === 'price' ? 'Price' : 'Rent'}</p>
+    </div>
+    <div class="print-section">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th><th>Grade</th><th>Property</th><th>Price</th><th>Rent/mo</th><th>Gross</th><th>Net</th><th>Cash Flow/yr</th><th>SDLT</th><th>Type</th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+    <div class="print-disclaimer">
+      <p><strong>Disclaimer:</strong> These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.</p>
+    </div>
+  `;
+
+  const filename = `RentalMetrics-Deal-Comparison-${dateStr}.pdf`;
+
+  const pdfBtn = document.querySelector('.btn-compare-pdf');
+  const origText = pdfBtn ? pdfBtn.textContent : '';
+  if (pdfBtn) { pdfBtn.textContent = 'Generating...'; pdfBtn.disabled = true; }
+
+  try {
+    await generatePdfFromHtml(compareHtml, filename, true);
+  } finally {
+    if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+  }
+}
+
 window.openCompare = openCompare;
 window.closeCompare = closeCompare;
 window.renderCompareTable = renderCompareTable;
+window.downloadComparePdf = downloadComparePdf;
 
 function shareDeal() {
   const price = getCurrencyFieldValue('price');
