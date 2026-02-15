@@ -1126,6 +1126,7 @@ function renderSDLTStandaloneResults(data, price) {
       <div class="results-header-row">
         <div>
           <h2>SDLT Calculation</h2>
+          <p class="sdlt-rates-note">Rates correct as of January 2026</p>
           <p class="address-line">${escHtml(address)} — ${fmt(price)}</p>
         </div>
       </div>
