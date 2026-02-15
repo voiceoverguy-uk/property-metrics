@@ -1371,8 +1371,8 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
     const input = document.getElementById(id);
     if (input) { input.dataset.rawValue = ''; input.value = ''; }
   });
-  document.getElementById('solicitorFees').dataset.rawValue = '1500';
-  document.getElementById('solicitorFees').value = formatCurrencyDisplay(1500);
+  document.getElementById('solicitorFees').dataset.rawValue = '';
+  document.getElementById('solicitorFees').value = '';
   document.getElementById('voidAllowance').value = '0';
   document.getElementById('maintenancePct').value = '0';
   document.getElementById('maintenanceFixed').value = '';
@@ -1382,7 +1382,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.querySelector('.maint-mode-btn[data-maint="pct"]').classList.add('active');
   document.getElementById('maintPctInput').style.display = '';
   document.getElementById('maintFixedInput').style.display = 'none';
-  document.getElementById('targetYield').value = '7.0';
+  document.getElementById('targetYield').value = '';
   document.getElementById('interestRate').value = '4.5';
   document.getElementById('mortgageTerm').value = '25';
   document.getElementById('stressTestRate').value = '7.0';
