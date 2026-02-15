@@ -703,6 +703,111 @@ header .subtitle {
   background: #e8e8e8;
 }
 
+.purchase-type-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  margin-top: 4px;
+}
+
+.purchase-type-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: #f5f5f5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.purchase-type-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+.purchase-type-btn:hover:not(.active) {
+  background: #e8e8e8;
+}
+
+.target-offer-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.target-yield-input {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  min-width: 44px;
+  height: 24px;
+  margin-top: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: #d42027;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.btn-start-again {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: #fff;
+  color: #d42027;
+  border: 2px solid #d42027;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-start-again:hover {
+  background: #d42027;
+  color: #fff;
+}
+
 .btn-mortgage-calc {
   width: 100%;
   padding: 10px;
@@ -1841,6 +1946,39 @@ body.dark .buyer-type-btn.active {
 
 body.dark .buyer-type-btn:hover:not(.active) {
   background: #2a2a4a;
+}
+
+body.dark .purchase-type-toggle {
+  border-color: #2a2a4a;
+}
+
+body.dark .purchase-type-btn {
+  background: #1a1a2e;
+  color: #a0a0b0;
+}
+
+body.dark .purchase-type-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+body.dark .purchase-type-btn:hover:not(.active) {
+  background: #2a2a4a;
+}
+
+body.dark .toggle-slider {
+  background: #444;
+}
+
+body.dark .btn-start-again {
+  background: transparent;
+  color: #d42027;
+  border-color: #d42027;
+}
+
+body.dark .btn-start-again:hover {
+  background: #d42027;
+  color: #fff;
 }
 
 body.dark .btn-mortgage-calc {

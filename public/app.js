@@ -78,23 +78,25 @@ function getCurrencyFieldValue(id) {
   return parseCurrencyValue(input.dataset.rawValue || input.value);
 }
 
-function syncMortgageInputsVisibility() {
-  const checked = document.getElementById('includeMortgage').checked;
-  document.getElementById('mortgageInputs').style.display = checked ? '' : 'none';
+let selectedPurchaseType = 'cash';
+
+function getSelectedPurchaseType() {
+  return selectedPurchaseType;
 }
 
-document.getElementById('mortgageToggle').addEventListener('click', function(e) {
-  if (e.target.classList.contains('tooltip')) return;
-  const fields = document.getElementById('mortgageFields');
-  const arrow = this.querySelector('.mortgage-arrow');
-  const isOpen = this.classList.contains('open');
-  this.classList.toggle('open');
-  fields.style.display = isOpen ? 'none' : '';
-  if (arrow) arrow.innerHTML = isOpen ? '&#9654;' : '&#9660;';
-  if (!isOpen) syncMortgageInputsVisibility();
-});
+function syncMortgageInputsVisibility() {
+  const isMortgage = selectedPurchaseType === 'mortgage';
+  document.getElementById('mortgageInputs').style.display = isMortgage ? '' : 'none';
+}
 
-document.getElementById('includeMortgage').addEventListener('change', syncMortgageInputsVisibility);
+document.querySelectorAll('.purchase-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.purchase-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedPurchaseType = btn.dataset.purchase;
+    syncMortgageInputsVisibility();
+  });
+});
 
 let selectedBuyerType = 'investor';
 
@@ -725,10 +727,11 @@ function renderScenario(data, label, targetYield, mortgage) {
 
     ${mortgageHtml}
 
+    ${document.getElementById('showTargetOffer').checked ? `
     <div class="result-section">
       <h3>Target Offer Price</h3>
       ${offerHtml}
-    </div>
+    </div>` : ''}
   `;
 }
 
@@ -741,15 +744,17 @@ function renderResults(result) {
   const address = escHtml(addressRaw);
   const targetYield = result.targetYield;
   const price = getCurrencyFieldValue('price');
-  const includeMortgage = document.getElementById('includeMortgage').checked;
+  const purchaseType = getSelectedPurchaseType();
+  const includeMortgage = purchaseType === 'mortgage';
+  const buyerType = getSelectedBuyerType();
 
-  let investorMortgage = null;
-  let ftbMortgage = null;
+  const data = buyerType === 'ftb' ? result.ftb : result.investor;
+  const label = buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property';
 
+  let mortgage = null;
   if (includeMortgage) {
-    investorMortgage = calculateMortgage(price, result.investor);
-    ftbMortgage = calculateMortgage(price, result.ftb);
-    lastMortgageData = { investor: investorMortgage, ftb: ftbMortgage };
+    mortgage = calculateMortgage(price, data);
+    lastMortgageData = { [buyerType]: mortgage };
   } else {
     lastMortgageData = null;
   }
@@ -769,50 +774,11 @@ function renderResults(result) {
         </div>
       </div>
 
-      ${renderSDLTComparison(result.investor.sdlt, result.ftb.sdlt)}
-
-      <div class="scenario-tabs">
-        <div class="scenario-tab active" data-view="comparison">Both Scenarios</div>
-        <div class="scenario-tab" data-view="investor">Investor Only</div>
-        <div class="scenario-tab" data-view="ftb">First-time Buyer Only</div>
-      </div>
-
-      <div id="view-comparison" class="view-content">
-        <div class="comparison-grid">
-          <div class="comparison-col">
-            <h4>Investor / Additional Property</h4>
-            ${renderScenario(result.investor, 'Investor', targetYield, investorMortgage)}
-          </div>
-          <div class="comparison-col">
-            <h4>First-time Buyer</h4>
-            ${renderScenario(result.ftb, 'First-time Buyer', targetYield, ftbMortgage)}
-          </div>
-        </div>
-      </div>
-
-      <div id="view-investor" class="view-content" style="display:none;">
-        ${renderScenario(result.investor, 'Investor / Additional Property', targetYield, investorMortgage)}
-      </div>
-
-      <div id="view-ftb" class="view-content" style="display:none;">
-        ${renderScenario(result.ftb, 'First-time Buyer', targetYield, ftbMortgage)}
-      </div>
+      ${renderScenario(data, label, targetYield, mortgage)}
     </div>
   `;
 
   resultsPanel.innerHTML = html;
-
-  const tabs = resultsPanel.querySelectorAll('.scenario-tab');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const view = tab.getAttribute('data-view');
-      document.getElementById('view-comparison').style.display = view === 'comparison' ? '' : 'none';
-      document.getElementById('view-investor').style.display = view === 'investor' ? '' : 'none';
-      document.getElementById('view-ftb').style.display = view === 'ftb' ? '' : 'none';
-    });
-  });
 }
 
 async function runCalculation() {
@@ -875,6 +841,41 @@ async function runCalculation() {
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   runCalculation();
+  document.getElementById('startAgainBtn').style.display = '';
+});
+
+document.getElementById('startAgainBtn').addEventListener('click', () => {
+  form.reset();
+  costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
+  renderCostItems();
+  CURRENCY_FIELDS.forEach(id => {
+    const input = document.getElementById(id);
+    if (input) { input.dataset.rawValue = ''; input.value = ''; }
+  });
+  document.getElementById('solicitorFees').dataset.rawValue = '1500';
+  document.getElementById('solicitorFees').value = formatCurrencyDisplay(1500);
+  document.getElementById('targetYield').value = '7.0';
+  document.getElementById('interestRate').value = '4.5';
+  document.getElementById('mortgageTerm').value = '25';
+  selectedBuyerType = 'investor';
+  document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.buyer-type-btn[data-buyer="investor"]').classList.add('active');
+  selectedPurchaseType = 'cash';
+  document.querySelectorAll('.purchase-type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.purchase-type-btn[data-purchase="cash"]').classList.add('active');
+  syncMortgageInputsVisibility();
+  document.getElementById('borrowingSummary').style.display = 'none';
+  document.getElementById('showTargetOffer').checked = true;
+  document.getElementById('targetYieldGroup').style.display = '';
+  resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+  document.getElementById('savePdfBtn').style.display = 'none';
+  document.getElementById('startAgainBtn').style.display = 'none';
+  lastResult = null;
+  lastMortgageData = null;
+});
+
+document.getElementById('showTargetOffer').addEventListener('change', function() {
+  document.getElementById('targetYieldGroup').style.display = this.checked ? '' : 'none';
 });
 
 function printSDLTTable(breakdown) {
@@ -1015,8 +1016,8 @@ function printReport() {
     costItemsHtml = '<p>None</p>';
   }
 
-  const investorMortgage = lastMortgageData ? lastMortgageData.investor : null;
-  const ftbMortgage = lastMortgageData ? lastMortgageData.ftb : null;
+  const buyerType = getSelectedBuyerType();
+  const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
 
   const lettingAgentPct = getLettingAgentPct();
   const lettingAgentVat = document.getElementById('lettingAgentVat').checked;
@@ -1055,13 +1056,8 @@ function printReport() {
     </div>
 
     <div class="print-section">
-      <h2>Investor / Additional Property</h2>
-      ${printScenario(lastResult.investor, 'Investor', lastResult.targetYield, investorMortgage)}
-    </div>
-
-    <div class="print-section">
-      <h2>First-time Buyer</h2>
-      ${printScenario(lastResult.ftb, 'First-time Buyer', lastResult.targetYield, ftbMortgage)}
+      <h2>${buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property'}</h2>
+      ${printScenario(buyerType === 'ftb' ? lastResult.ftb : lastResult.investor, buyerType === 'ftb' ? 'First-time Buyer' : 'Investor', lastResult.targetYield, selectedMortgage)}
     </div>
 
     <div class="print-disclaimer">
@@ -1252,6 +1248,7 @@ function addToHistory(result) {
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
+    purchaseType: selectedPurchaseType,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
 
@@ -1322,6 +1319,17 @@ function applyHistoryEntry(entry) {
   if (entry.refurbCosts !== undefined && entry.refurbCosts > 0) {
     costItems = [{ label: '', amount: entry.refurbCosts }, { label: '', amount: 0 }, { label: '', amount: 0 }];
     renderCostItems();
+  }
+
+  if (entry.purchaseType) {
+    selectedPurchaseType = entry.purchaseType;
+    document.querySelectorAll('.purchase-type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.purchase === entry.purchaseType);
+    });
+    const mortgageSection = document.getElementById('mortgageSection');
+    if (mortgageSection) {
+      mortgageSection.style.display = entry.purchaseType === 'mortgage' ? '' : 'none';
+    }
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1398,6 +1406,7 @@ function shareDeal() {
   params.set('target', target);
   if (addr) params.set('addr', addr);
   params.set('buyer', getSelectedBuyerType());
+  params.set('purchase', selectedPurchaseType);
 
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
 
@@ -1513,6 +1522,18 @@ function checkUrlParams() {
     document.querySelectorAll('.buyer-type-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.buyer === bt);
     });
+  }
+
+  if (params.has('purchase')) {
+    const pt = params.get('purchase');
+    selectedPurchaseType = pt;
+    document.querySelectorAll('.purchase-type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.purchase === pt);
+    });
+    const mortgageSection = document.getElementById('mortgageSection');
+    if (mortgageSection) {
+      mortgageSection.style.display = pt === 'mortgage' ? '' : 'none';
+    }
   }
 
   window.history.replaceState({}, '', window.location.pathname);

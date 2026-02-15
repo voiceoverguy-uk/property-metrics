@@ -105,76 +105,85 @@
             </div>
           </div>
 
-          <h3 class="analyser-only">Target Offer Price</h3>
-
-          <div class="form-group analyser-only">
-            <label for="targetYield">
-              Target Yield (%)
-              <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum price to achieve this.">?</span>
+          <div class="form-group analyser-only target-offer-group">
+            <label>
+              Target Offer Price
+              <span class="tooltip" data-tip="Toggle to show/hide target offer price calculation in results.">?</span>
             </label>
-            <input type="number" id="targetYield" min="0" max="50" step="any" value="7.0">
+            <div class="target-offer-toggle-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="showTargetOffer" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <div class="form-group target-yield-input" id="targetYieldGroup">
+                <label for="targetYield">
+                  Target Yield (%)
+                  <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum price to achieve this.">?</span>
+                </label>
+                <input type="number" id="targetYield" min="0" max="50" step="any" value="7.0">
+              </div>
+            </div>
           </div>
 
-          <h3 class="mortgage-header analyser-only" id="mortgageToggle" style="cursor:pointer;">
-            Mortgage Calculator <span class="mortgage-arrow">&#9654;</span>
-            <span class="tooltip" data-tip="Click to expand. Adds monthly payments, cash flow and cash-on-cash return to your analysis.">?</span>
-          </h3>
-
-          <div id="mortgageFields" class="mortgage-fields analyser-only" style="display:none;">
-            <div class="mortgage-include-row">
-              <label class="toggle-checkbox">
-                <input type="checkbox" id="includeMortgage" checked>
-                <span class="toggle-checkbox-label">Include mortgage in analysis</span>
-              </label>
+          <div class="form-group analyser-only purchase-type-group">
+            <label>
+              Purchase Type
+              <span class="tooltip" data-tip="Select whether this is a cash purchase or a mortgage purchase. Mortgage adjusts yields based on your cash invested.">?</span>
+            </label>
+            <div class="purchase-type-toggle">
+              <button type="button" class="purchase-type-btn active" data-purchase="cash">Cash Purchase</button>
+              <button type="button" class="purchase-type-btn" data-purchase="mortgage">Mortgage</button>
             </div>
-            <div id="mortgageInputs">
-              <div class="form-row">
-                <div class="form-group half">
-                  <label for="depositAmount">
-                    Deposit (&pound;)
-                    <span class="tooltip" data-tip="The deposit amount you will put down. The rest will be the mortgage.">?</span>
-                  </label>
-                  <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. 40000">
-                </div>
-                <div class="form-group half">
-                  <label for="interestRate">
-                    Interest Rate (%)
-                    <span class="tooltip" data-tip="Annual mortgage interest rate.">?</span>
-                  </label>
-                  <input type="number" id="interestRate" min="0" max="30" step="any" value="4.5">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="mortgageTerm">
-                  Mortgage Term (years)
-                  <span class="tooltip" data-tip="The length of the mortgage in years.">?</span>
+          </div>
+
+          <div id="mortgageInputs" class="mortgage-fields analyser-only" style="display:none;">
+            <div class="form-row">
+              <div class="form-group half">
+                <label for="depositAmount">
+                  Deposit (&pound;)
+                  <span class="tooltip" data-tip="The deposit amount you will put down. The rest will be the mortgage.">?</span>
                 </label>
-                <input type="number" id="mortgageTerm" min="1" max="40" step="1" value="25">
+                <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. £40,000">
               </div>
-              <button type="button" class="btn-mortgage-calc" id="mortgageCalcBtn">Calculate Mortgage</button>
-              <div class="borrowing-summary" id="borrowingSummary" style="display:none;">
-                <div class="borrowing-row">
-                  <span class="borrowing-label">Cash Deposit</span>
-                  <span class="borrowing-value" id="borrowingDeposit">&pound;0</span>
-                </div>
-                <div class="borrowing-row">
-                  <span class="borrowing-label">SDLT</span>
-                  <span class="borrowing-value" id="borrowingSDLT">&pound;0</span>
-                </div>
-                <div class="borrowing-row">
-                  <span class="borrowing-label">Solicitor Fees</span>
-                  <span class="borrowing-value" id="borrowingSolicitor">&pound;0</span>
-                </div>
-                <div class="borrowing-row borrowing-total">
-                  <span class="borrowing-label">Amount to Borrow</span>
-                  <span class="borrowing-value" id="borrowingAmount">&pound;0</span>
-                </div>
+              <div class="form-group half">
+                <label for="interestRate">
+                  Interest Rate (%)
+                  <span class="tooltip" data-tip="Annual mortgage interest rate.">?</span>
+                </label>
+                <input type="number" id="interestRate" min="0" max="30" step="any" value="4.5">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="mortgageTerm">
+                Mortgage Term (years)
+                <span class="tooltip" data-tip="The length of the mortgage in years.">?</span>
+              </label>
+              <input type="number" id="mortgageTerm" min="1" max="40" step="1" value="25">
+            </div>
+            <button type="button" class="btn-mortgage-calc" id="mortgageCalcBtn">Calculate Mortgage</button>
+            <div class="borrowing-summary" id="borrowingSummary" style="display:none;">
+              <div class="borrowing-row">
+                <span class="borrowing-label">Cash Deposit</span>
+                <span class="borrowing-value" id="borrowingDeposit">&pound;0</span>
+              </div>
+              <div class="borrowing-row">
+                <span class="borrowing-label">SDLT</span>
+                <span class="borrowing-value" id="borrowingSDLT">&pound;0</span>
+              </div>
+              <div class="borrowing-row">
+                <span class="borrowing-label">Solicitor Fees</span>
+                <span class="borrowing-value" id="borrowingSolicitor">&pound;0</span>
+              </div>
+              <div class="borrowing-row borrowing-total">
+                <span class="borrowing-label">Amount to Borrow</span>
+                <span class="borrowing-value" id="borrowingAmount">&pound;0</span>
               </div>
             </div>
           </div>
 
           <button type="submit" class="btn-calculate analyser-only">Analyse Deal</button>
           <button type="button" id="sdltCalcBtn" class="btn-calculate sdlt-only">Calculate SDLT</button>
+          <button type="button" id="startAgainBtn" class="btn-start-again analyser-only" style="display:none;">Start Again</button>
           <button type="button" id="savePdfBtn" class="btn-save-pdf analyser-only" style="display:none;" onclick="printReport()">Save as PDF</button>
         </form>
       </section>

@@ -4,6 +4,11 @@
 A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (#d42027 red, #1a1a1a charcoal).
 
 ## Recent Changes
+- 2026-02-15: Purchase type persisted in history entries and share URLs; applyHistoryEntry and checkUrlParams restore purchase type toggle and mortgage section visibility
+- 2026-02-15: PDF/print report now shows only selected buyer type (Investor OR FTB) instead of both scenarios
+- 2026-02-15: Results panel shows only selected buyer type (single scenario) instead of side-by-side comparison; removed scenario tabs
+- 2026-02-15: Replaced mortgage checkbox with Cash Purchase / Mortgage toggle buttons (styled like buyer type toggle); controls yield calculation basis
+- 2026-02-15: Added "Start Again" reset button and Target Offer Price show/hide toggle switch
 - 2026-02-15: Leveraged yield calculations — when mortgage is checked, gross/net yields recalculate based on cash invested (deposit + SDLT + fees + costs) instead of total purchase price; mortgage payments deducted from net annual rent; deal rating adjusts accordingly
 - 2026-02-15: Replaced logo image with Manrope Semi Bold text heading "Rental Metrics"; custom @font-face loaded from public/fonts/
 - 2026-02-15: Header background changed to red (#d42027); subtitle font increased ~20%, spacing improved
@@ -11,7 +16,7 @@ A web-based UK property investment deal analyser for England & Northern Ireland 
 - 2026-02-15: Rebranded to RentalMetrics; mortgage summary shows Cash Deposit, SDLT, Solicitor Fees, then Amount to Borrow as bottom-line total
 - 2026-02-14: Added buyer type toggle (Investor/FTB) at top of form, defaulting to Investor; Calculate Mortgage button in mortgage section
 - 2026-02-14: Changed letting agent fee to percentage input (% of monthly rent) instead of flat £ amount; +20% VAT checkbox; integrated into running costs, yield calcs, mortgage cash flow, PDF, history, and share URL
-- 2026-02-14: Added mortgage include/exclude checkbox inside expanded mortgage section for cash vs mortgage purchase toggle
+- 2026-02-14: Added Cash Purchase / Mortgage toggle replacing old mortgage checkbox
 - 2026-02-14: Added dark mode toggle (moon/sun icon, localStorage persistence), mobile responsive improvements
 - 2026-02-14: Added comparison history (localStorage, max 20 entries) with load/delete/clear; share deal via URL query params with clipboard copy
 - 2026-02-14: Added standalone SDLT calculator mode with toggle buttons and dedicated /api/sdlt endpoint; shows all 3 buyer types
