@@ -122,6 +122,7 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
   }
 
   const borrowed = Math.max(price - deposit, 0);
+  document.getElementById('borrowingDeposit').textContent = fmt(deposit);
   document.getElementById('borrowingAmount').textContent = fmt(borrowed);
   document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
 
