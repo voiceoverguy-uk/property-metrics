@@ -155,8 +155,11 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     return;
   }
 
+  const mortgageAmt = Math.max(price - deposit, 0);
   document.getElementById('borrowingDeposit').textContent = fmt(deposit);
   document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
+  document.getElementById('borrowingMortgage').textContent = fmt(mortgageAmt);
+  console.log('Mortgage Calc Debug:', { purchasePrice: price, deposit: deposit, calculatedMortgageAmount: mortgageAmt });
 
   try {
     const res = await fetch(`/api/sdlt?price=${price}`);
@@ -164,12 +167,12 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     const buyerType = getSelectedBuyerType();
     const sdlt = buyerType === 'ftb' ? data.ftb.total : data.additional.total;
     document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
-    const borrowed = Math.max(price - deposit + sdlt + solicitorFees, 0);
-    document.getElementById('borrowingAmount').textContent = fmt(borrowed);
+    const totalFunds = Math.max(deposit + sdlt + solicitorFees + mortgageAmt, 0);
+    document.getElementById('borrowingAmount').textContent = fmt(totalFunds);
   } catch (e) {
     document.getElementById('borrowingSDLT').textContent = '-';
-    const borrowed = Math.max(price - deposit + solicitorFees, 0);
-    document.getElementById('borrowingAmount').textContent = fmt(borrowed);
+    const totalFunds = Math.max(deposit + solicitorFees + mortgageAmt, 0);
+    document.getElementById('borrowingAmount').textContent = fmt(totalFunds);
   }
 
   summary.style.display = '';

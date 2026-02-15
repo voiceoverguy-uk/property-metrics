@@ -897,6 +897,22 @@ header .subtitle {
   padding: 4px 0;
 }
 
+.borrowing-row.borrowing-highlight {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #ddd;
+}
+
+.borrowing-highlight .borrowing-label {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.borrowing-highlight .borrowing-value {
+  font-size: 1rem;
+  color: #0a7a2e;
+}
+
 .borrowing-row.borrowing-total {
   margin-top: 6px;
   padding-top: 8px;
@@ -2700,6 +2716,18 @@ body.dark .btn-mortgage-calc:hover {
 body.dark .borrowing-summary {
   background: #1a1a2e;
   border-color: #2a2a4a;
+}
+
+body.dark .borrowing-row.borrowing-highlight {
+  border-top-color: #2a2a4a;
+}
+
+body.dark .borrowing-highlight .borrowing-label {
+  color: #e0e0f0;
+}
+
+body.dark .borrowing-highlight .borrowing-value {
+  color: #4ade80;
 }
 
 body.dark .borrowing-row.borrowing-total {
