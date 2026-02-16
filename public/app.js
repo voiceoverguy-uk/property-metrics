@@ -2647,9 +2647,10 @@ function downloadComparePdf() {
     pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
     h.gap(6);
 
-    const headers = ['Rank', 'Grade', 'Property', 'Price', 'Rent/mo', 'Gross', 'Net', 'Cash Flow/yr', 'SDLT', 'Type'];
-    const colW = [12, 12, h.contentW - 12 - 12 - 24 - 22 - 16 - 16 - 26 - 22 - 16, 24, 22, 16, 16, 26, 22, 16];
-    const rowH = 7;
+    const headers = ['Rank', 'Grade', 'Property', 'Ref', 'Price', 'Rent/mo', 'Gross', 'Net', 'Cash Flow/yr', 'SDLT', 'Type'];
+    const fixedW = 13 + 14 + 30 + 24 + 22 + 16 + 16 + 26 + 22 + 16;
+    const colW = [13, 14, h.contentW - fixedW, 30, 24, 22, 16, 16, 26, 22, 16];
+    const rowH = 9;
 
     h.checkPage(rowH + 4);
     pdf.setFillColor(240, 240, 240);
@@ -2670,12 +2671,15 @@ function downloadComparePdf() {
 
     entries.forEach((e, idx) => {
       const rank = '#' + (idx + 1);
-      const prop = (e.address || 'No address') + (e.dealReference ? ' (' + e.dealReference + ')' : '');
+      const prop = e.address || 'No address';
+      const ref = e.dealReference || '';
       const cashColor = e.cashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
 
       pdf.setFontSize(8);
       const propLines = pdf.splitTextToSize(prop, colW[2] - 2);
-      const dynRowH = Math.max(rowH, propLines.length * 4 + 3);
+      const refLines = ref ? pdf.splitTextToSize(ref, colW[3] - 2) : [];
+      const maxTextLines = Math.max(propLines.length, refLines.length);
+      const dynRowH = Math.max(rowH, maxTextLines * 4 + 3);
       h.checkPage(dynRowH + 2);
 
       let cx = h.margins.left + 2;
@@ -2687,11 +2691,11 @@ function downloadComparePdf() {
 
       const gradeRgb = h.hexToRgb(e.rating.color);
       pdf.setFillColor(...gradeRgb);
-      pdf.circle(cx + 4, h.getY() - 1.5, 3.5, 'F');
+      pdf.circle(cx + 5, h.getY() - 1.5, 3.5, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
-      pdf.text(e.rating.grade, cx + 4, h.getY() - 0.5, { align: 'center' });
+      pdf.text(e.rating.grade, cx + 5, h.getY() - 0.5, { align: 'center' });
       cx += colW[1];
 
       pdf.setFontSize(8);
@@ -2703,32 +2707,42 @@ function downloadComparePdf() {
       });
       cx += colW[2];
 
-      pdf.text(fmt(e.price), cx, h.getY());
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(100, 100, 100);
+      refLines.forEach((line, li) => {
+        pdf.text(line, cx, h.getY() + li * 3.5);
+      });
+      pdf.setTextColor(0, 0, 0);
       cx += colW[3];
 
-      pdf.text(fmt(e.monthlyRent), cx, h.getY());
+      pdf.setFontSize(8);
+      pdf.text(fmt(e.price), cx, h.getY());
       cx += colW[4];
 
-      pdf.text(fmtPct(e.grossYieldCalc), cx, h.getY());
+      pdf.text(fmt(e.monthlyRent), cx, h.getY());
       cx += colW[5];
+
+      pdf.text(fmtPct(e.grossYieldCalc), cx, h.getY());
+      cx += colW[6];
 
       pdf.setFont('helvetica', 'bold');
       pdf.text(fmtPct(e.displayNetYield), cx, h.getY());
-      cx += colW[6];
+      cx += colW[7];
 
       pdf.setTextColor(...cashColor);
       pdf.setFont('helvetica', 'bold');
       pdf.text(fmt(e.cashFlow), cx, h.getY());
-      cx += colW[7];
+      cx += colW[8];
 
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
       pdf.text(fmt(e.displaySdlt), cx, h.getY());
-      cx += colW[8];
+      cx += colW[9];
 
       pdf.text(e.buyerType === 'ftb' ? 'FTB' : 'Investor', cx, h.getY());
 
-      h.setY(h.getY() + dynRowH - 5);
+      h.setY(h.getY() + dynRowH - 3);
       pdf.setDrawColor(230, 230, 230);
       pdf.setLineWidth(0.15);
       pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
