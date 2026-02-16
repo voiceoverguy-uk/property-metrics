@@ -2986,7 +2986,7 @@ body.dark .cg-projection-period { color: #999; }
   display: none;
   padding: 48px 0 32px;
 }
-body.simple-mode .landing-underfold {
+body.simple-mode .landing-underfold:not(.sdlt-underfold) {
   display: block;
 }
 
@@ -3137,46 +3137,55 @@ body.simple-mode .landing-underfold {
 }
 
 .landing-resources {
-  background: #f5f6f7;
+  background: #f7f7f7;
   border-radius: 10px;
-  padding: 24px 28px;
+  padding: 20px;
   margin-top: 24px;
   max-width: 680px;
 }
 
 .landing-resources h3 {
   font-family: 'Manrope', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin-bottom: 8px;
-}
-
-.landing-resources-intro {
-  font-size: 0.9rem;
-  color: #555;
-  line-height: 1.6;
   margin-bottom: 16px;
 }
 
 .landing-resource-row {
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .landing-resource-row:last-child {
   margin-bottom: 0;
 }
 
+.landing-resource-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.landing-resource-text {
+  display: flex;
+  flex-direction: column;
+}
+
 .landing-resource-title {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 2px;
 }
 
 .landing-resource-row a {
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: #d42027;
   text-decoration: none;
   font-weight: 500;
@@ -3184,6 +3193,14 @@ body.simple-mode .landing-underfold {
 
 .landing-resource-row a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .landing-resource-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
 .sdlt-underfold {
@@ -3290,7 +3307,6 @@ body.dark .faq-item summary:hover { background: #333; }
 body.dark .faq-item p { color: #aaa; }
 body.dark .landing-resources { background: #2a2a2a; }
 body.dark .landing-resources h3 { color: #e0e0e0; }
-body.dark .landing-resources-intro { color: #aaa; }
 body.dark .landing-resource-title { color: #ccc; }
 body.dark .sdlt-explanation { color: #aaa; }
 body.dark .sdlt-cta { color: #aaa; }
