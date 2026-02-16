@@ -6,6 +6,8 @@ A web-based UK property investment deal analyser for England & Northern Ireland 
 ## Recent Changes
 - 2026-02-16: Client-side routing — SEO-friendly URLs (/ = Simple Analyser, /deal-analyser, /sdlt-calculator) via pushState; Express fallback routes; unique title/description/canonical/OG/Twitter per route; popstate for back/forward; default mode changed to Simple Analyser
 - 2026-02-16: Sitemap updated to include all 3 page URLs with priorities
+- 2026-02-16: Google Maps API updated to async bootstrap loader (official best practice); loading=async parameter; no more console warning
+- 2026-02-16: Route-specific FAQPage JSON-LD — 4 questions per route dynamically injected via updateFaqSchema(); simple (yield, gross/net, solicitor fees, good yield), analyser (cash-on-cash, stress test, cash flow, costs), sdlt (rates, surcharge, FTB, Scotland/Wales); 40-80 word UK answers; removed on route change to prevent duplication
 - 2026-02-16: Structured data upgraded to @graph — Organization (logo), WebSite (publisher), SoftwareApplication+WebApplication (featureList with 12 real features, publisher link); no fake ratings
 - 2026-02-16: Fixed sticky header — removed overflow-x:hidden from html element that was breaking position:sticky
 - 2026-02-15: Header redesign — single-row layout with logo+tagline left, pill-style mode tabs (Simple Analyser, Deal Analyser, SDLT Calculator Only) + dark mode toggle right; light grey bg (#f5f6f7), 2px red underline (#d42027), sticky with blur/shadow on scroll (20px threshold); red outlined pills with filled active state; circular dark mode toggle with red border; responsive wrapping at 860px/480px breakpoints; dark mode compatible

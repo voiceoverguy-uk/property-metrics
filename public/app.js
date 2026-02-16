@@ -192,28 +192,36 @@ async function initGoogleMaps() {
     }
     console.log('Google Maps: loading API...');
 
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,marker&v=weekly`;
-    script.async = true;
-    script.defer = true;
+    ((g) => {
+      var h, a, k, p = 'The Google Maps JavaScript API', c = 'google', l = 'importLibrary',
+        q = '__ib__', m = document, b = window;
+      b = b[c] || (b[c] = {});
+      var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams,
+        u = () => h || (h = new Promise(async (f, n) => {
+          await (a = m.createElement('script'));
+          e.set('libraries', [...r] + '');
+          for (k in g) e.set(k.replace(/[A-Z]/g, t => '_' + t[0].toLowerCase()), g[k]);
+          e.set('callback', c + '.maps.' + q);
+          a.src = 'https://maps.googleapis.com/maps/api/js?' + e;
+          d[q] = f;
+          a.onerror = () => h = n(Error(p + ' could not load.'));
+          a.nonce = m.querySelector('script[nonce]')?.nonce || '';
+          m.head.append(a);
+        }));
+      d[l] ? console.warn(p + ' only loads once. Ignoring:', g) :
+        d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+    })({ key, v: 'weekly', loading: 'async' });
 
-    script.onload = async () => {
-      console.log('Google Maps: script loaded');
-      try {
-        const placesLib = await google.maps.importLibrary('places');
-        await google.maps.importLibrary('maps');
-        console.log('Google Maps: libraries imported');
-        console.log('Google Maps: AutocompleteSuggestion available:', !!placesLib.AutocompleteSuggestion);
-        setupAutocomplete(placesLib);
-      } catch (e) {
-        console.error('Google Maps: failed to import libraries:', e);
-      }
-    };
-    script.onerror = (e) => {
-      console.error('Google Maps: script failed to load', e);
-    };
-
-    document.head.appendChild(script);
+    try {
+      const placesLib = await google.maps.importLibrary('places');
+      await google.maps.importLibrary('maps');
+      await google.maps.importLibrary('marker');
+      console.log('Google Maps: libraries imported');
+      console.log('Google Maps: AutocompleteSuggestion available:', !!placesLib.AutocompleteSuggestion);
+      setupAutocomplete(placesLib);
+    } catch (e) {
+      console.error('Google Maps: failed to import libraries:', e);
+    }
   } catch (e) {
     console.error('Google Maps failed to load:', e);
   }
@@ -2007,6 +2015,90 @@ function updateMeta(mode) {
   if (twDesc) twDesc.setAttribute('content', meta.description);
 }
 
+const modeFaqs = {
+  simple: [
+    {
+      q: 'What is rental yield?',
+      a: 'Rental yield measures the annual return on a buy-to-let property as a percentage of its purchase price. Gross yield uses the full annual rent, while net yield deducts running costs such as insurance, maintenance and letting agent fees. Most UK investors target a net yield between 5% and 8%.'
+    },
+    {
+      q: 'What is the difference between gross and net yield?',
+      a: 'Gross yield is calculated by dividing the annual rent by the property price and multiplying by 100. Net yield goes further by subtracting annual running costs from the rent before dividing by the total acquisition cost, including SDLT and solicitor fees. Net yield gives a more realistic picture of your actual return.'
+    },
+    {
+      q: 'How much should I budget for solicitor fees?',
+      a: 'Solicitor or conveyancing fees for a standard UK buy-to-let purchase typically range from \u00a31,000 to \u00a31,800 plus VAT. Costs can be higher for leasehold properties or complex transactions. Always get a fixed-fee quote that includes disbursements such as searches, Land Registry fees and bank transfer charges.'
+    },
+    {
+      q: 'What is a good rental yield in the UK?',
+      a: 'A good gross yield for UK buy-to-let is generally considered to be 6% or above, though this varies by region. Northern cities such as Liverpool, Manchester and Leeds often achieve 7\u201310%, while London yields tend to be lower at 3\u20135%. Always assess net yield after costs for a true comparison.'
+    }
+  ],
+  analyser: [
+    {
+      q: 'What is cash-on-cash return?',
+      a: 'Cash-on-cash return measures the annual pre-tax cash flow as a percentage of the total cash you invested, including your deposit, SDLT, solicitor fees and refurbishment costs. It is especially useful for leveraged purchases because it shows the return on your actual money in the deal rather than the full property price.'
+    },
+    {
+      q: 'How does mortgage stress testing work?',
+      a: 'Stress testing calculates your mortgage payment at a higher interest rate, typically 2\u20133% above your actual rate, to check whether the rental income still covers costs. UK lenders commonly stress-test at around 5.5\u20137%. If cash flow remains positive at the stress rate, the deal offers a safety margin against future rate rises.'
+    },
+    {
+      q: 'What is annual cash flow on a buy-to-let?',
+      a: 'Annual cash flow is the money left after deducting all costs from your rental income. This includes mortgage payments, letting agent fees, maintenance, insurance, void periods and any other running costs. Positive cash flow means the property pays for itself each month; negative cash flow requires you to top up from personal funds.'
+    },
+    {
+      q: 'What costs are included in a deal analysis?',
+      a: 'A full deal analysis includes the purchase price, Stamp Duty Land Tax, solicitor fees, survey costs, refurbishment and any other acquisition costs. It also factors in ongoing costs such as mortgage payments, letting agent fees with VAT, maintenance allowance, insurance and void periods to calculate accurate net yield and cash flow.'
+    }
+  ],
+  sdlt: [
+    {
+      q: 'What are the current SDLT rates in England?',
+      a: 'For standard purchases the rates are 0% up to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.'
+    },
+    {
+      q: 'What is the additional property SDLT surcharge?',
+      a: 'Since April 2025, buyers purchasing an additional residential property in England or Northern Ireland pay a 5% surcharge on top of standard SDLT rates. This applies to buy-to-let investments and second homes. The surcharge is calculated on the entire purchase price and significantly increases the total tax bill on investment properties.'
+    },
+    {
+      q: 'Do first-time buyers pay less Stamp Duty?',
+      a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3425,000 and 5% on the portion from \u00a3425,001 to \u00a3625,000. If the property costs more than \u00a3625,000, the relief is lost entirely and standard rates apply to the full price.'
+    },
+    {
+      q: 'Does SDLT apply in Scotland and Wales?',
+      a: 'No, SDLT only applies in England and Northern Ireland. Scotland uses Land and Buildings Transaction Tax with different rate bands and thresholds. Wales uses Land Transaction Tax, also with its own structure. This calculator covers England and Northern Ireland only; separate tools are needed for Scottish and Welsh calculations.'
+    }
+  ]
+};
+
+function updateFaqSchema(mode) {
+  const existing = document.getElementById('faq-jsonld');
+  if (existing) existing.remove();
+
+  const faqs = modeFaqs[mode];
+  if (!faqs) return;
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqs.map(f => ({
+      '@type': 'Question',
+      'name': f.q,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': f.a
+      }
+    }))
+  };
+
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'faq-jsonld';
+  script.textContent = JSON.stringify(schema);
+  document.head.appendChild(script);
+}
+
 function setMode(mode, pushHistory) {
   currentMode = mode;
   const btns = document.querySelectorAll('.mode-btn');
@@ -2028,6 +2120,7 @@ function setMode(mode, pushHistory) {
   }
 
   updateMeta(mode);
+  updateFaqSchema(mode);
 
   if (pushHistory !== false) {
     const target = modeToRoute[mode] || '/';
