@@ -2013,16 +2013,22 @@ const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calcul
 const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
 const modeMeta = {
   simple: {
-    title: 'Simple Buy-to-Let Yield Calculator | RentalMetrics',
-    description: 'Quick UK buy-to-let yield calculator. Enter price and rent to instantly see gross yield, net yield and deal rating.'
+    title: 'Rental Yield Calculator UK | Free BTL Tool',
+    description: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
+    h1: 'Rental Yield Calculator UK',
+    subheading: 'Calculate gross and net rental yield, monthly cash flow and acquisition costs in seconds.'
   },
   analyser: {
-    title: 'Deal Analyser – Full Property Investment Calculator | RentalMetrics',
-    description: 'In-depth UK property deal analyser. Calculate SDLT, net yield, cash-on-cash return, mortgage stress tests, target offer price and export PDF reports.'
+    title: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
+    description: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
+    h1: 'Buy-to-Let Deal Analyser (UK)',
+    subheading: 'Stress test your numbers, model mortgage impact and see if your deal really stacks up.'
   },
   sdlt: {
-    title: 'SDLT Calculator – Stamp Duty Land Tax | RentalMetrics',
-    description: 'Free UK Stamp Duty calculator for England & Northern Ireland. Compare SDLT for investors, first-time buyers and additional property purchases.'
+    title: 'Stamp Duty Calculator UK | Free SDLT Tool',
+    description: 'Free UK Stamp Duty calculator for investors, additional properties and first-time buyers. Accurate SDLT estimates in seconds.',
+    h1: 'Stamp Duty Calculator UK (SDLT)',
+    subheading: 'Instantly calculate Stamp Duty for investors, additional properties and first-time buyers.'
   }
 };
 
@@ -2045,6 +2051,10 @@ function updateMeta(mode) {
   if (twTitle) twTitle.setAttribute('content', meta.title);
   const twDesc = document.querySelector('meta[name="twitter:description"]');
   if (twDesc) twDesc.setAttribute('content', meta.description);
+  const h1El = document.getElementById('pageH1');
+  if (h1El) h1El.textContent = meta.h1;
+  const subEl = document.getElementById('pageSubheading');
+  if (subEl) subEl.textContent = meta.subheading;
 }
 
 const modeFaqs = {
