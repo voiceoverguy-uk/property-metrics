@@ -3136,26 +3136,100 @@ body.simple-mode .landing-underfold {
   line-height: 1.65;
 }
 
-.landing-disclaimer {
-  font-size: 0.85rem;
-  color: #888;
-  line-height: 1.6;
-  margin-bottom: 16px;
+.landing-resources {
+  background: #f5f6f7;
+  border-radius: 10px;
+  padding: 24px 28px;
+  margin-top: 24px;
   max-width: 680px;
 }
 
-.landing-community {
-  font-size: 0.9rem;
-  color: #666;
+.landing-resources h3 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
 }
 
-.landing-community a {
+.landing-resources-intro {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.landing-resource-row {
+  margin-bottom: 12px;
+}
+
+.landing-resource-row:last-child {
+  margin-bottom: 0;
+}
+
+.landing-resource-title {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.landing-resource-row a {
+  font-size: 0.88rem;
+  color: #d42027;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.landing-resource-row a:hover {
+  text-decoration: underline;
+}
+
+.sdlt-underfold {
+  display: none;
+  padding: 48px 0 32px;
+}
+
+body.sdlt-mode .sdlt-underfold {
+  display: block;
+}
+
+body.sdlt-mode .landing-underfold:not(.sdlt-underfold) {
+  display: none;
+}
+
+.sdlt-landing-content {
+  max-height: none !important;
+  opacity: 1 !important;
+}
+
+.sdlt-info-card {
+  max-width: 680px;
+  margin-bottom: 20px;
+}
+
+.sdlt-explanation {
+  font-size: 0.92rem;
+  color: #555;
+  line-height: 1.65;
+  padding: 0 4px;
+}
+
+.sdlt-cta {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 8px;
+  max-width: 680px;
+}
+
+.sdlt-cta a {
   color: #d42027;
   text-decoration: none;
   font-weight: 600;
 }
 
-.landing-community a:hover {
+.sdlt-cta a:hover {
   text-decoration: underline;
 }
 
@@ -3214,7 +3288,11 @@ body.dark .faq-item { border-color: #444; }
 body.dark .faq-item summary { color: #e0e0e0; }
 body.dark .faq-item summary:hover { background: #333; }
 body.dark .faq-item p { color: #aaa; }
-body.dark .landing-disclaimer { color: #777; }
-body.dark .landing-community { color: #999; }
+body.dark .landing-resources { background: #2a2a2a; }
+body.dark .landing-resources h3 { color: #e0e0e0; }
+body.dark .landing-resources-intro { color: #aaa; }
+body.dark .landing-resource-title { color: #ccc; }
+body.dark .sdlt-explanation { color: #aaa; }
+body.dark .sdlt-cta { color: #aaa; }
 body.dark .landing-toggle-btn { color: #d42027; border-color: #d42027; }
 body.dark .landing-toggle-btn:hover { background: #d42027; color: #fff; }

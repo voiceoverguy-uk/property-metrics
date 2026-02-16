@@ -3027,6 +3027,18 @@ function checkUrlParams() {
   setTimeout(() => runCalculation(), 300);
 }
 
+document.querySelectorAll('.sdlt-cta a, .landing-underfold a[href^="/"]').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    const path = this.getAttribute('href');
+    const mode = routeToMode[path];
+    if (mode) {
+      e.preventDefault();
+      setMode(mode);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+});
+
 (function initRouteMode() {
   const path = window.location.pathname;
   const modeFromRoute = routeToMode[path];

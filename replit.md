@@ -1,122 +1,60 @@
 # RentalMetrics – UK Property Deal & Yield Analysis Tool
 
 ## Overview
-A web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Calculates SDLT (Stamp Duty Land Tax), total acquisition costs, gross/net yields, and target offer prices for both investor (additional property) and first-time buyer scenarios. Includes mortgage calculator, deal rating system, SVG charts, dark mode, comparison history, and standalone SDLT calculator mode. RentalMetrics branding (primary red #d42027, charcoal #1a1a1a).
-
-## Recent Changes
-- 2026-02-16: Client-side routing — SEO-friendly URLs (/ = Simple Analyser, /deal-analyser, /sdlt-calculator) via pushState; Express fallback routes; unique title/description/canonical/OG/Twitter per route; popstate for back/forward; default mode changed to Simple Analyser
-- 2026-02-16: Sitemap updated to include all 3 page URLs with priorities
-- 2026-02-16: Homepage under-fold landing content — H2 "UK buy-to-let maths, without the headache", intro text, 2-column card grid (What you can calculate + How it works), FAQ accordion (4 Qs collapsed by default), disclaimer, Meetup community link; homepage only (body.simple-mode); mobile <=768px collapses behind "Show calculator help" toggle with smooth CSS transition; dark mode compatible; brand red #d42027 as small accents only
-- 2026-02-16: Google Maps API updated to async bootstrap loader (official best practice); loading=async parameter; no more console warning
-- 2026-02-16: Route-specific FAQPage JSON-LD — 4 questions per route dynamically injected via updateFaqSchema(); simple (yield, gross/net, solicitor fees, good yield), analyser (cash-on-cash, stress test, cash flow, costs), sdlt (rates, surcharge, FTB, Scotland/Wales); 40-80 word UK answers; removed on route change to prevent duplication
-- 2026-02-16: Structured data upgraded to @graph — Organization (logo), WebSite (publisher), SoftwareApplication+WebApplication (featureList with 12 real features, publisher link); no fake ratings
-- 2026-02-16: Fixed sticky header — removed overflow-x:hidden from html element that was breaking position:sticky
-- 2026-02-15: Header redesign — single-row layout with logo+tagline left, pill-style mode tabs (Simple Analyser, Deal Analyser, SDLT Calculator Only) + dark mode toggle right; light grey bg (#f5f6f7), 2px red underline (#d42027), sticky with blur/shadow on scroll (20px threshold); red outlined pills with filled active state; circular dark mode toggle with red border; responsive wrapping at 860px/480px breakpoints; dark mode compatible
-- 2026-02-15: Full branding & SEO overhaul — logo image header (responsive srcset, white bg, tagline "UK Buy-to-Let Yield Calculator"), favicons (16/32), apple-touch-icon (192), PWA web manifest, Open Graph + Twitter cards, JSON-LD SoftwareApplication schema, canonical URL, robots.txt, sitemap.xml with correct Express content types
-- 2026-02-15: All form fields use placeholders instead of hardcoded defaults (solicitor fees "e.g. £1,500", target yield "e.g. 7", void allowance "e.g. 5", maintenance "e.g. 8" / "e.g. £1,000")
-- 2026-02-15: Default mode set to Deal Analyser; default theme set to light mode
-- 2026-02-15: Simple mode Additional Costs — replaced single input with 2 itemised cost boxes (label + amount pairs); placeholders "e.g. Solicitor Fees" and "e.g. Electrics"; integrated into results, PDF, history, share URL (scitems param), URL restoration; no remove buttons (fixed 2 rows for simplicity)
-- 2026-02-15: Fixed phantom solicitor fees in Simple mode — server.js now respects solicitorFees=0 instead of defaulting to £1,500; renderCostBreakdownRows shows only user-entered items in Simple mode
-- 2026-02-15: Fixed PDF generation — replaced off-screen rendering with in-viewport wrapper (z-index overlay, pointer-events:none) so html2canvas captures reliably; double rAF + forced reflow before capture
-- 2026-02-15: Changed void allowance default from 5% to 0% (HTML, reset, URL fallback)
-- 2026-02-15: Updated Deal Reference placeholder to "e.g. house with mortgage"
-- 2026-02-15: Added Deal Reference text input below Buyer Type — shown in results header, history cards, Compare Deals overlay, PDF report, URL sharing; cleared on Start Again; analyser-only (hidden in SDLT mode)
-- 2026-02-15: Fixed deal rating bug — "Below Target" was shown for yields slightly above target; added "On Target" band (B-) for diff 0–0.5; "Below Target" now only for negative diff; added parseFloat safety
-- 2026-02-15: Added Compare Deals feature — "Compare Deals" button in history section (shown when 2+ entries); opens full-screen overlay with deals ranked by rating/yield; shows price, rent, gross yield, net yield, annual cash flow, SDLT, buyer type; sortable by rating, net yield, gross yield, price, rent; gold/silver/bronze rank badges; "Best Deal" label; close via button, Escape key, or overlay click; dark mode and mobile responsive
-- 2026-02-15: Fixed mobile wobble on additional cost inputs — set font-size 16px on cost-item-label and cost-item-amount to prevent iOS zoom
-- 2026-02-15: Replaced single Monthly Running Costs input with itemised list (label + amount pairs, like Additional Costs); items shown in results breakdown, PDF, history, and URL sharing; backward compatible with old history entries
-- 2026-02-15: Results Monthly Running Costs section now shows itemised breakdown: rent, each running cost by name, letting agent (with VAT), maintenance, mortgage payment (if active), then total
-- 2026-02-15: Enhanced history entries — now stores investorGrossYield, ftbGrossYield, annualCashFlow, hasMortgage, depositAmount for richer comparison data
-- 2026-02-15: Added Capital Growth Projection — collapsible section showing 5yr/10yr projected value and estimated equity using amortisation; growth% input (default 3%)
-- 2026-02-15: Added Section 24 Tax Impact toggle — collapsible section with tax band dropdown (20%/40%/45%, default 40%); shows estimated tax, 20% mortgage interest credit, after-tax cash flow
-- 2026-02-15: Added Cash-on-Cash Return and Payback Period as dedicated yield cards (shown when mortgage active)
-- 2026-02-15: Added tooltips to Gross Yield, Net Yield, Cash Flow, Cash Invested labels in results
-- 2026-02-15: Added Refinance Scenario — collapsible interactive section in results with inputs for years, growth%, LTV%; shows projected value, equity released, updated cash-on-cash return
-- 2026-02-15: Added Stress Test Interest Rate (default 7%) — calculates alternative mortgage payment and cash flow at stress rate with positive/negative indicator
-- 2026-02-15: Added Maintenance Allowance — toggle between % of effective rent or fixed £/year; integrated as running cost across yields, mortgage, PDF, history, URL sharing
-- 2026-02-15: Replaced void months with Void Allowance (%) — default 5%; effectiveAnnualRent = annualRent * (1 - voidPct/100); used in gross yield, net yield, mortgage cash flow, stress test
-- 2026-02-15: Fixed mortgage cash flow to use effective (void-adjusted) annual rent instead of gross rent
-- 2026-02-15: Purchase type persisted in history entries and share URLs; applyHistoryEntry and checkUrlParams restore purchase type toggle and mortgage section visibility
-- 2026-02-15: PDF/print report now shows only selected buyer type (Investor OR FTB) instead of both scenarios
-- 2026-02-15: Results panel shows only selected buyer type (single scenario) instead of side-by-side comparison; removed scenario tabs
-- 2026-02-15: Replaced mortgage checkbox with Cash Purchase / Mortgage toggle buttons (styled like buyer type toggle); controls yield calculation basis
-- 2026-02-15: Added "Start Again" reset button and Target Offer Price show/hide toggle switch
-- 2026-02-15: Leveraged yield calculations — when mortgage is checked, gross/net yields recalculate based on cash invested (deposit + SDLT + fees + costs) instead of total purchase price; mortgage payments deducted from net annual rent; deal rating adjusts accordingly
-- 2026-02-15: Replaced logo image with Manrope Semi Bold text heading "Rental Metrics"; custom @font-face loaded from public/fonts/
-- 2026-02-15: Header background changed to deep red (#B11217); subtitle font increased ~20%, spacing improved
-- 2026-02-15: Updated placeholders: address "e.g. WF2", price "e.g. £200,000", rent "e.g. £900", running costs "e.g. £150"
-- 2026-02-15: Rebranded to RentalMetrics; mortgage summary shows Cash Deposit, SDLT, Solicitor Fees, then Amount to Borrow as bottom-line total
-- 2026-02-14: Added buyer type toggle (Investor/FTB) at top of form, defaulting to Investor; Calculate Mortgage button in mortgage section
-- 2026-02-14: Changed letting agent fee to percentage input (% of monthly rent) instead of flat £ amount; +20% VAT checkbox; integrated into running costs, yield calcs, mortgage cash flow, PDF, history, and share URL
-- 2026-02-14: Added Cash Purchase / Mortgage toggle replacing old mortgage checkbox
-- 2026-02-14: Added dark mode toggle (moon/sun icon, localStorage persistence), mobile responsive improvements
-- 2026-02-14: Added comparison history (localStorage, max 20 entries) with load/delete/clear; share deal via URL query params with clipboard copy
-- 2026-02-14: Added standalone SDLT calculator mode with toggle buttons and dedicated /api/sdlt endpoint; shows all 3 buyer types
-- 2026-02-14: Added SVG yield gauge (semi-circle arc) and SDLT comparison bar chart (investor vs FTB horizontal bars)
-- 2026-02-14: Added mortgage/financing calculator — collapsible section with deposit %, interest rate, term; shows monthly payment, cash flow, cash-on-cash return
-- 2026-02-14: Added deal rating indicator (A+ to F letter grades with color-coded circles based on net yield vs target yield)
-- 2026-02-14: Added live currency formatting on numeric inputs (£ with commas, formatted on blur, raw on focus)
-- 2026-02-14: Added XSS protection via escHtml() for user-provided strings in innerHTML
-- 2026-02-14: Added Save as PDF feature — window.print() with clean print layout
-- 2026-02-13: Switched to new AutocompleteSuggestion API; added Google Maps integration
-- 2026-02-13: Fixed investor SDLT bands to post-April 2025 rates; replaced single refurb input with itemised cost list
-- 2026-02-12: Initial build — Express server, SDLT calculator, yield analysis, target offer price solver
-
-## Project Architecture
-
-### Tech Stack
-- **Backend**: Node.js + Express (server.js)
-- **Frontend**: Plain HTML + CSS + vanilla JS (served from /public)
-- **Storage**: localStorage for history and dark mode preference — no database
-
-### Structure
-```
-server.js              — Express server, API endpoints
-src/sdlt.js            — SDLT band calculations (standard, FTB, additional property)
-src/calcs.js           — Deal calculations (costs, yields, target offer price solver)
-public/index.html      — Single-page UI with mode toggle, mortgage section, history
-public/style.css       — Styling incl. dark mode, print styles, responsive
-public/app.js          — Client-side: form handling, results, charts, history, sharing
-public/fonts/          — Custom fonts (Manrope-SemiBold.ttf)
-```
-
-### API
-- `GET /api/maps-key` — Returns Google Maps API key for client-side use
-- `POST /api/calculate` — Accepts property details, returns investor and FTB analysis
-- `GET /api/sdlt?price=N` — Standalone SDLT calculation for all 3 buyer types
-
-### Features
-- **Mode Toggle**: "Deal Analyser" (full) vs "SDLT Calculator Only" (price + SDLT only)
-- **Deal Rating**: A+ to F grades based on net yield vs target yield difference
-- **Mortgage Calculator**: Collapsible section; annuity formula; shows deposit, payment, cash flow, cash-on-cash return
-- **SVG Charts**: Yield gauge (semi-circle arc) and SDLT comparison bar chart
-- **Currency Formatting**: £ with commas on blur, raw number on focus; data-rawValue attribute
-- **Comparison History**: localStorage, max 20 entries, click to reload, delete/clear
-- **Share via URL**: Query params auto-populate form; clipboard copy with "Copied!" feedback
-- **Dark Mode**: Toggle in header, localStorage persistence, CSS body.dark selector
-- **PDF Export**: window.print() with clean layout, suggested filename
-- **Google Maps**: AutocompleteSuggestion API, session tokens, map preview with Marker
-
-### Google Maps Integration
-- Uses new Places API (`AutocompleteSuggestion.fetchAutocompleteSuggestions`)
-- Custom dropdown with debounce (300ms) and session tokens for billing optimisation
-- `place.fetchFields()` to get coordinates; `google.maps.Marker` for map pins
-- API key stored in Replit Secrets (`GOOGLE_MAPS_API_KEY`), served via `/api/maps-key`
-- Restricted to UK addresses (`includedRegionCodes: ['gb']`)
-
-### SDLT Rates (England & NI, as of build date)
-- **Standard**: 0% up to £250k, 5% £250k-£925k, 10% £925k-£1.5m, 12% above
-- **First-time buyer**: 0% up to £425k, 5% £425k-£625k (reverts to standard above £625k)
-- **Additional property** (post-April 2025): 5% up to £125k, 7% £125k-£250k, 10% £250k-£925k, 15% £925k-£1.5m, 17% above
-
-## Running
-```
-node server.js
-```
-Server binds to 0.0.0.0:5000.
+RentalMetrics is a web-based UK property investment deal analyser for England & Northern Ireland (rentalmetrics.co.uk). Its primary purpose is to empower investors and first-time buyers by calculating essential financial metrics for property deals. Key capabilities include calculating Stamp Duty Land Tax (SDLT), total acquisition costs, gross and net yields, and target offer prices. The tool also features a mortgage calculator, a deal rating system, interactive charts, dark mode, comparison history, and a standalone SDLT calculator mode. The project aims to provide UK buy-to-let maths without the headache, offering a comprehensive yet user-friendly platform for property investment analysis.
 
 ## User Preferences
 - Currency: GBP with £ and commas
 - V1: England & NI only (no Scotland LBTT / Wales LTT)
 - Clean, modern UI with tooltips
 - RentalMetrics branding: deep red #B11217, charcoal #1a1a1a
+
+## System Architecture
+
+### Tech Stack
+- **Backend**: Node.js + Express
+- **Frontend**: Plain HTML + CSS + vanilla JS
+- **Storage**: localStorage for history and dark mode preference
+
+### UI/UX Decisions
+- **Branding**: RentalMetrics branding uses primary red (#d42027, #B11217) and charcoal (#1a1a1a).
+- **Header**: Single-row layout with logo and tagline on the left, pill-style mode tabs (Simple Analyser, Deal Analyser, SDLT Calculator Only) and dark mode toggle on the right. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
+- **Mode Toggle**: Functionality to switch between "Deal Analyser" (full analysis) and "SDLT Calculator Only" (price + SDLT).
+- **Dark Mode**: Toggleable with localStorage persistence.
+- **Form Fields**: Utilize placeholders for user guidance (e.g., "e.g. £1,500" for solicitor fees).
+- **Results Display**: Single scenario display (Investor or FTB), not side-by-side. Mortgage calculations are based on cash invested (deposit + SDLT + fees + costs) when a mortgage is active.
+- **Comparison Feature**: "Compare Deals" overlay in the history section, ranking deals by rating/yield with gold/silver/bronze badges for top deals.
+- **PDF Export**: Clean print layout for generating PDF reports.
+
+### Technical Implementations
+- **Client-side Routing**: Implemented using `pushState` for SEO-friendly URLs (`/`, `/deal-analyser`, `/sdlt-calculator`) with Express fallback routes. Unique title, description, canonical, OG, and Twitter metadata per route.
+- **Calculations**: Comprehensive deal calculations for costs, yields, and target offer price. SDLT calculations adhere to England & Northern Ireland rates, including standard, first-time buyer, and additional property scenarios (post-April 2025 rates for additional property).
+- **Mortgage Calculator**: Collapsible section with deposit percentage, interest rate, and term inputs. Displays monthly payment, cash flow, and cash-on-cash return. Includes stress test functionality.
+- **Yield Analysis**: Leveraged yield calculations when a mortgage is active, deducting mortgage payments from net annual rent.
+- **Deal Rating**: A+ to F grades based on net yield vs. target yield difference.
+- **Itemised Costs**: Replaced single inputs for additional costs and monthly running costs with itemised label + amount pairs.
+- **Capital Growth & Tax Impact**: Collapsible sections for projecting capital growth and estimating Section 24 tax impact.
+- **Refinance Scenario**: Interactive section to model refinance scenarios.
+- **History**: Stores up to 20 deal entries in `localStorage`, enabling reloading, deletion, and comparison.
+- **URL Sharing**: Deals can be shared via URL query parameters, which auto-populate the form.
+- **Structured Data**: Implemented various JSON-LD schemas (@graph, Organization, WebSite, SoftwareApplication+WebApplication, FAQPage) for SEO.
+- **Security**: XSS protection implemented via `escHtml()` for user-provided strings.
+
+### Features
+- **SDLT Calculation**: Standard, First-Time Buyer, and Additional Property rates.
+- **Yield Calculation**: Gross, Net, Cash-on-Cash Return, and Payback Period.
+- **Target Offer Price Solver**.
+- **Itemised Costs Management**: Additional costs and monthly running costs.
+- **Capital Growth Projection**: 5yr/10yr projection and estimated equity.
+- **Section 24 Tax Impact Analysis**: Estimated tax, mortgage interest credit, and after-tax cash flow.
+- **Mortgage Stress Testing**: Calculates impact of higher interest rates.
+- **Void Allowance**: Percentage-based void allowance impacting effective annual rent.
+- **Deal Reference**: Input field to identify deals.
+- **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
+- **Currency Formatting**: Automatic formatting with £ and commas.
+- **"Start Again" Reset Button**.
+
+## External Dependencies
+- **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`.
+- **Node.js**: Backend runtime environment.
+- **Express**: Web framework for the Node.js backend.
