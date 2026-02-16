@@ -436,6 +436,17 @@ initCurrencyFormatting();
   });
 })();
 
+(function initDealToggle() {
+  const btn = document.getElementById('dealToggleBtn');
+  const content = document.getElementById('dealContent');
+  if (!btn || !content) return;
+  btn.addEventListener('click', () => {
+    const expanded = content.classList.toggle('expanded');
+    btn.textContent = expanded ? 'Hide analyser help' : 'Show analyser help';
+    btn.setAttribute('aria-expanded', expanded);
+  });
+})();
+
 function escHtml(str) {
   const d = document.createElement('div');
   d.textContent = str;
@@ -2125,7 +2136,7 @@ function setMode(mode, pushHistory) {
   const btns = document.querySelectorAll('.mode-btn');
   btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
-  document.body.classList.remove('sdlt-mode', 'simple-mode');
+  document.body.classList.remove('sdlt-mode', 'simple-mode', 'deal-mode');
 
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
@@ -2136,6 +2147,7 @@ function setMode(mode, pushHistory) {
     document.getElementById('monthlyRent').setAttribute('required', '');
     resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
   } else {
+    document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
     resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
   }

@@ -27,7 +27,8 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **PDF Export**: Clean print layout for generating PDF reports.
 
 ### Technical Implementations
-- **Client-side Routing**: Implemented using `pushState` for SEO-friendly URLs (`/`, `/deal-analyser`, `/sdlt-calculator`) with Express fallback routes. Unique title, description, canonical, OG, and Twitter metadata per route.
+- **Client-side Routing**: Implemented using `pushState` for SEO-friendly URLs (`/`, `/deal-analyser`, `/sdlt-calculator`) with Express fallback routes. Unique title, description, canonical, OG, and Twitter metadata per route. Body class system: `simple-mode` (homepage), `deal-mode` (deal analyser), `sdlt-mode` (SDLT calculator) controls route-specific visibility.
+- **Route-Specific Underfold Content**: Each route has its own below-the-fold landing content (intro, info cards, FAQs) controlled via CSS body classes. Deal Analyser has 3-column card grid on desktop. All sections support mobile toggle (collapsible) pattern.
 - **Calculations**: Comprehensive deal calculations for costs, yields, and target offer price. SDLT calculations adhere to England & Northern Ireland rates, including standard, first-time buyer, and additional property scenarios (post-April 2025 rates for additional property).
 - **Mortgage Calculator**: Collapsible section with deposit percentage, interest rate, and term inputs. Displays monthly payment, cash flow, and cash-on-cash return. Includes stress test functionality.
 - **Yield Analysis**: Leveraged yield calculations when a mortgage is active, deducting mortgage payments from net annual rent.

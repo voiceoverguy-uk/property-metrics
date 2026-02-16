@@ -2986,8 +2986,11 @@ body.dark .cg-projection-period { color: #999; }
   display: none;
   padding: 48px 0 32px;
 }
-body.simple-mode .landing-underfold:not(.sdlt-underfold) {
+body.simple-mode .landing-underfold:not(.sdlt-underfold):not(.deal-underfold) {
   display: block;
+}
+body.deal-mode .landing-underfold:not(.deal-underfold) {
+  display: none;
 }
 
 .landing-underfold h2 {
@@ -3216,6 +3219,14 @@ body.sdlt-mode .landing-underfold:not(.sdlt-underfold) {
   display: none;
 }
 
+body.deal-mode .deal-underfold {
+  display: block;
+}
+
+.landing-cards-three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 .sdlt-landing-content {
   max-height: none !important;
   opacity: 1 !important;
@@ -3275,6 +3286,10 @@ body.sdlt-mode .landing-underfold:not(.sdlt-underfold) {
     grid-template-columns: 1fr;
   }
 
+  .landing-cards-three {
+    grid-template-columns: 1fr;
+  }
+
   .landing-toggle-btn {
     display: block;
     margin-bottom: 20px;
@@ -3301,6 +3316,7 @@ body.dark .landing-card { background: #2a2a2a; border-color: #444; }
 body.dark .landing-card h3 { color: #e0e0e0; }
 body.dark .landing-card ul li,
 body.dark .landing-card ol li { color: #bbb; }
+body.dark .landing-card p { color: #bbb; }
 body.dark .faq-item { border-color: #444; }
 body.dark .faq-item summary { color: #e0e0e0; }
 body.dark .faq-item summary:hover { background: #333; }
