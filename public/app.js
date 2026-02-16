@@ -2677,25 +2677,30 @@ function downloadComparePdf() {
 
       pdf.setFontSize(8);
       const propLines = pdf.splitTextToSize(prop, colW[2] - 2);
+      pdf.setFontSize(7);
       const refLines = ref ? pdf.splitTextToSize(ref, colW[3] - 2) : [];
       const maxTextLines = Math.max(propLines.length, refLines.length);
-      const dynRowH = Math.max(rowH, maxTextLines * 4 + 3);
+      const dynRowH = Math.max(rowH, maxTextLines * 4 + 4);
       h.checkPage(dynRowH + 2);
+
+      const textY = h.getY();
+      const textMid = textY - 1.4;
 
       let cx = h.margins.left + 2;
 
       pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(rank, cx, h.getY());
+      pdf.text(rank, cx, textY);
       cx += colW[0];
 
       const gradeRgb = h.hexToRgb(e.rating.color);
       pdf.setFillColor(...gradeRgb);
-      pdf.circle(cx + 5, h.getY() - 1.5, 3.5, 'F');
+      pdf.circle(cx + 5, textMid, 3.5, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
-      pdf.text(e.rating.grade, cx + 5, h.getY() - 0.5, { align: 'center' });
+      pdf.text(e.rating.grade, cx + 5, textMid + 1, { align: 'center' });
       cx += colW[1];
 
       pdf.setFontSize(8);
@@ -2703,7 +2708,7 @@ function downloadComparePdf() {
       pdf.setTextColor(0, 0, 0);
       propLines.forEach((line, li) => {
         pdf.setFontSize(li === 0 ? 8 : 6.5);
-        pdf.text(line, cx, h.getY() + li * 3.5);
+        pdf.text(line, cx, textY + li * 3.5);
       });
       cx += colW[2];
 
@@ -2711,38 +2716,38 @@ function downloadComparePdf() {
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(100, 100, 100);
       refLines.forEach((line, li) => {
-        pdf.text(line, cx, h.getY() + li * 3.5);
+        pdf.text(line, cx, textY + li * 3.5);
       });
       pdf.setTextColor(0, 0, 0);
       cx += colW[3];
 
       pdf.setFontSize(8);
-      pdf.text(fmt(e.price), cx, h.getY());
+      pdf.text(fmt(e.price), cx, textY);
       cx += colW[4];
 
-      pdf.text(fmt(e.monthlyRent), cx, h.getY());
+      pdf.text(fmt(e.monthlyRent), cx, textY);
       cx += colW[5];
 
-      pdf.text(fmtPct(e.grossYieldCalc), cx, h.getY());
+      pdf.text(fmtPct(e.grossYieldCalc), cx, textY);
       cx += colW[6];
 
       pdf.setFont('helvetica', 'bold');
-      pdf.text(fmtPct(e.displayNetYield), cx, h.getY());
+      pdf.text(fmtPct(e.displayNetYield), cx, textY);
       cx += colW[7];
 
       pdf.setTextColor(...cashColor);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(fmt(e.cashFlow), cx, h.getY());
+      pdf.text(fmt(e.cashFlow), cx, textY);
       cx += colW[8];
 
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
-      pdf.text(fmt(e.displaySdlt), cx, h.getY());
+      pdf.text(fmt(e.displaySdlt), cx, textY);
       cx += colW[9];
 
-      pdf.text(e.buyerType === 'ftb' ? 'FTB' : 'Investor', cx, h.getY());
+      pdf.text(e.buyerType === 'ftb' ? 'FTB' : 'Investor', cx, textY);
 
-      h.setY(h.getY() + dynRowH - 3);
+      h.setY(textY + dynRowH - 4);
       pdf.setDrawColor(230, 230, 230);
       pdf.setLineWidth(0.15);
       pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
