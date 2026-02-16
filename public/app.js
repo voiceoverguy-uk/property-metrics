@@ -3096,7 +3096,7 @@ document.querySelectorAll('.sdlt-cta a, .landing-underfold a[href^="/"]').forEac
   const modeFromRoute = routeToMode[path];
   if (modeFromRoute) {
     setMode(modeFromRoute, false);
-    window.history.replaceState({ mode: modeFromRoute }, '', path);
+    window.history.replaceState({ mode: modeFromRoute }, '', path + window.location.search);
   } else {
     setMode('simple', false);
   }
