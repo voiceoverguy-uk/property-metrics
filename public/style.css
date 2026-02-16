@@ -2944,3 +2944,240 @@ body.dark .cg-inputs label { color: #bbb; }
 body.dark .cg-projection-card { background: #333; border-color: #444; }
 body.dark .cg-projection-value { color: #e0e0e0; }
 body.dark .cg-projection-period { color: #999; }
+
+.landing-underfold {
+  display: none;
+  padding: 48px 0 32px;
+}
+body.simple-mode .landing-underfold {
+  display: block;
+}
+
+.landing-underfold h2 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.landing-intro {
+  font-size: 1rem;
+  color: #555;
+  max-width: 680px;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.landing-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 28px 28px 24px;
+}
+
+.landing-card h3 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #d42027;
+}
+
+.landing-card ul,
+.landing-card ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.landing-card ul li,
+.landing-card ol li {
+  position: relative;
+  padding: 6px 0 6px 22px;
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.landing-card ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 13px;
+  width: 8px;
+  height: 8px;
+  background: #d42027;
+  border-radius: 50%;
+}
+
+.landing-card ol {
+  counter-reset: steps;
+}
+
+.landing-card ol li {
+  counter-increment: steps;
+}
+
+.landing-card ol li::before {
+  content: counter(steps);
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 20px;
+  height: 20px;
+  background: #d42027;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.landing-faq {
+  margin-bottom: 32px;
+}
+
+.faq-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.faq-item summary {
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.faq-item summary:hover {
+  background: #fafafa;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #d42027;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.faq-item[open] summary::after {
+  content: '\2212';
+}
+
+.faq-item p {
+  padding: 0 20px 16px;
+  font-size: 0.92rem;
+  color: #555;
+  line-height: 1.65;
+}
+
+.landing-disclaimer {
+  font-size: 0.85rem;
+  color: #888;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  max-width: 680px;
+}
+
+.landing-community {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.landing-community a {
+  color: #d42027;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.landing-community a:hover {
+  text-decoration: underline;
+}
+
+.landing-toggle-btn {
+  display: none;
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #d42027;
+  background: transparent;
+  border: 2px solid #d42027;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.landing-toggle-btn:hover {
+  background: #d42027;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .landing-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-toggle-btn {
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  .landing-content {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+    margin-top: 0;
+  }
+
+  .landing-content.expanded {
+    max-height: 3000px;
+    opacity: 1;
+    margin-top: 8px;
+  }
+}
+
+body.dark .landing-underfold h2 { color: #e8e8e8; }
+body.dark .landing-intro { color: #aaa; }
+body.dark .landing-card { background: #2a2a2a; border-color: #444; }
+body.dark .landing-card h3 { color: #e0e0e0; }
+body.dark .landing-card ul li,
+body.dark .landing-card ol li { color: #bbb; }
+body.dark .faq-item { border-color: #444; }
+body.dark .faq-item summary { color: #e0e0e0; }
+body.dark .faq-item summary:hover { background: #333; }
+body.dark .faq-item p { color: #aaa; }
+body.dark .landing-disclaimer { color: #777; }
+body.dark .landing-community { color: #999; }
+body.dark .landing-toggle-btn { color: #d42027; border-color: #d42027; }
+body.dark .landing-toggle-btn:hover { background: #d42027; color: #fff; }

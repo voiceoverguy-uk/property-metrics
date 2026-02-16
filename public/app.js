@@ -424,6 +424,17 @@ function showMap(lat, lng, title) {
 initGoogleMaps();
 initCurrencyFormatting();
 
+(function initLandingToggle() {
+  const btn = document.getElementById('landingToggleBtn');
+  const content = document.getElementById('landingContent');
+  if (!btn || !content) return;
+  btn.addEventListener('click', () => {
+    const expanded = content.classList.toggle('expanded');
+    btn.textContent = expanded ? 'Hide calculator help' : 'Show calculator help';
+    btn.setAttribute('aria-expanded', expanded);
+  });
+})();
+
 function escHtml(str) {
   const d = document.createElement('div');
   d.textContent = str;

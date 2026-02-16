@@ -6,6 +6,7 @@ A web-based UK property investment deal analyser for England & Northern Ireland 
 ## Recent Changes
 - 2026-02-16: Client-side routing — SEO-friendly URLs (/ = Simple Analyser, /deal-analyser, /sdlt-calculator) via pushState; Express fallback routes; unique title/description/canonical/OG/Twitter per route; popstate for back/forward; default mode changed to Simple Analyser
 - 2026-02-16: Sitemap updated to include all 3 page URLs with priorities
+- 2026-02-16: Homepage under-fold landing content — H2 "UK buy-to-let maths, without the headache", intro text, 2-column card grid (What you can calculate + How it works), FAQ accordion (4 Qs collapsed by default), disclaimer, Meetup community link; homepage only (body.simple-mode); mobile <=768px collapses behind "Show calculator help" toggle with smooth CSS transition; dark mode compatible; brand red #d42027 as small accents only
 - 2026-02-16: Google Maps API updated to async bootstrap loader (official best practice); loading=async parameter; no more console warning
 - 2026-02-16: Route-specific FAQPage JSON-LD — 4 questions per route dynamically injected via updateFaqSchema(); simple (yield, gross/net, solicitor fees, good yield), analyser (cash-on-cash, stress test, cash flow, costs), sdlt (rates, surcharge, FTB, Scotland/Wales); 40-80 word UK answers; removed on route change to prevent duplication
 - 2026-02-16: Structured data upgraded to @graph — Organization (logo), WebSite (publisher), SoftwareApplication+WebApplication (featureList with 12 real features, publisher link); no fake ratings
