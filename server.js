@@ -11,7 +11,7 @@ app.use(express.json());
 
 const htmlTemplate = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
 
-const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-og.png';
+const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x630-og.png?v=2';
 
 const routeMeta = {
   '/': {
@@ -19,7 +19,7 @@ const routeMeta = {
     metaDesc: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
     canonical: 'https://rentalmetrics.co.uk/',
     ogTitle: 'Rental Yield Calculator UK (Free)',
-    ogDesc: 'Estimate gross and net yield, cash flow and acquisition costs for UK buy-to-let deals in seconds.',
+    ogDesc: 'Free UK rental yield calculator. Instantly calculate gross yield, net yield and cash flow on your next property deal.',
     ogUrl: 'https://rentalmetrics.co.uk/',
   },
   '/deal-analyser': {
