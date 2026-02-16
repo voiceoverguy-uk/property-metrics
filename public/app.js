@@ -419,9 +419,196 @@ function showMap(lat, lng, title) {
     title: title || 'Property Location',
     animation: google.maps.Animation.DROP,
   });
+  showNearbyBlock();
 }
 
 initGoogleMaps();
+
+const nearbyBlock = document.getElementById('nearbyBlock');
+const nearbyRadiusSlider = document.getElementById('nearbyRadius');
+const nearbyRadiusLabel = document.getElementById('nearbyRadiusLabel');
+const nearbyChipsContainer = document.getElementById('nearbyChips');
+const nearbyClearBtn = document.getElementById('nearbyClearBtn');
+
+let nearbyMarkers = [];
+let nearbyActiveCategories = new Set();
+let nearbyDebounceTimer = null;
+let markerClusterer = null;
+const nearbyClientCache = new Map();
+const NEARBY_CLIENT_CACHE_TTL = 10 * 60 * 1000;
+
+function showNearbyBlock() {
+  if (!nearbyBlock) return;
+  nearbyBlock.style.display = '';
+}
+
+function hideNearbyBlock() {
+  if (!nearbyBlock) return;
+  nearbyBlock.style.display = 'none';
+  clearNearbyMarkers();
+  nearbyActiveCategories.clear();
+  document.querySelectorAll('.nearby-chip').forEach(c => c.classList.remove('active'));
+  nearbyRadiusSlider.value = 1;
+  nearbyRadiusLabel.textContent = '1 mile';
+}
+
+function clearNearbyMarkers() {
+  nearbyMarkers.forEach(m => m.setMap(null));
+  nearbyMarkers = [];
+  if (markerClusterer) {
+    markerClusterer.clearMarkers();
+    markerClusterer.setMap(null);
+    markerClusterer = null;
+  }
+}
+
+function milesToMeters(miles) {
+  return Math.round(miles * 1609.34);
+}
+
+const CATEGORY_COLORS = {
+  supermarkets: '#2196F3',
+  schools: '#FF9800',
+  transport: '#4CAF50',
+  parks: '#8BC34A',
+  healthcare: '#E91E63',
+  gyms: '#9C27B0',
+};
+
+function createNearbyMarkerIcon(category) {
+  const color = CATEGORY_COLORS[category] || '#d42027';
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: color,
+    fillOpacity: 0.85,
+    strokeColor: '#fff',
+    strokeWeight: 1.5,
+    scale: 7,
+  };
+}
+
+async function fetchNearbyPlaces(category) {
+  if (!selectedLocation) return [];
+  const radiusMiles = parseFloat(nearbyRadiusSlider.value);
+  const radiusMeters = milesToMeters(radiusMiles);
+  const { lat, lng } = selectedLocation;
+
+  const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)},${radiusMeters},${category}`;
+  const cached = nearbyClientCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < NEARBY_CLIENT_CACHE_TTL) {
+    return cached.data;
+  }
+
+  try {
+    const resp = await fetch('/api/places/nearby', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lng, radiusMeters, category }),
+    });
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    const results = data.results || [];
+    nearbyClientCache.set(cacheKey, { data: results, timestamp: Date.now() });
+    return results;
+  } catch (e) {
+    console.error('Nearby fetch error:', e);
+    return [];
+  }
+}
+
+async function updateNearbyMarkers() {
+  clearNearbyMarkers();
+  if (!selectedLocation || !map || nearbyActiveCategories.size === 0) return;
+
+  const allPlaces = [];
+  const fetches = [...nearbyActiveCategories].map(async (cat) => {
+    const places = await fetchNearbyPlaces(cat);
+    places.forEach(p => allPlaces.push({ ...p, category: cat }));
+  });
+  await Promise.all(fetches);
+
+  allPlaces.forEach(p => {
+    const m = new google.maps.Marker({
+      position: { lat: p.lat, lng: p.lng },
+      map: null,
+      title: p.name + (p.rating ? ` (${p.rating}★)` : ''),
+      icon: createNearbyMarkerIcon(p.category),
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `<div style="font-family:'Manrope',sans-serif;font-size:13px;max-width:200px;"><strong>${escHtml(p.name)}</strong>${p.rating ? `<br><span style="color:#888;">Rating: ${p.rating}★</span>` : ''}</div>`,
+    });
+    m.addListener('click', () => {
+      infoWindow.open(map, m);
+    });
+
+    nearbyMarkers.push(m);
+  });
+
+  if (nearbyActiveCategories.size >= 3 && typeof MarkerClusterer !== 'undefined') {
+    markerClusterer = new MarkerClusterer(map, nearbyMarkers, {
+      maxZoom: 15,
+      gridSize: 50,
+    });
+  } else {
+    nearbyMarkers.forEach(m => m.setMap(map));
+  }
+}
+
+if (nearbyRadiusSlider) {
+  nearbyRadiusSlider.addEventListener('input', () => {
+    const val = parseFloat(nearbyRadiusSlider.value);
+    nearbyRadiusLabel.textContent = val === 1 ? '1 mile' : val + ' miles';
+  });
+
+  nearbyRadiusSlider.addEventListener('change', () => {
+    clearTimeout(nearbyDebounceTimer);
+    nearbyDebounceTimer = setTimeout(() => {
+      if (nearbyActiveCategories.size > 0) {
+        nearbyClientCache.clear();
+        updateNearbyMarkers();
+      }
+    }, 500);
+  });
+}
+
+const addressInputForNearby = document.getElementById('address');
+if (addressInputForNearby) {
+  addressInputForNearby.addEventListener('input', () => {
+    if (addressInputForNearby.value.trim().length === 0) {
+      selectedLocation = null;
+      if (marker) { marker.setMap(null); marker = null; }
+      mapSection.style.display = 'none';
+      hideNearbyBlock();
+    }
+  });
+}
+
+if (nearbyChipsContainer) {
+  nearbyChipsContainer.addEventListener('click', (e) => {
+    const chip = e.target.closest('.nearby-chip');
+    if (!chip) return;
+    const cat = chip.dataset.category;
+    if (nearbyActiveCategories.has(cat)) {
+      nearbyActiveCategories.delete(cat);
+      chip.classList.remove('active');
+    } else {
+      nearbyActiveCategories.add(cat);
+      chip.classList.add('active');
+    }
+    clearTimeout(nearbyDebounceTimer);
+    nearbyDebounceTimer = setTimeout(() => updateNearbyMarkers(), 300);
+  });
+}
+
+if (nearbyClearBtn) {
+  nearbyClearBtn.addEventListener('click', () => {
+    clearNearbyMarkers();
+    nearbyActiveCategories.clear();
+    document.querySelectorAll('.nearby-chip').forEach(c => c.classList.remove('active'));
+  });
+}
+
 initCurrencyFormatting();
 
 (function initLandingToggle() {
@@ -1428,6 +1615,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('startAgainBtn').style.display = 'none';
   lastResult = null;
   lastMortgageData = null;
+  hideNearbyBlock();
 });
 
 document.getElementById('showTargetOffer').addEventListener('change', function() {
