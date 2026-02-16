@@ -1369,6 +1369,11 @@ async function runCalculation() {
     if (currentMode === 'analyser' || currentMode === 'simple') {
       addToHistory(result);
     }
+    if (window.innerWidth <= 860) {
+      setTimeout(() => {
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
   } catch (err) {
     resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
   }
@@ -2208,6 +2213,11 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     }
     const data = await res.json();
     renderSDLTStandaloneResults(data, price);
+    if (window.innerWidth <= 860) {
+      setTimeout(() => {
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
   } catch (err) {
     resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
   }
