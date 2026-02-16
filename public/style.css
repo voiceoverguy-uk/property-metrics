@@ -1525,6 +1525,7 @@ body.dark .dark-mode-toggle-mobile:hover {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
+  margin-left: 8px;
   transition: background 0.2s;
 }
 
@@ -1818,6 +1819,7 @@ body.dark .dark-mode-toggle-mobile:hover {
   .btn-add-item,
   .btn-remove-item,
   .btn-clear-history,
+  .btn-compare-deals,
   .history-card-delete {
     min-height: 44px;
   }
@@ -2118,13 +2120,13 @@ body.dark .dark-mode-toggle-mobile:hover {
 .btn-compare-deals {
   background: #B11217;
   color: #fff;
-  border: none;
-  padding: 4px 14px;
-  border-radius: 6px;
+  border: 1.5px solid #B11217;
+  padding: 6px 14px;
+  border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  margin-left: 12px;
+  margin-left: 8px;
   vertical-align: middle;
   transition: background 0.2s;
 }
