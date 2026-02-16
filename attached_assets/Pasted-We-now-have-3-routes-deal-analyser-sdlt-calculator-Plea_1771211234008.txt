@@ -1,0 +1,49 @@
+We now have 3 routes: / , /deal-analyser , /sdlt-calculator.
+
+Please implement proper per-route SEO meta for social sharing and indexing.
+
+1) Canonical tags (MUST):
+- / -> <link rel="canonical" href="https://rentalmetrics.co.uk/">
+- /deal-analyser -> <link rel="canonical" href="https://rentalmetrics.co.uk/deal-analyser">
+- /sdlt-calculator -> <link rel="canonical" href="https://rentalmetrics.co.uk/sdlt-calculator">
+
+2) Open Graph + Twitter tags (per route):
+Ensure the initial HTML served for each route contains correct OG/Twitter tags (server-side), not only injected via client JS.
+
+For each route set:
+- og:title
+- og:description
+- og:url
+- og:type = website
+- og:image (use the existing OG image for all routes for now)
+- twitter:card = summary_large_image
+- twitter:title
+- twitter:description
+- twitter:image
+
+Use these exact values:
+
+/ 
+og:title: "Rental Yield Calculator UK (Free)"
+og:description: "Estimate gross and net yield, cash flow and acquisition costs for UK buy-to-let deals in seconds."
+og:url: "https://rentalmetrics.co.uk/"
+
+/deal-analyser
+og:title: "Buy-to-Let Deal Analyser UK"
+og:description: "Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool."
+og:url: "https://rentalmetrics.co.uk/deal-analyser"
+
+/sdlt-calculator
+og:title: "Stamp Duty Calculator UK (SDLT)"
+og:description: "Free SDLT calculator for investors, additional properties and first-time buyers. Instant estimates using current England rates."
+og:url: "https://rentalmetrics.co.uk/sdlt-calculator"
+
+Twitter tags should mirror OG.
+
+3) Keep existing dynamic document.title updates in the SPA, but the server-rendered meta should already be correct on first load for each route.
+
+Files:
+- server.js: when serving index.html for each route, inject the correct meta/canonical block for that route (string replace placeholders is fine).
+- index.html: add placeholders like %%CANONICAL%%, %%OG_TITLE%%, %%OG_DESC%%, %%OG_URL%%, %%OG_IMAGE%%.
+
+Do not break existing routing or calculator functionality.
