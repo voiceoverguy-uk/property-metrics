@@ -1187,7 +1187,7 @@ function renderScenario(data, label, targetYield, mortgage) {
   const voidPct = isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0);
 
   return `
-    ${renderDealRating(displayData.netYield, targetYield)}
+    ${isSimple ? '' : renderDealRating(displayData.netYield, targetYield)}
 
     <div class="result-section">
       <h3>SDLT \u2014 ${label}</h3>
@@ -1206,15 +1206,15 @@ function renderScenario(data, label, targetYield, mortgage) {
     <div class="result-section">
       <h3>Yield Analysis</h3>
       ${yieldNote}
-      ${renderYieldGauge(displayData.netYield, targetYield)}
+      ${isSimple ? '' : renderYieldGauge(displayData.netYield, targetYield)}
       <div class="yield-cards">
         <div class="yield-card">
           <div class="yield-label">Gross Yield <span class="tooltip" data-tip="Annual rent ÷ purchase price.">?</span></div>
-          <div class="yield-value ${yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
+          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
         </div>
         <div class="yield-card">
           <div class="yield-label">${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'} <span class="tooltip" data-tip="Net annual rent ÷ total acquisition cost (purchase + SDLT + fees + costs).">?</span></div>
-          <div class="yield-value ${yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
+          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
         </div>
         ${mortgage ? `
         <div class="yield-card">
@@ -1871,12 +1871,14 @@ function printReport() {
     h.separator();
 
     h.heading(buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property');
-    h.dealRating(
-      rating.grade,
-      rating.label,
-      '(Net yield ' + fmtPct(displayData.netYield) + ' vs ' + fmtPct(parseFloat(targetYield)) + ' target)',
-      rating.color
-    );
+    if (!isSimplePdf) {
+      h.dealRating(
+        rating.grade,
+        rating.label,
+        '(Net yield ' + fmtPct(displayData.netYield) + ' vs ' + fmtPct(parseFloat(targetYield)) + ' target)',
+        rating.color
+      );
+    }
 
     h.subheading('SDLT Breakdown');
     if (scenarioData.sdltBreakdown && scenarioData.sdltBreakdown.bands && scenarioData.sdltBreakdown.bands.length > 0) {
@@ -1907,12 +1909,14 @@ function printReport() {
       h.textLine('Net yield based on ' + fmt(displayData.cashInvested) + ' cash invested (after mortgage costs)', { size: 9, align: 'center', color: '#555555' });
     }
     h.gap(2);
-    h.yieldGauge(displayData.netYield, parseFloat(targetYield));
-    h.gap(4);
+    if (!isSimplePdf) {
+      h.yieldGauge(displayData.netYield, parseFloat(targetYield));
+      h.gap(4);
+    }
 
     const yieldCardData = [
       { label: 'Gross Yield', value: fmtPct(displayData.grossYield), color: '#333333' },
-      { label: selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', value: fmtPct(displayData.netYield), color: displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217' },
+      { label: selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', value: fmtPct(displayData.netYield), color: isSimplePdf ? '#333333' : (displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217') },
     ];
     if (selectedMortgage) {
       yieldCardData.push({ label: 'Cash-on-Cash Return', value: fmtPct(selectedMortgage.cashOnCashReturn), color: selectedMortgage.cashOnCashReturn >= 0 ? '#0a7a2e' : '#B11217' });
