@@ -11,7 +11,7 @@ app.use(express.json());
 
 const htmlTemplate = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
 
-const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x120-og.png';
+const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x630-og.png';
 
 const routeMeta = {
   '/': {
