@@ -2820,20 +2820,30 @@ function shareDeal() {
 
 function initDarkMode() {
   const toggle = document.getElementById('darkModeToggle');
+  const toggleMobile = document.getElementById('darkModeToggleMobile');
   const saved = localStorage.getItem('darkMode');
+  const sunIcon = '&#9728;';
+  const moonIcon = '&#9790;';
+
+  function updateIcons(isDark) {
+    const icon = isDark ? sunIcon : moonIcon;
+    if (toggle) toggle.innerHTML = icon;
+    if (toggleMobile) toggleMobile.innerHTML = icon;
+  }
 
   if (saved === 'true') {
     document.body.classList.add('dark');
-    toggle.innerHTML = '&#9728;';
-  } else {
-    toggle.innerHTML = '&#9790;';
   }
+  updateIcons(saved === 'true');
 
-  toggle.addEventListener('click', () => {
+  function handleToggle() {
     const isDark = document.body.classList.toggle('dark');
     localStorage.setItem('darkMode', isDark);
-    toggle.innerHTML = isDark ? '&#9728;' : '&#9790;';
-  });
+    updateIcons(isDark);
+  }
+
+  if (toggle) toggle.addEventListener('click', handleToggle);
+  if (toggleMobile) toggleMobile.addEventListener('click', handleToggle);
 }
 
 initDarkMode();
