@@ -1300,7 +1300,7 @@ function renderResults(result) {
           ${dealRef ? `<p class="deal-ref-line">${dealRef}</p>` : ''}
         </div>
         <div class="results-header-buttons">
-          <button type="button" class="btn-share" onclick="shareDeal()">Share</button>
+          <button type="button" class="btn-share" onclick="shareDeal(this)">Share</button>
           <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
         </div>
       </div>
@@ -2216,6 +2216,9 @@ function renderSDLTStandaloneResults(data, price) {
           <p class="sdlt-rates-note">Rates correct as of January 2026</p>
           <p class="address-line">${escHtml(address)} — ${fmt(price)}</p>
         </div>
+        <div class="results-header-buttons">
+          <button type="button" class="btn-share" onclick="shareSDLT(this)">Share</button>
+        </div>
       </div>
 
       ${renderSDLTSection(sdltLabel, sdltData)}
@@ -2796,7 +2799,7 @@ window.closeCompare = closeCompare;
 window.renderCompareTable = renderCompareTable;
 window.downloadComparePdf = downloadComparePdf;
 
-function shareDeal() {
+function shareDeal(btnEl) {
   const price = getCurrencyFieldValue('price');
   const rent = getCurrencyFieldValue('monthlyRent');
   const isSimple = currentMode === 'simple';
@@ -2842,18 +2845,25 @@ function shareDeal() {
   params.set('purchase', selectedPurchaseType);
 
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
+  shareOrCopy(url, btnEl);
+}
 
+function shareSDLT(btnEl) {
+  const price = getCurrencyFieldValue('price');
+  const buyer = getSelectedBuyerType();
+  const addr = document.getElementById('address').value || '';
+  const params = new URLSearchParams();
+  params.set('mode', 'sdlt');
+  if (price) params.set('price', price);
+  if (addr) params.set('addr', addr);
+  params.set('buyer', buyer);
+  const url = window.location.origin + '/sdlt-calculator?' + params.toString();
+  shareOrCopy(url, btnEl);
+}
+
+function copyToClipboard(url, btnEl) {
   navigator.clipboard.writeText(url).then(() => {
-    const btn = document.querySelector('.btn-share');
-    if (btn) {
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.classList.remove('copied');
-      }, 2000);
-    }
+    flashShareBtn(btnEl, 'Link copied!');
   }).catch(() => {
     const textarea = document.createElement('textarea');
     textarea.value = url;
@@ -2861,17 +2871,31 @@ function shareDeal() {
     textarea.select();
     document.execCommand('copy');
     document.body.removeChild(textarea);
-    const btn = document.querySelector('.btn-share');
-    if (btn) {
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.classList.remove('copied');
-      }, 2000);
-    }
+    flashShareBtn(btnEl, 'Link copied!');
   });
+}
+
+function shareOrCopy(url, btnEl) {
+  if (navigator.share) {
+    navigator.share({ title: document.title, url: url }).catch(() => {
+      copyToClipboard(url, btnEl);
+    });
+  } else {
+    copyToClipboard(url, btnEl);
+  }
+}
+
+function flashShareBtn(btnEl, msg) {
+  const btn = btnEl || document.querySelector('.btn-share');
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.textContent = msg;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  }
 }
 
 function initDarkMode() {
@@ -3047,7 +3071,12 @@ function checkUrlParams() {
 
   window.history.replaceState({}, '', window.location.pathname);
 
-  setTimeout(() => runCalculation(), 300);
+  const isSDLT = currentMode === 'sdlt' || window.location.pathname === '/sdlt-calculator';
+  if (isSDLT) {
+    setTimeout(() => document.getElementById('sdltCalcBtn').click(), 300);
+  } else {
+    setTimeout(() => runCalculation(), 300);
+  }
 }
 
 document.querySelectorAll('.sdlt-cta a, .landing-underfold a[href^="/"]').forEach(function(link) {
