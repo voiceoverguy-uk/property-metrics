@@ -1,0 +1,36 @@
+ASK: Add “landing content under the fold” below the calculator UI on all routes (/ , /deal-analyser , /sdlt-calculator) — but keep it clean and NOT cluttered.
+
+Tone: friendly DIY landlord helper (still professional). Avoid hype, avoid sales language, avoid “guru/investor bro” vibes.
+
+Strict layout rules to avoid clutter:
+	•	The new section must have generous whitespace and a max-width matching the app container.
+	•	Desktop: 2-column grid with two simple cards only (Features + How it works).
+	•	Mobile: single column, comfortable spacing.
+	•	Only one H2 title for the whole section.
+	•	“What you can calculate” list: max 6 bullets.
+	•	FAQ must be an accordion with all answers collapsed by default.
+	•	Keep disclaimer to one short paragraph.
+	•	Community link must be a single slim line, not a big block.
+
+Brand + styling:
+	•	Use existing brand red #d42027 for small accents (rule lines, button outlines, small headings).
+	•	Do NOT add large red backgrounds.
+	•	Match existing card style: soft shadow, rounded corners, clean type.
+
+Content (use exactly this structure):
+	1.	H2: “UK buy-to-let maths, without the headache.”
+	2.	2–3 sentence intro: Explain that RentalMetrics estimates yield, cash flow and SDLT in seconds, using GBP and common UK assumptions.
+	3.	Two cards side-by-side:
+	•	Card A (H3): “What you can calculate” bullets (max 6): Gross yield, net yield, cash flow, cash-on-cash return, mortgage stress test, SDLT estimate, PDF export (pick best 6 per route).
+	•	Card B (H3): “How it works” steps: 1) Enter price + rent 2) Add costs/mortgage if needed 3) Get results + PDF
+	4.	FAQ accordion visible on the page: reuse the same questions used in the FAQPage JSON-LD for that route.
+	5.	Disclaimer: “Estimates only, not financial/tax advice…” (1 paragraph).
+	6.	Community line at the bottom:
+Text: “Learn with others: Leeds Property Investor Group on Meetup”
+Link: https://www.meetup.com/leeds-property-people/
+Open in new tab with rel=“noopener noreferrer”.
+Add small optional text: “Next event: check Meetup”.
+
+Technical SEO requirement:
+	•	Ensure this content is in the DOM immediately (not lazy-inserted late).
+	•	Keep performance fast; no new libraries.
