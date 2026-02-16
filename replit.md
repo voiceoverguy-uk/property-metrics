@@ -54,16 +54,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Currency Formatting**: Automatic formatting with £ and commas.
 - **"Start Again" Reset Button**.
 
-### Nearby Amenities ("What's near here?")
-- **Server Proxy**: `POST /api/places/nearby` proxies Google Places API Nearby Search; never exposes API key to browser for Places calls.
-- **Caching**: In-memory cache with 10-minute TTL on server; client-side cache mirrors the same TTL.
-- **Rate Limiting**: Simple per-IP rate limiter (30 requests/minute, 1-minute window, in-memory).
-- **Categories**: Supermarkets, Schools, Transport, Parks, Healthcare, Gyms — mapped to Google Places types.
-- **UI**: Hidden by default; revealed with 200ms CSS animation (respects `prefers-reduced-motion`) after address selection. Radius slider (0.25–5 miles, default 1 mile, debounced 500ms). Category toggle chips (all OFF by default). Clear button resets chips and removes markers.
-- **Markers**: Color-coded circle markers per category with info windows (name + rating). Falls back to direct markers if MarkerClusterer not loaded.
-- **Lifecycle**: `showNearbyBlock()` triggered from `showMap()`; `hideNearbyBlock()` triggered from Start Again handler and address-cleared detection.
-
 ## External Dependencies
-- **Google Maps API**: Used for address autocomplete suggestions, map preview with marker, and nearby places search (proxied via server). The browser key is served via `/api/maps-key`; Places API calls are server-side only.
+- **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`.
 - **Node.js**: Backend runtime environment.
 - **Express**: Web framework for the Node.js backend.
