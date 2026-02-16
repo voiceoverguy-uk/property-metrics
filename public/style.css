@@ -87,6 +87,10 @@ header.scrolled {
   height: 42px;
   width: auto;
   display: block;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
 header .subtitle {
