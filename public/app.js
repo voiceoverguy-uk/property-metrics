@@ -1967,9 +1967,47 @@ function printReport() {
   }
 }
 
-let currentMode = 'analyser';
+let currentMode = 'simple';
 
-function setMode(mode) {
+const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
+const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
+const modeMeta = {
+  simple: {
+    title: 'Simple Buy-to-Let Yield Calculator | RentalMetrics',
+    description: 'Quick UK buy-to-let yield calculator. Enter price and rent to instantly see gross yield, net yield and deal rating.'
+  },
+  analyser: {
+    title: 'Deal Analyser – Full Property Investment Calculator | RentalMetrics',
+    description: 'In-depth UK property deal analyser. Calculate SDLT, net yield, cash-on-cash return, mortgage stress tests, target offer price and export PDF reports.'
+  },
+  sdlt: {
+    title: 'SDLT Calculator – Stamp Duty Land Tax | RentalMetrics',
+    description: 'Free UK Stamp Duty calculator for England & Northern Ireland. Compare SDLT for investors, first-time buyers and additional property purchases.'
+  }
+};
+
+function updateMeta(mode) {
+  const meta = modeMeta[mode];
+  if (!meta) return;
+  const url = 'https://rentalmetrics.co.uk' + modeToRoute[mode];
+  document.title = meta.title;
+  const descTag = document.querySelector('meta[name="description"]');
+  if (descTag) descTag.setAttribute('content', meta.description);
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.setAttribute('href', url);
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.setAttribute('content', meta.title);
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute('content', meta.description);
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.setAttribute('content', url);
+  const twTitle = document.querySelector('meta[name="twitter:title"]');
+  if (twTitle) twTitle.setAttribute('content', meta.title);
+  const twDesc = document.querySelector('meta[name="twitter:description"]');
+  if (twDesc) twDesc.setAttribute('content', meta.description);
+}
+
+function setMode(mode, pushHistory) {
   currentMode = mode;
   const btns = document.querySelectorAll('.mode-btn');
   btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
@@ -1988,7 +2026,21 @@ function setMode(mode) {
     document.getElementById('monthlyRent').setAttribute('required', '');
     resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
   }
+
+  updateMeta(mode);
+
+  if (pushHistory !== false) {
+    const target = modeToRoute[mode] || '/';
+    if (window.location.pathname !== target) {
+      window.history.pushState({ mode }, '', target);
+    }
+  }
 }
+
+window.addEventListener('popstate', (e) => {
+  const mode = (e.state && e.state.mode) ? e.state.mode : (routeToMode[window.location.pathname] || 'simple');
+  setMode(mode, false);
+});
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => setMode(btn.dataset.mode));
@@ -2696,11 +2748,15 @@ initDarkMode();
 
 function checkUrlParams() {
   const params = new URLSearchParams(window.location.search);
-  if (!params.has('price')) return;
 
-  if (params.has('mode') && params.get('mode') === 'simple') {
-    setMode('simple');
+  if (params.has('mode')) {
+    const m = params.get('mode');
+    if (m === 'simple' || m === 'analyser' || m === 'sdlt') {
+      setMode(m);
+    }
   }
+
+  if (!params.has('price')) return;
 
   const price = parseFloat(params.get('price'));
   if (!price || price <= 0) return;
@@ -2823,6 +2879,17 @@ function checkUrlParams() {
 
   setTimeout(() => runCalculation(), 300);
 }
+
+(function initRouteMode() {
+  const path = window.location.pathname;
+  const modeFromRoute = routeToMode[path];
+  if (modeFromRoute) {
+    setMode(modeFromRoute, false);
+    window.history.replaceState({ mode: modeFromRoute }, '', path);
+  } else {
+    setMode('simple', false);
+  }
+})();
 
 checkUrlParams();
 

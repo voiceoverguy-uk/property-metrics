@@ -23,14 +23,57 @@
   <meta name="twitter:image" content="https://rentalmetrics.co.uk/rental-metrics-icon-1024.png">
   <script type="application/ld+json">
   {
-    "@context":"https://schema.org",
-    "@type":"SoftwareApplication",
-    "name":"RentalMetrics | UK Buy-to-Let Yield Calculator",
-    "applicationCategory":"FinanceApplication",
-    "operatingSystem":"Web",
-    "url":"https://rentalmetrics.co.uk/",
-    "description":"UK buy-to-let deal analyser with yield calculation, mortgage stress testing, SDLT and PDF reports.",
-    "offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"}
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://rentalmetrics.co.uk/#organization",
+        "name": "RentalMetrics",
+        "url": "https://rentalmetrics.co.uk/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://rentalmetrics.co.uk/rental-metrics-icon-1024.png",
+          "width": 1024,
+          "height": 1024
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://rentalmetrics.co.uk/#website",
+        "name": "RentalMetrics",
+        "url": "https://rentalmetrics.co.uk/",
+        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" }
+      },
+      {
+        "@type": ["SoftwareApplication", "WebApplication"],
+        "@id": "https://rentalmetrics.co.uk/#app",
+        "name": "RentalMetrics – UK Buy-to-Let Yield Calculator",
+        "url": "https://rentalmetrics.co.uk/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "description": "Free UK property deal analyser for England & Northern Ireland. Calculate SDLT, gross and net yield, cash-on-cash return, mortgage stress tests, deal ratings and export PDF reports.",
+        "featureList": [
+          "SDLT (Stamp Duty) calculator for investor, first-time buyer and additional property",
+          "Gross and net rental yield analysis",
+          "Cash-on-cash return calculation",
+          "Mortgage calculator with stress testing",
+          "Deal rating system (A+ to F grades)",
+          "Capital growth projection",
+          "Section 24 tax impact estimator",
+          "Refinance scenario modelling",
+          "Target offer price solver",
+          "Comparison history with deal ranking",
+          "PDF report export",
+          "Google Maps address lookup"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "GBP"
+        },
+        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" }
+      }
+    ]
   }
   </script>
   <link rel="stylesheet" href="style.css">
@@ -44,8 +87,8 @@
       </div>
       <div class="header-nav">
         <div class="mode-toggle">
-          <button type="button" class="mode-btn" data-mode="simple">Simple Analyser</button>
-          <button type="button" class="mode-btn active" data-mode="analyser">Deal Analyser</button>
+          <button type="button" class="mode-btn active" data-mode="simple">Simple Analyser</button>
+          <button type="button" class="mode-btn" data-mode="analyser">Deal Analyser</button>
           <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
         </div>
         <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
