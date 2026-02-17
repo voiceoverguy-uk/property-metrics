@@ -173,6 +173,19 @@
             </div>
           </div>
 
+          <div class="analyser-only simple-only">
+            <h3>
+              Recurring Monthly Costs
+              <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc).">?</span>
+            </h3>
+            <div id="simpleRunningCostItemsList"></div>
+            <button type="button" id="addSimpleRunningCostItem" class="btn-add-item">+ Add Recurring Cost</button>
+            <div class="cost-total-row">
+              <span>Total Recurring Monthly Costs:</span>
+              <span id="simpleRunningCostItemsTotal">&pound;0/mo</span>
+            </div>
+          </div>
+
           <h3 class="analyser-only full-only">
             Additional Costs
             <span class="tooltip" data-tip="Add itemised costs such as refurb, repairs, decorating, EPC, EICR, surveys, etc.">?</span>
@@ -213,13 +226,13 @@
           </div>
 
           <h3 class="analyser-only full-only">
-            Monthly Running Costs
+            Recurring Monthly Costs
             <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are separate below.">?</span>
           </h3>
           <div id="runningCostItemsList" class="analyser-only full-only"></div>
-          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Running Cost</button>
+          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Recurring Cost</button>
           <div class="cost-total-row analyser-only full-only">
-            <span>Total Monthly Running Costs:</span>
+            <span>Total Recurring Monthly Costs:</span>
             <span id="runningCostItemsTotal">&pound;0</span>
           </div>
 
@@ -272,10 +285,17 @@
             <div class="form-row">
               <div class="form-group half">
                 <label for="depositAmount">
-                  Deposit (&pound;)
-                  <span class="tooltip" data-tip="The deposit amount you will put down. The rest will be the mortgage.">?</span>
+                  Deposit
+                  <span class="tooltip" data-tip="Enter deposit as a pound amount or percentage of purchase price.">?</span>
                 </label>
-                <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. £40,000">
+                <div class="deposit-input-wrapper">
+                  <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. 40,000">
+                  <div class="deposit-mode-toggle">
+                    <button type="button" class="deposit-mode-btn active" data-deposit-mode="pounds">&pound;</button>
+                    <button type="button" class="deposit-mode-btn" data-deposit-mode="pct">%</button>
+                  </div>
+                </div>
+                <div class="deposit-helper-text" id="depositHelperText"></div>
               </div>
               <div class="form-group half">
                 <label for="interestRate">
@@ -283,6 +303,16 @@
                   <span class="tooltip" data-tip="Annual mortgage interest rate.">?</span>
                 </label>
                 <input type="number" id="interestRate" min="0" max="30" step="any" value="4.5">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>
+                Mortgage Type
+                <span class="tooltip" data-tip="Interest Only payments are lower but don't reduce the loan. Repayment gradually pays off the full balance.">?</span>
+              </label>
+              <div class="mortgage-type-toggle">
+                <button type="button" class="mortgage-type-btn active" data-mortgage-type="interest-only">Interest Only</button>
+                <button type="button" class="mortgage-type-btn" data-mortgage-type="repayment">Repayment</button>
               </div>
             </div>
             <div class="form-group">

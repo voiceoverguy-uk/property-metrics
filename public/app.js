@@ -13,7 +13,7 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'depositAmount', 'maintenanceFixed'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -100,6 +100,8 @@ function getCurrencyFieldValue(id) {
 }
 
 let selectedPurchaseType = 'cash';
+let depositInputMode = 'pounds';
+let mortgageType = 'interest-only';
 
 function getSelectedPurchaseType() {
   return selectedPurchaseType;
@@ -118,6 +120,74 @@ document.querySelectorAll('.purchase-type-btn').forEach(btn => {
     syncMortgageInputsVisibility();
   });
 });
+
+document.querySelectorAll('.deposit-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.deposit-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    depositInputMode = btn.dataset.depositMode;
+    updateDepositHelperText();
+  });
+});
+
+document.querySelectorAll('.mortgage-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mortgage-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mortgageType = btn.dataset.mortgageType;
+  });
+});
+
+function updateDepositHelperText() {
+  const helperEl = document.getElementById('depositHelperText');
+  if (!helperEl) return;
+  const price = getCurrencyFieldValue('price');
+  const depositInput = document.getElementById('depositAmount');
+  const rawVal = parseFloat(depositInput.value) || 0;
+
+  if (!price || price <= 0) {
+    helperEl.textContent = 'Enter purchase price to calculate';
+    return;
+  }
+
+  if (depositInputMode === 'pounds') {
+    const pct = price > 0 ? ((rawVal / price) * 100) : 0;
+    helperEl.textContent = rawVal > 0 ? `That's ${pct.toFixed(1)}% deposit` : '';
+  } else {
+    const clampedPct = Math.min(Math.max(rawVal, 0), 100);
+    const depositPounds = Math.round(price * (clampedPct / 100));
+    helperEl.textContent = clampedPct > 0 ? `That's ${fmt(depositPounds)} deposit` : '';
+  }
+}
+
+function getDepositAmount() {
+  const price = getCurrencyFieldValue('price');
+  const rawVal = parseFloat(document.getElementById('depositAmount').value) || 0;
+  if (depositInputMode === 'pct') {
+    const clampedPct = Math.min(Math.max(rawVal, 0), 100);
+    return Math.round(price * (clampedPct / 100));
+  }
+  return Math.min(rawVal, price || Infinity);
+}
+
+function calcMortgagePayment(loanAmount, annualRate, termYears, type) {
+  if (loanAmount <= 0) return 0;
+  const monthlyRate = (annualRate / 100) / 12;
+  const totalMonths = termYears * 12;
+
+  if (type === 'interest-only') {
+    return (loanAmount * (annualRate / 100)) / 12;
+  }
+
+  if (monthlyRate <= 0) {
+    return totalMonths > 0 ? loanAmount / totalMonths : 0;
+  }
+  return loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+}
+
+document.getElementById('depositAmount').addEventListener('input', updateDepositHelperText);
+document.getElementById('price').addEventListener('input', updateDepositHelperText);
+document.getElementById('price').addEventListener('blur', updateDepositHelperText);
 
 let maintenanceMode = 'pct';
 
@@ -147,7 +217,7 @@ function getSelectedBuyerType() {
 
 document.getElementById('mortgageCalcBtn').addEventListener('click', async () => {
   const price = getCurrencyFieldValue('price');
-  const deposit = getCurrencyFieldValue('depositAmount') || 0;
+  const deposit = getDepositAmount();
   const isSimple = currentMode === 'simple';
   const solicitorFees = isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500);
   const summary = document.getElementById('borrowingSummary');
@@ -485,27 +555,21 @@ function getDealRating(netYield, targetYield) {
 }
 
 function calculateMortgage(price, data) {
-  const depositAmount = getCurrencyFieldValue('depositAmount') || 0;
+  const depositAmount = getDepositAmount();
   const interestRate = parseFloat(document.getElementById('interestRate').value) || 4.5;
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
+  const isSimple = currentMode === 'simple';
   const baseRunningCosts = getRunningCostItemsTotal();
-  const lettingAgentFee = getLettingAgentFeeMonthly();
-  const maintenanceMonthly = getMaintenanceAnnual() / 12;
+  const lettingAgentFee = isSimple ? 0 : getLettingAgentFeeMonthly();
+  const maintenanceMonthly = isSimple ? 0 : (getMaintenanceAnnual() / 12);
   const runningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
-  const solicitorFees = getCurrencyFieldValue('solicitorFees');
-  const refurbCosts = getCostItemsTotal();
+  const solicitorFees = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
+  const refurbCosts = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
 
   const mortgageAmount = Math.max(price - depositAmount, 0);
   const depositPct = price > 0 ? (depositAmount / price) * 100 : 0;
-  const monthlyRate = (interestRate / 100) / 12;
   const totalMonths = mortgageTerm * 12;
-
-  let monthlyPayment = 0;
-  if (monthlyRate > 0 && totalMonths > 0 && mortgageAmount > 0) {
-    monthlyPayment = mortgageAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
-  } else if (mortgageAmount > 0 && totalMonths > 0) {
-    monthlyPayment = mortgageAmount / totalMonths;
-  }
+  const monthlyPayment = calcMortgagePayment(mortgageAmount, interestRate, mortgageTerm, mortgageType);
 
   const effectiveMonthlyRent = (data.effectiveAnnualRent || data.annualRent) / 12;
   const monthlyCashFlow = effectiveMonthlyRent - monthlyPayment - runningCosts;
@@ -514,13 +578,7 @@ function calculateMortgage(price, data) {
   const cashOnCashReturn = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
 
   const stressRate = parseFloat(document.getElementById('stressTestRate').value) || 7.0;
-  const stressMonthlyRate = (stressRate / 100) / 12;
-  let stressMonthlyPayment = 0;
-  if (stressMonthlyRate > 0 && totalMonths > 0 && mortgageAmount > 0) {
-    stressMonthlyPayment = mortgageAmount * (stressMonthlyRate * Math.pow(1 + stressMonthlyRate, totalMonths)) / (Math.pow(1 + stressMonthlyRate, totalMonths) - 1);
-  } else if (mortgageAmount > 0 && totalMonths > 0) {
-    stressMonthlyPayment = mortgageAmount / totalMonths;
-  }
+  const stressMonthlyPayment = calcMortgagePayment(mortgageAmount, stressRate, mortgageTerm, mortgageType);
   const stressMonthlyCashFlow = effectiveMonthlyRent - stressMonthlyPayment - runningCosts;
 
   return {
@@ -529,6 +587,7 @@ function calculateMortgage(price, data) {
     mortgageAmount,
     interestRate,
     mortgageTerm,
+    mortgageType,
     monthlyPayment,
     monthlyCashFlow,
     annualCashFlow,
@@ -713,20 +772,82 @@ function renderRunningCostItems() {
   });
 
   updateRunningCostTotal();
+  renderSimpleRunningCostItems();
 }
 
 function updateRunningCostTotal() {
   runningCostItemsTotalEl.textContent = fmt(getRunningCostItemsTotal()) + '/mo';
+  updateSimpleRunningCostTotal();
 }
 
 addRunningCostItemBtn.addEventListener('click', () => {
   runningCostItems.push({ label: '', amount: 0 });
   renderRunningCostItems();
+  renderSimpleRunningCostItems();
   const labels = runningCostItemsList.querySelectorAll('.cost-item-label');
   if (labels.length > 0) labels[labels.length - 1].focus();
 });
 
 renderRunningCostItems();
+
+const simpleRunningCostItemsList = document.getElementById('simpleRunningCostItemsList');
+const simpleRunningCostItemsTotalEl = document.getElementById('simpleRunningCostItemsTotal');
+const addSimpleRunningCostItemBtn = document.getElementById('addSimpleRunningCostItem');
+
+function renderSimpleRunningCostItems() {
+  if (!simpleRunningCostItemsList) return;
+  simpleRunningCostItemsList.innerHTML = '';
+  runningCostItems.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'cost-item-row';
+    const placeholders = ['e.g. Insurance', 'e.g. Ground Rent'];
+    const placeholder = placeholders[index] || 'e.g. Service charge';
+    row.innerHTML = `
+      <input type="text" class="cost-item-label" value="${escHtml(item.label)}" placeholder="${placeholder}" data-index="${index}">
+      <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
+      <button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>
+    `;
+    simpleRunningCostItemsList.appendChild(row);
+  });
+
+  simpleRunningCostItemsList.querySelectorAll('.cost-item-label').forEach(input => {
+    input.addEventListener('input', (e) => {
+      runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
+    });
+  });
+
+  simpleRunningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
+    applyCurrencyToRunningCostAmount(input);
+  });
+
+  simpleRunningCostItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      runningCostItems.splice(parseInt(e.target.dataset.index), 1);
+      renderSimpleRunningCostItems();
+      renderRunningCostItems();
+    });
+  });
+
+  updateSimpleRunningCostTotal();
+}
+
+function updateSimpleRunningCostTotal() {
+  if (simpleRunningCostItemsTotalEl) {
+    simpleRunningCostItemsTotalEl.textContent = fmt(getRunningCostItemsTotal()) + '/mo';
+  }
+}
+
+renderSimpleRunningCostItems();
+
+if (addSimpleRunningCostItemBtn) {
+  addSimpleRunningCostItemBtn.addEventListener('click', () => {
+    runningCostItems.push({ label: '', amount: 0 });
+    renderSimpleRunningCostItems();
+    renderRunningCostItems();
+    const labels = simpleRunningCostItemsList.querySelectorAll('.cost-item-label');
+    if (labels.length > 0) labels[labels.length - 1].focus();
+  });
+}
 
 function renderSDLTTable(breakdown) {
   if (!breakdown || !breakdown.bands || breakdown.bands.length === 0) {
@@ -792,7 +913,7 @@ function renderRunningCostsBreakdown() {
 
   let html = '';
   if (baseRunning > 0 || agentPct > 0 || maintenanceAnnual > 0 || mortgageMonthly > 0) {
-    html += '<div class="result-section"><h3>Monthly Running Costs</h3>';
+    html += '<div class="result-section"><h3>Recurring Monthly Costs</h3>';
     html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
     if (runningItems.length > 0) {
       runningItems.forEach(item => {
@@ -811,7 +932,9 @@ function renderRunningCostsBreakdown() {
       html += `<div class="result-row"><span class="label">${maintLabel}</span><span class="value">${fmt(maintenanceMonthly)}/mo</span></div>`;
     }
     if (mortgageMonthly > 0) {
-      html += `<div class="result-row"><span class="label">Mortgage Payment</span><span class="value">${fmt(mortgageMonthly)}/mo</span></div>`;
+      const mtType = lastMortgageData && lastMortgageData[buyerType] && lastMortgageData[buyerType].mortgageType;
+      const mtLabel = mtType === 'interest-only' ? 'Interest Only' : 'Repayment';
+      html += `<div class="result-row"><span class="label">Mortgage Payment <span class="mortgage-type-label">(${mtLabel})</span></span><span class="value">${fmt(mortgageMonthly)}/mo</span></div>`;
     }
     html += `<div class="result-row total"><span class="label">Total Monthly Costs</span><span class="value">${fmt(totalMonthly)}/mo</span></div>`;
     html += `<div class="result-row"><span class="label">Annual Running Costs</span><span class="value">${fmt(totalMonthly * 12)}/yr</span></div>`;
@@ -843,7 +966,7 @@ function renderMortgageSection(mortgage) {
       <h3>Mortgage Analysis</h3>
       <div class="result-row"><span class="label">Deposit (${fmtPct(mortgage.depositPct)})</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
       <div class="result-row"><span class="label">Mortgage Amount</span><span class="value">${fmt(mortgage.mortgageAmount)}</span></div>
-      <div class="result-row"><span class="label">Monthly Mortgage Payment</span><span class="value">${fmt(mortgage.monthlyPayment)}</span></div>
+      <div class="result-row"><span class="label">Monthly Mortgage Payment <span class="mortgage-type-label">(${mortgage.mortgageType === 'interest-only' ? 'Interest Only' : 'Repayment'})</span></span><span class="value">${fmt(mortgage.monthlyPayment)}/mo</span></div>
       <div class="result-row"><span class="label">Monthly Cash Flow <span class="tooltip" data-tip="Monthly rent minus monthly costs (and mortgage if used).">?</span></span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
       <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
       <div class="result-row"><span class="label">Cash Invested <span class="tooltip" data-tip="Deposit + buying costs + any refurb/extra costs.">?</span></span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
@@ -1247,6 +1370,29 @@ function renderScenario(data, label, targetYield, mortgage) {
       <div class="result-row"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>
     </div>
 
+    ${isSimple && mortgage ? `
+    <div class="result-section">
+      <h3>Recurring Monthly Costs</h3>
+      <div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(getCurrencyFieldValue('monthlyRent'))}/mo</span></div>
+      ${runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(item =>
+        `<div class="result-row"><span class="label">${escHtml(item.label || 'Recurring cost')}</span><span class="value">${fmt(item.amount)}/mo</span></div>`
+      ).join('')}
+      <div class="result-row"><span class="label">Mortgage Payment <span class="mortgage-type-label">(${mortgage.mortgageType === 'interest-only' ? 'Interest Only' : 'Repayment'})</span></span><span class="value">${fmt(mortgage.monthlyPayment)}/mo</span></div>
+      <div class="result-row total"><span class="label">Monthly Cash Flow</span><span class="value ${mortgage.monthlyCashFlow >= 0 ? 'cash-flow-positive' : 'cash-flow-negative'}">${fmt(mortgage.monthlyCashFlow)}/mo</span></div>
+    </div>
+    ` : ''}
+
+    ${isSimple && !mortgage && getRunningCostItemsTotal() > 0 ? `
+    <div class="result-section">
+      <h3>Recurring Monthly Costs</h3>
+      <div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(getCurrencyFieldValue('monthlyRent'))}/mo</span></div>
+      ${runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(item =>
+        `<div class="result-row"><span class="label">${escHtml(item.label || 'Recurring cost')}</span><span class="value">${fmt(item.amount)}/mo</span></div>`
+      ).join('')}
+      <div class="result-row total"><span class="label">Total Recurring Costs</span><span class="value">${fmt(getRunningCostItemsTotal())}/mo</span></div>
+    </div>
+    ` : ''}
+
     ${isSimple ? '' : renderRunningCostsBreakdown()}
 
     ${mortgageHtml}
@@ -1332,10 +1478,10 @@ async function runCalculation() {
   if (isSimple) {
     totalAdditionalCosts = getSimpleCostItemsTotal();
     lettingAgentFee = 0;
-    baseRunningCosts = 0;
+    baseRunningCosts = getRunningCostItemsTotal();
     maintenanceAnnual = 0;
     maintenanceMonthly = 0;
-    totalRunningCosts = 0;
+    totalRunningCosts = baseRunningCosts;
   } else {
     totalAdditionalCosts = getCostItemsTotal();
     lettingAgentFee = getLettingAgentFeeMonthly();
@@ -1403,6 +1549,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   renderCostItems();
   runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderRunningCostItems();
+  renderSimpleRunningCostItems();
   CURRENCY_FIELDS.forEach(id => {
     const input = document.getElementById(id);
     if (input) { input.dataset.rawValue = ''; input.value = ''; }
@@ -1429,6 +1576,16 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.querySelectorAll('.purchase-type-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.purchase-type-btn[data-purchase="cash"]').classList.add('active');
   syncMortgageInputsVisibility();
+  depositInputMode = 'pounds';
+  document.querySelectorAll('.deposit-mode-btn').forEach(b => b.classList.remove('active'));
+  const poundsBtn = document.querySelector('.deposit-mode-btn[data-deposit-mode="pounds"]');
+  if (poundsBtn) poundsBtn.classList.add('active');
+  const helperEl = document.getElementById('depositHelperText');
+  if (helperEl) helperEl.textContent = '';
+  mortgageType = 'interest-only';
+  document.querySelectorAll('.mortgage-type-btn').forEach(b => b.classList.remove('active'));
+  const ioBtn = document.querySelector('.mortgage-type-btn[data-mortgage-type="interest-only"]');
+  if (ioBtn) ioBtn.classList.add('active');
   document.getElementById('borrowingSummary').style.display = 'none';
   document.getElementById('dealReference').value = '';
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
@@ -2291,13 +2448,14 @@ function addToHistory(result) {
       ? (result.investor.annualRent)
       : ((result.investor.effectiveAnnualRent || result.investor.annualRent) - (getRunningCostItemsTotal() || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual()),
     hasMortgage: selectedPurchaseType === 'mortgage',
-    depositAmount: getCurrencyFieldValue('depositAmount') || 0,
+    depositAmount: getDepositAmount(),
     solicitorFees: isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500),
     refurbCosts: isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal(),
     simpleCostItems: isSimple ? simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })) : [],
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
-    runningCosts: isSimple ? 0 : getRunningCostItemsTotal(),
-    runningCostItems: isSimple ? [] : runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
+    runningCosts: getRunningCostItemsTotal(),
+    runningCostItems: runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
+    mortgageType: mortgageType,
     lettingAgentPct: isSimple ? 0 : getLettingAgentPct(),
     lettingAgentVat: isSimple ? false : document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
@@ -2425,6 +2583,13 @@ function applyHistoryEntry(entry) {
     if (mortgageSection) {
       mortgageSection.style.display = entry.purchaseType === 'mortgage' ? '' : 'none';
     }
+  }
+
+  if (entry.mortgageType) {
+    mortgageType = entry.mortgageType;
+    document.querySelectorAll('.mortgage-type-btn').forEach(b => b.classList.remove('active'));
+    const mtBtn = document.querySelector(`.mortgage-type-btn[data-mortgage-type="${entry.mortgageType}"]`);
+    if (mtBtn) mtBtn.classList.add('active');
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2805,7 +2970,7 @@ function shareDeal(btnEl) {
   const isSimple = currentMode === 'simple';
   const sol = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
   const refurb = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
-  const running = isSimple ? 0 : getRunningCostItemsTotal();
+  const running = getRunningCostItemsTotal();
   const target = isSimple ? 6 : (parseFloat(document.getElementById('targetYield').value) || 7);
   const addr = document.getElementById('address').value || '';
 
@@ -2827,11 +2992,15 @@ function shareDeal(btnEl) {
       params.set('scitems', JSON.stringify(activeSimple.map(i => ({ l: i.label, a: i.amount }))));
     }
   }
+  const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+  if (activeRunning.length > 0) {
+    params.set('rcitems', JSON.stringify(activeRunning.map(i => ({ l: i.label, a: i.amount }))));
+  }
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
   if (!isSimple && sol) params.set('sol', sol);
   if (!isSimple && refurb) params.set('refurb', refurb);
-  if (!isSimple && running) params.set('running', running);
+  if (running) params.set('running', running);
   if (!isSimple && agentPct) params.set('agentpct', agentPct);
   if (!isSimple && agentVat) params.set('agentvat', '1');
   if (!isSimple && voidPct) params.set('void', voidPct);
@@ -2843,6 +3012,7 @@ function shareDeal(btnEl) {
   if (dealRef) params.set('ref', dealRef);
   params.set('buyer', getSelectedBuyerType());
   params.set('purchase', selectedPurchaseType);
+  if (selectedPurchaseType === 'mortgage') params.set('mtype', mortgageType);
 
   const url = window.location.origin + window.location.pathname + '?' + params.toString();
   shareOrCopy(url, btnEl);
@@ -2996,7 +3166,16 @@ function checkUrlParams() {
   }
 
 
-  if (params.has('running')) {
+  if (params.has('rcitems')) {
+    try {
+      const items = JSON.parse(params.get('rcitems'));
+      if (Array.isArray(items) && items.length > 0) {
+        runningCostItems = items.map(i => ({ label: i.l || '', amount: parseFloat(i.a) || 0 }));
+        while (runningCostItems.length < 2) runningCostItems.push({ label: '', amount: 0 });
+        renderRunningCostItems();
+      }
+    } catch (e) {}
+  } else if (params.has('running')) {
     const running = parseFloat(params.get('running'));
     if (running > 0) {
       runningCostItems = [{ label: '', amount: running }, { label: '', amount: 0 }];
@@ -3067,6 +3246,14 @@ function checkUrlParams() {
     if (mortgageSection) {
       mortgageSection.style.display = pt === 'mortgage' ? '' : 'none';
     }
+  }
+
+  if (params.has('mtype')) {
+    const mt = params.get('mtype');
+    mortgageType = mt;
+    document.querySelectorAll('.mortgage-type-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mortgageType === mt);
+    });
   }
 
   window.history.replaceState({}, '', window.location.pathname);

@@ -3355,3 +3355,113 @@ body.dark .sdlt-explanation { color: #aaa; }
 body.dark .sdlt-cta { color: #aaa; }
 body.dark .landing-toggle-btn { color: #d42027; border-color: #d42027; }
 body.dark .landing-toggle-btn:hover { background: #d42027; color: #fff; }
+
+.deposit-input-wrapper {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+.deposit-input-wrapper input {
+  flex: 1;
+  border-radius: 6px 0 0 6px;
+  border-right: none;
+}
+
+.deposit-mode-toggle {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 0 6px 6px 0;
+  overflow: hidden;
+}
+
+.deposit-mode-btn {
+  padding: 6px 10px;
+  border: none;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+  transition: background 0.15s, color 0.15s;
+}
+
+.deposit-mode-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+.deposit-helper-text {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 4px;
+  min-height: 1.2em;
+}
+
+.mortgage-type-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mortgage-type-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mortgage-type-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+.mortgage-type-label {
+  font-weight: 400;
+  font-size: 0.85em;
+  color: #888;
+}
+
+body.dark .deposit-mode-btn {
+  background: #333;
+  color: #aaa;
+  border-color: #555;
+}
+
+body.dark .deposit-mode-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+body.dark .deposit-mode-toggle {
+  border-color: #555;
+}
+
+body.dark .deposit-helper-text {
+  color: #999;
+}
+
+body.dark .mortgage-type-btn {
+  background: #333;
+  color: #aaa;
+}
+
+body.dark .mortgage-type-btn.active {
+  background: #d42027;
+  color: #fff;
+}
+
+body.dark .mortgage-type-toggle {
+  border-color: #555;
+}
+
+body.dark .mortgage-type-label {
+  color: #999;
+}
