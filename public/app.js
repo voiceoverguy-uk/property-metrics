@@ -16,6 +16,132 @@ let currentMode = 'simple';
 let lastSdltData = null;
 let lastSdltPrice = null;
 
+const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
+const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
+const modeMeta = {
+  simple: {
+    title: 'Rental Yield Calculator UK | Free BTL Tool',
+    description: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
+    h1: 'Rental Yield Calculator UK',
+    subheading: 'Calculate gross and net rental yield, monthly cash flow and acquisition costs in seconds.'
+  },
+  analyser: {
+    title: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
+    description: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
+    h1: 'Buy-to-Let Deal Analyser (UK)',
+    subheading: 'Stress test your numbers, model mortgage impact and see if your deal really stacks up.'
+  },
+  sdlt: {
+    title: 'Stamp Duty Calculator UK | Free SDLT Tool',
+    description: 'Free UK Stamp Duty calculator for investors, additional properties and first-time buyers. Accurate SDLT estimates in seconds.',
+    h1: 'Stamp Duty Calculator UK (SDLT)',
+    subheading: 'Instantly calculate Stamp Duty for investors, additional properties and first-time buyers.'
+  }
+};
+const modeFaqs = {
+  simple: [
+    { q: 'What is rental yield?', a: 'Rental yield measures the annual return on a buy-to-let property as a percentage of its purchase price. Gross yield uses the full annual rent, while net yield deducts running costs such as insurance, maintenance and letting agent fees. Most UK investors target a net yield between 5% and 8%.' },
+    { q: 'What is the difference between gross and net yield?', a: 'Gross yield is calculated by dividing the annual rent by the property price and multiplying by 100. Net yield goes further by subtracting annual running costs from the rent before dividing by the total acquisition cost, including SDLT and solicitor fees. Net yield gives a more realistic picture of your actual return.' },
+    { q: 'How much should I budget for solicitor fees?', a: 'Solicitor or conveyancing fees for a standard UK buy-to-let purchase typically range from \u00a31,000 to \u00a31,800 plus VAT. Costs can be higher for leasehold properties or complex transactions. Always get a fixed-fee quote that includes disbursements such as searches, Land Registry fees and bank transfer charges.' },
+    { q: 'What is a good rental yield in the UK?', a: 'A good gross yield for UK buy-to-let is generally considered to be 6% or above, though this varies by region. Northern cities such as Liverpool, Manchester and Leeds often achieve 7\u201310%, while London yields tend to be lower at 3\u20135%. Always assess net yield after costs for a true comparison.' }
+  ],
+  analyser: [
+    { q: 'What is cash-on-cash return?', a: 'Cash-on-cash return measures the annual pre-tax cash flow as a percentage of the total cash you invested, including your deposit, SDLT, solicitor fees and refurbishment costs. It is especially useful for leveraged purchases because it shows the return on your actual money in the deal rather than the full property price.' },
+    { q: 'How does mortgage stress testing work?', a: 'Stress testing calculates your mortgage payment at a higher interest rate, typically 2\u20133% above your actual rate, to check whether the rental income still covers costs. UK lenders commonly stress-test at around 5.5\u20137%. If cash flow remains positive at the stress rate, the deal offers a safety margin against future rate rises.' },
+    { q: 'What is annual cash flow on a buy-to-let?', a: 'Annual cash flow is the money left after deducting all costs from your rental income. This includes mortgage payments, letting agent fees, maintenance, insurance, void periods and any other running costs. Positive cash flow means the property pays for itself each month; negative cash flow requires you to top up from personal funds.' },
+    { q: 'What costs are included in a deal analysis?', a: 'A full deal analysis includes the purchase price, Stamp Duty Land Tax, solicitor fees, survey costs, refurbishment and any other acquisition costs. It also factors in ongoing costs such as mortgage payments, letting agent fees with VAT, maintenance allowance, insurance and void periods to calculate accurate net yield and cash flow.' }
+  ],
+  sdlt: [
+    { q: 'What are the current SDLT rates in England?', a: 'For standard purchases the rates are 0% up to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.' },
+    { q: 'What is the additional property SDLT surcharge?', a: 'Since April 2025, buyers purchasing an additional residential property in England or Northern Ireland pay a 5% surcharge on top of standard SDLT rates. This applies to buy-to-let investments and second homes. The surcharge is calculated on the entire purchase price and significantly increases the total tax bill on investment properties.' },
+    { q: 'Do first-time buyers pay less Stamp Duty?', a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3425,000 and 5% on the portion from \u00a3425,001 to \u00a3625,000. If the property costs more than \u00a3625,000, the relief is lost entirely and standard rates apply to the full price.' },
+    { q: 'Does SDLT apply in Scotland and Wales?', a: 'No, SDLT only applies in England and Northern Ireland. Scotland uses Land and Buildings Transaction Tax with different rate bands and thresholds. Wales uses Land Transaction Tax, also with its own structure. This calculator covers England and Northern Ireland only; separate tools are needed for Scottish and Welsh calculations.' }
+  ]
+};
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+
+window.addEventListener('popstate', (e) => {
+  const mode = (e.state && e.state.mode) ? e.state.mode : (routeToMode[window.location.pathname] || 'simple');
+  setMode(mode, false);
+});
+
+function updateMeta(mode) {
+  const meta = modeMeta[mode];
+  if (!meta) return;
+  const url = 'https://rentalmetrics.co.uk' + modeToRoute[mode];
+  document.title = meta.title;
+  const descTag = document.querySelector('meta[name="description"]');
+  if (descTag) descTag.setAttribute('content', meta.description);
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.setAttribute('href', url);
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.setAttribute('content', meta.title);
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute('content', meta.description);
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.setAttribute('content', url);
+  const twTitle = document.querySelector('meta[name="twitter:title"]');
+  if (twTitle) twTitle.setAttribute('content', meta.title);
+  const twDesc = document.querySelector('meta[name="twitter:description"]');
+  if (twDesc) twDesc.setAttribute('content', meta.description);
+  const h1El = document.getElementById('pageH1');
+  if (h1El) h1El.textContent = meta.h1;
+  const subEl = document.getElementById('pageSubheading');
+  if (subEl) subEl.textContent = meta.subheading;
+}
+
+function updateFaqSchema(mode) {
+  const existing = document.getElementById('faq-jsonld');
+  if (existing) existing.remove();
+  const faqs = modeFaqs[mode];
+  if (!faqs) return;
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqs.map(f => ({
+      '@type': 'Question',
+      'name': f.q,
+      'acceptedAnswer': { '@type': 'Answer', 'text': f.a }
+    }))
+  };
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'faq-jsonld';
+  script.textContent = JSON.stringify(schema);
+  document.head.appendChild(script);
+}
+
+function setMode(mode, pushHistory) {
+  currentMode = mode;
+  const btns = document.querySelectorAll('.mode-btn');
+  btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.body.classList.remove('sdlt-mode', 'simple-mode', 'deal-mode');
+  if (mode === 'sdlt') {
+    document.body.classList.add('sdlt-mode');
+    document.getElementById('monthlyRent').removeAttribute('required');
+    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>';
+  } else if (mode === 'simple') {
+    document.body.classList.add('simple-mode');
+    document.getElementById('monthlyRent').setAttribute('required', '');
+    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+  } else {
+    document.body.classList.add('deal-mode');
+    document.getElementById('monthlyRent').setAttribute('required', '');
+    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+  }
+  updateMeta(mode);
+  updateFaqSchema(mode);
+  if (pushHistory !== false) {
+    const target = modeToRoute[mode] || '/';
+    if (window.location.pathname !== target) {
+      window.history.pushState({ mode }, '', target);
+    }
+  }
+}
+
 const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
@@ -2169,179 +2295,6 @@ function printReport() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
 }
-
-const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
-const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
-const modeMeta = {
-  simple: {
-    title: 'Rental Yield Calculator UK | Free BTL Tool',
-    description: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
-    h1: 'Rental Yield Calculator UK',
-    subheading: 'Calculate gross and net rental yield, monthly cash flow and acquisition costs in seconds.'
-  },
-  analyser: {
-    title: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
-    description: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
-    h1: 'Buy-to-Let Deal Analyser (UK)',
-    subheading: 'Stress test your numbers, model mortgage impact and see if your deal really stacks up.'
-  },
-  sdlt: {
-    title: 'Stamp Duty Calculator UK | Free SDLT Tool',
-    description: 'Free UK Stamp Duty calculator for investors, additional properties and first-time buyers. Accurate SDLT estimates in seconds.',
-    h1: 'Stamp Duty Calculator UK (SDLT)',
-    subheading: 'Instantly calculate Stamp Duty for investors, additional properties and first-time buyers.'
-  }
-};
-
-function updateMeta(mode) {
-  const meta = modeMeta[mode];
-  if (!meta) return;
-  const url = 'https://rentalmetrics.co.uk' + modeToRoute[mode];
-  document.title = meta.title;
-  const descTag = document.querySelector('meta[name="description"]');
-  if (descTag) descTag.setAttribute('content', meta.description);
-  const canonical = document.querySelector('link[rel="canonical"]');
-  if (canonical) canonical.setAttribute('href', url);
-  const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.setAttribute('content', meta.title);
-  const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.setAttribute('content', meta.description);
-  const ogUrl = document.querySelector('meta[property="og:url"]');
-  if (ogUrl) ogUrl.setAttribute('content', url);
-  const twTitle = document.querySelector('meta[name="twitter:title"]');
-  if (twTitle) twTitle.setAttribute('content', meta.title);
-  const twDesc = document.querySelector('meta[name="twitter:description"]');
-  if (twDesc) twDesc.setAttribute('content', meta.description);
-  const h1El = document.getElementById('pageH1');
-  if (h1El) h1El.textContent = meta.h1;
-  const subEl = document.getElementById('pageSubheading');
-  if (subEl) subEl.textContent = meta.subheading;
-}
-
-const modeFaqs = {
-  simple: [
-    {
-      q: 'What is rental yield?',
-      a: 'Rental yield measures the annual return on a buy-to-let property as a percentage of its purchase price. Gross yield uses the full annual rent, while net yield deducts running costs such as insurance, maintenance and letting agent fees. Most UK investors target a net yield between 5% and 8%.'
-    },
-    {
-      q: 'What is the difference between gross and net yield?',
-      a: 'Gross yield is calculated by dividing the annual rent by the property price and multiplying by 100. Net yield goes further by subtracting annual running costs from the rent before dividing by the total acquisition cost, including SDLT and solicitor fees. Net yield gives a more realistic picture of your actual return.'
-    },
-    {
-      q: 'How much should I budget for solicitor fees?',
-      a: 'Solicitor or conveyancing fees for a standard UK buy-to-let purchase typically range from \u00a31,000 to \u00a31,800 plus VAT. Costs can be higher for leasehold properties or complex transactions. Always get a fixed-fee quote that includes disbursements such as searches, Land Registry fees and bank transfer charges.'
-    },
-    {
-      q: 'What is a good rental yield in the UK?',
-      a: 'A good gross yield for UK buy-to-let is generally considered to be 6% or above, though this varies by region. Northern cities such as Liverpool, Manchester and Leeds often achieve 7\u201310%, while London yields tend to be lower at 3\u20135%. Always assess net yield after costs for a true comparison.'
-    }
-  ],
-  analyser: [
-    {
-      q: 'What is cash-on-cash return?',
-      a: 'Cash-on-cash return measures the annual pre-tax cash flow as a percentage of the total cash you invested, including your deposit, SDLT, solicitor fees and refurbishment costs. It is especially useful for leveraged purchases because it shows the return on your actual money in the deal rather than the full property price.'
-    },
-    {
-      q: 'How does mortgage stress testing work?',
-      a: 'Stress testing calculates your mortgage payment at a higher interest rate, typically 2\u20133% above your actual rate, to check whether the rental income still covers costs. UK lenders commonly stress-test at around 5.5\u20137%. If cash flow remains positive at the stress rate, the deal offers a safety margin against future rate rises.'
-    },
-    {
-      q: 'What is annual cash flow on a buy-to-let?',
-      a: 'Annual cash flow is the money left after deducting all costs from your rental income. This includes mortgage payments, letting agent fees, maintenance, insurance, void periods and any other running costs. Positive cash flow means the property pays for itself each month; negative cash flow requires you to top up from personal funds.'
-    },
-    {
-      q: 'What costs are included in a deal analysis?',
-      a: 'A full deal analysis includes the purchase price, Stamp Duty Land Tax, solicitor fees, survey costs, refurbishment and any other acquisition costs. It also factors in ongoing costs such as mortgage payments, letting agent fees with VAT, maintenance allowance, insurance and void periods to calculate accurate net yield and cash flow.'
-    }
-  ],
-  sdlt: [
-    {
-      q: 'What are the current SDLT rates in England?',
-      a: 'For standard purchases the rates are 0% up to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.'
-    },
-    {
-      q: 'What is the additional property SDLT surcharge?',
-      a: 'Since April 2025, buyers purchasing an additional residential property in England or Northern Ireland pay a 5% surcharge on top of standard SDLT rates. This applies to buy-to-let investments and second homes. The surcharge is calculated on the entire purchase price and significantly increases the total tax bill on investment properties.'
-    },
-    {
-      q: 'Do first-time buyers pay less Stamp Duty?',
-      a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3425,000 and 5% on the portion from \u00a3425,001 to \u00a3625,000. If the property costs more than \u00a3625,000, the relief is lost entirely and standard rates apply to the full price.'
-    },
-    {
-      q: 'Does SDLT apply in Scotland and Wales?',
-      a: 'No, SDLT only applies in England and Northern Ireland. Scotland uses Land and Buildings Transaction Tax with different rate bands and thresholds. Wales uses Land Transaction Tax, also with its own structure. This calculator covers England and Northern Ireland only; separate tools are needed for Scottish and Welsh calculations.'
-    }
-  ]
-};
-
-function updateFaqSchema(mode) {
-  const existing = document.getElementById('faq-jsonld');
-  if (existing) existing.remove();
-
-  const faqs = modeFaqs[mode];
-  if (!faqs) return;
-
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    'mainEntity': faqs.map(f => ({
-      '@type': 'Question',
-      'name': f.q,
-      'acceptedAnswer': {
-        '@type': 'Answer',
-        'text': f.a
-      }
-    }))
-  };
-
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.id = 'faq-jsonld';
-  script.textContent = JSON.stringify(schema);
-  document.head.appendChild(script);
-}
-
-function setMode(mode, pushHistory) {
-  currentMode = mode;
-  const btns = document.querySelectorAll('.mode-btn');
-  btns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-
-  document.body.classList.remove('sdlt-mode', 'simple-mode', 'deal-mode');
-
-  if (mode === 'sdlt') {
-    document.body.classList.add('sdlt-mode');
-    document.getElementById('monthlyRent').removeAttribute('required');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>';
-  } else if (mode === 'simple') {
-    document.body.classList.add('simple-mode');
-    document.getElementById('monthlyRent').setAttribute('required', '');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
-  } else {
-    document.body.classList.add('deal-mode');
-    document.getElementById('monthlyRent').setAttribute('required', '');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
-  }
-
-  updateMeta(mode);
-  updateFaqSchema(mode);
-
-  if (pushHistory !== false) {
-    const target = modeToRoute[mode] || '/';
-    if (window.location.pathname !== target) {
-      window.history.pushState({ mode }, '', target);
-    }
-  }
-}
-
-window.addEventListener('popstate', (e) => {
-  const mode = (e.state && e.state.mode) ? e.state.mode : (routeToMode[window.location.pathname] || 'simple');
-  setMode(mode, false);
-});
-
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => setMode(btn.dataset.mode));
-});
 
 function renderSDLTStandaloneResults(data, price) {
   const address = document.getElementById('address').value || 'Property';
