@@ -12,6 +12,9 @@ let runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
+let currentMode = 'simple';
+let lastSdltData = null;
+let lastSdltPrice = null;
 
 const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'maintenanceFixed'];
 
@@ -2166,10 +2169,6 @@ function printReport() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
 }
-
-let currentMode = 'simple';
-let lastSdltData = null;
-let lastSdltPrice = null;
 
 const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
 const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
