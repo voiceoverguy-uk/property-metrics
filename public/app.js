@@ -12,12 +12,12 @@ let runningCostItems = [{ label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
-let currentMode = 'simple';
+let currentMode = 'analyser';
 let lastSdltData = null;
 let lastSdltPrice = null;
 
-const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
-const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
+const routeToMode = { '/': 'analyser', '/simple-analyser': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
+const modeToRoute = { 'analyser': '/', 'simple': '/simple-analyser', 'sdlt': '/sdlt-calculator' };
 const modeMeta = {
   simple: {
     title: 'Rental Yield Calculator UK | Free BTL Tool',
@@ -3383,7 +3383,7 @@ document.querySelectorAll('.sdlt-cta a, .landing-underfold a[href^="/"]').forEac
     setMode(modeFromRoute, false);
     window.history.replaceState({ mode: modeFromRoute }, '', path + window.location.search);
   } else {
-    setMode('simple', false);
+    setMode('analyser', false);
   }
 })();
 

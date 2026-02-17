@@ -15,20 +15,28 @@ const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x6
 
 const routeMeta = {
   '/': {
-    pageTitle: 'Rental Yield Calculator UK | Free BTL Tool',
-    metaDesc: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
+    pageTitle: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
+    metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
     canonical: 'https://rentalmetrics.co.uk/',
-    ogTitle: 'Rental Yield Calculator UK (Free)',
-    ogDesc: 'Free UK rental yield calculator. Instantly calculate gross yield, net yield and cash flow on your next property deal.',
+    ogTitle: 'Buy-to-Let Deal Analyser UK',
+    ogDesc: 'Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool.',
     ogUrl: 'https://rentalmetrics.co.uk/',
   },
   '/deal-analyser': {
     pageTitle: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
     metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
-    canonical: 'https://rentalmetrics.co.uk/deal-analyser',
+    canonical: 'https://rentalmetrics.co.uk/',
     ogTitle: 'Buy-to-Let Deal Analyser UK',
     ogDesc: 'Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool.',
-    ogUrl: 'https://rentalmetrics.co.uk/deal-analyser',
+    ogUrl: 'https://rentalmetrics.co.uk/',
+  },
+  '/simple-analyser': {
+    pageTitle: 'Rental Yield Calculator UK | Free BTL Tool',
+    metaDesc: 'Free UK rental yield calculator. Estimate gross and net yield, cash flow and acquisition costs for buy-to-let property deals.',
+    canonical: 'https://rentalmetrics.co.uk/simple-analyser',
+    ogTitle: 'Rental Yield Calculator UK (Free)',
+    ogDesc: 'Free UK rental yield calculator. Instantly calculate gross yield, net yield and cash flow on your next property deal.',
+    ogUrl: 'https://rentalmetrics.co.uk/simple-analyser',
   },
   '/sdlt-calculator': {
     pageTitle: 'Stamp Duty Calculator UK | Free SDLT Tool',
@@ -54,7 +62,7 @@ function serveHtml(req, res) {
   res.send(html);
 }
 
-app.get(['/', '/deal-analyser', '/sdlt-calculator'], serveHtml);
+app.get(['/', '/deal-analyser', '/simple-analyser', '/sdlt-calculator'], serveHtml);
 
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain').sendFile(path.join(__dirname, 'public', 'robots.txt'));
