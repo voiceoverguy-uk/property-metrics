@@ -32,8 +32,7 @@ function calculateFTB(price) {
 
 function calculateAdditional(price) {
   const bands = [
-    { threshold: 125000, rate: 0.05 },
-    { threshold: 250000, rate: 0.07 },
+    { threshold: 250000, rate: 0.05 },
     { threshold: 925000, rate: 0.10 },
     { threshold: 1500000, rate: 0.15 },
     { threshold: Infinity, rate: 0.17 },
@@ -66,8 +65,7 @@ function getSDLTBreakdown(price, buyerType) {
     ];
   } else if (buyerType === 'additional') {
     bands = [
-      { from: 0, to: 125000, rate: 0.05 },
-      { from: 125000, to: 250000, rate: 0.07 },
+      { from: 0, to: 250000, rate: 0.05 },
       { from: 250000, to: 925000, rate: 0.10 },
       { from: 925000, to: 1500000, rate: 0.15 },
       { from: 1500000, to: Infinity, rate: 0.17 },

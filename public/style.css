@@ -811,6 +811,11 @@ header .subtitle {
   transition: all 0.2s;
 }
 
+.buyer-type-3 .buyer-type-btn {
+  font-size: 0.8rem;
+  padding: 8px 6px;
+}
+
 .buyer-type-btn.active {
   background: #B11217;
   color: #fff;
@@ -1399,8 +1404,15 @@ header .subtitle {
   background: #0d7377;
 }
 
-.sdlt-bar-standard {
-  background: #b8860b;
+.sdlt-bar-standard,
+.sdlt-bar-main {
+  background: #4a7fb5;
+}
+
+.sdlt-calc-type {
+  font-size: 0.88rem;
+  color: #555;
+  margin: 4px 0 8px;
 }
 
 .sdlt-bar-amount {
@@ -2619,6 +2631,10 @@ body.dark .results-placeholder {
 
 body.dark .sdlt-rates-note {
   color: #666;
+}
+
+body.dark .sdlt-calc-type {
+  color: #999;
 }
 
 body.dark .results-content .address-line {

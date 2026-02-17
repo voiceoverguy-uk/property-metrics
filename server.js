@@ -32,10 +32,10 @@ const routeMeta = {
   },
   '/sdlt-calculator': {
     pageTitle: 'Stamp Duty Calculator UK | Free SDLT Tool',
-    metaDesc: 'Free UK Stamp Duty calculator for investors, additional properties and first-time buyers. Accurate SDLT estimates in seconds.',
+    metaDesc: 'Free UK Stamp Duty calculator for main residences, first-time buyers and investors. Accurate SDLT estimates in seconds.',
     canonical: 'https://rentalmetrics.co.uk/sdlt-calculator',
     ogTitle: 'Stamp Duty Calculator UK (SDLT)',
-    ogDesc: 'Free SDLT calculator for investors, additional properties and first-time buyers. Instant estimates using current England rates.',
+    ogDesc: 'Free SDLT calculator for main residences, first-time buyers and investors. Instant estimates using current England rates.',
     ogUrl: 'https://rentalmetrics.co.uk/sdlt-calculator',
   },
 };
@@ -134,6 +134,11 @@ app.post('/api/calculate', (req, res) => {
     const ftbBreakdown = getSDLTBreakdown(params.price, 'ftb');
     const ftbOffer = calculateTargetOfferPrice({ ...params, buyerType: 'ftb', targetYield: Number(targetYield) || 7.0 });
 
+    const mainResult = calculateDeal({ ...params, buyerType: 'standard' });
+    mainResult.breakdown.costItems = parsedCostItems;
+    const mainBreakdown = getSDLTBreakdown(params.price, 'standard');
+    const mainOffer = calculateTargetOfferPrice({ ...params, buyerType: 'standard', targetYield: Number(targetYield) || 7.0 });
+
     res.json({
       investor: {
         ...investorResult,
@@ -144,6 +149,11 @@ app.post('/api/calculate', (req, res) => {
         ...ftbResult,
         sdltBreakdown: ftbBreakdown,
         targetOffer: ftbOffer,
+      },
+      main: {
+        ...mainResult,
+        sdltBreakdown: mainBreakdown,
+        targetOffer: mainOffer,
       },
       targetYield: Number(targetYield) || 7.0,
     });

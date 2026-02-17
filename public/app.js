@@ -33,9 +33,9 @@ const modeMeta = {
   },
   sdlt: {
     title: 'Stamp Duty Calculator UK | Free SDLT Tool',
-    description: 'Free UK Stamp Duty calculator for investors, additional properties and first-time buyers. Accurate SDLT estimates in seconds.',
+    description: 'Free UK Stamp Duty calculator for main residences, first-time buyers and investors. Accurate SDLT estimates in seconds.',
     h1: 'Stamp Duty Calculator UK (SDLT)',
-    subheading: 'Instantly calculate Stamp Duty for investors, additional properties and first-time buyers.'
+    subheading: 'Instantly calculate Stamp Duty for main residences, first-time buyers and investors.'
   }
 };
 const modeFaqs = {
@@ -430,6 +430,24 @@ function getSelectedBuyerType() {
   return selectedBuyerType;
 }
 
+function getBuyerTypeLabel(bt) {
+  if (bt === 'ftb') return 'First-Time Buyer';
+  if (bt === 'main') return 'Main Residence';
+  return 'Investor / Additional Property';
+}
+
+function getResultForBuyerType(result, bt) {
+  if (bt === 'ftb') return result.ftb;
+  if (bt === 'main') return result.main;
+  return result.investor;
+}
+
+function getSdltApiDataForBuyerType(data, bt) {
+  if (bt === 'ftb') return data.ftb;
+  if (bt === 'main') return data.standard;
+  return data.additional;
+}
+
 document.getElementById('mortgageCalcBtn').addEventListener('click', async () => {
   const price = getCurrencyFieldValue('price');
   const deposit = getDepositAmount();
@@ -456,7 +474,8 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     const res = await fetch(`/api/sdlt?price=${price}`);
     const data = await res.json();
     const buyerType = getSelectedBuyerType();
-    const sdlt = buyerType === 'ftb' ? data.ftb.total : data.additional.total;
+    const sdltData = getSdltApiDataForBuyerType(data, buyerType);
+    const sdlt = sdltData.total;
     document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
     const totalFunds = Math.max(deposit + sdlt + solicitorFees + mortgageAmt, 0);
     document.getElementById('borrowingAmount').textContent = fmt(totalFunds);
@@ -1241,9 +1260,10 @@ function renderYieldGauge(netYield, targetYield) {
   `;
 }
 
-function renderSDLTComparison(investorSDLT, ftbSDLT) {
-  const maxSDLT = Math.max(investorSDLT, ftbSDLT, 1);
+function renderSDLTComparison(investorSDLT, ftbSDLT, mainSDLT) {
+  const maxSDLT = Math.max(investorSDLT, ftbSDLT, mainSDLT || 0, 1);
   const investorPct = (investorSDLT / maxSDLT) * 100;
+  const mainPct = ((mainSDLT || 0) / maxSDLT) * 100;
   const ftbPct = (ftbSDLT / maxSDLT) * 100;
   return `
     <div class="sdlt-comparison-chart">
@@ -1254,6 +1274,13 @@ function renderSDLTComparison(investorSDLT, ftbSDLT) {
           <div class="sdlt-bar-fill sdlt-bar-investor" style="width:${Math.max(investorPct, 2)}%"></div>
         </div>
         <span class="sdlt-bar-amount">${fmt(investorSDLT)}</span>
+      </div>
+      <div class="sdlt-bar-row">
+        <span class="sdlt-bar-label">Main Res.</span>
+        <div class="sdlt-bar-track">
+          <div class="sdlt-bar-fill sdlt-bar-main" style="width:${Math.max(mainPct, 2)}%"></div>
+        </div>
+        <span class="sdlt-bar-amount">${fmt(mainSDLT || 0)}</span>
       </div>
       <div class="sdlt-bar-row">
         <span class="sdlt-bar-label">FTB</span>
@@ -1386,7 +1413,8 @@ window.recalcSection24 = function() {
 
   const taxRate = parseFloat(document.getElementById('s24TaxBand').value) / 100;
   const annualMortgageInterest = mortgage.mortgageAmount * (mortgage.interestRate / 100);
-  const effectiveRent = (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].effectiveAnnualRent) || (lastResult[buyerType === 'ftb' ? 'ftb' : 'investor'].annualRent);
+  const resultData = getResultForBuyerType(lastResult, buyerType);
+  const effectiveRent = resultData.effectiveAnnualRent || resultData.annualRent;
   const taxableProfit = Math.max(effectiveRent - (getRunningCostItemsTotal() * 12) - (getLettingAgentFeeMonthly() * 12) - (getMaintenanceAnnual()), 0);
   const taxDue = taxableProfit * taxRate;
   const s24TaxCredit = annualMortgageInterest * 0.20;
@@ -1541,7 +1569,9 @@ function renderScenario(data, label, targetYield, mortgage) {
     ${isSimple ? '' : renderDealRating(displayData.netYield, targetYield)}
 
     <div class="result-section">
-      <h3>SDLT \u2014 ${label}</h3>
+      <h3>SDLT — ${label}</h3>
+      <p class="sdlt-calc-type">Calculation type: <strong>${label}</strong></p>
+      <p class="sdlt-rates-note">Rates correct as at February 2026</p>
       ${renderSDLTTable(data.sdltBreakdown)}
       <div class="result-row total">
         <span class="label">Total SDLT</span>
@@ -1639,8 +1669,8 @@ function renderResults(result) {
   const includeMortgage = purchaseType === 'mortgage';
   const buyerType = getSelectedBuyerType();
 
-  const data = buyerType === 'ftb' ? result.ftb : result.investor;
-  const label = buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property';
+  const data = getResultForBuyerType(result, buyerType);
+  const label = getBuyerTypeLabel(buyerType);
 
   let mortgage = null;
   if (includeMortgage) {
@@ -2188,7 +2218,7 @@ function printReport() {
     const filename = parts.join('-') + '.pdf';
 
     const buyerType = getSelectedBuyerType();
-    const scenarioData = buyerType === 'ftb' ? lastResult.ftb : lastResult.investor;
+    const scenarioData = getResultForBuyerType(lastResult, buyerType);
     if (!scenarioData || !scenarioData.breakdown) {
       alert('Deal data is incomplete. Please run the analysis again.');
       if (btn) { btn.textContent = origText; btn.disabled = false; }
@@ -2263,7 +2293,7 @@ function printReport() {
 
     h.separator();
 
-    h.heading(buyerType === 'ftb' ? 'First-time Buyer' : 'Investor / Additional Property');
+    h.heading(getBuyerTypeLabel(buyerType));
     if (!isSimplePdf) {
       h.dealRating(
         rating.grade,
@@ -2411,15 +2441,15 @@ function renderSDLTStandaloneResults(data, price) {
     `;
   };
 
-  const sdltLabel = buyerType === 'ftb' ? 'First-time Buyer' : 'Additional Property';
-  const sdltData = buyerType === 'ftb' ? data.ftb : data.additional;
+  const sdltLabel = getBuyerTypeLabel(buyerType);
+  const sdltData = getSdltApiDataForBuyerType(data, buyerType);
 
   const html = `
     <div class="results-content">
       <div class="results-header-row">
         <div>
           <h2>SDLT Calculation</h2>
-          <p class="sdlt-rates-note">Rates correct as of January 2026</p>
+          <p class="sdlt-rates-note">Rates correct as at February 2026</p>
           <p class="address-line">${escHtml(address)} — ${fmt(price)}</p>
         </div>
         <div class="results-header-buttons">
@@ -2427,6 +2457,7 @@ function renderSDLTStandaloneResults(data, price) {
         </div>
       </div>
 
+      <p class="sdlt-calc-type">Calculation type: <strong>${sdltLabel}</strong></p>
       ${renderSDLTSection(sdltLabel, sdltData)}
     </div>
   `;
@@ -2490,11 +2521,14 @@ function addToHistory(result) {
     targetYield: targetYield,
     investorNetYield: result.investor.netYield,
     ftbNetYield: result.ftb.netYield,
+    mainNetYield: result.main.netYield,
     investorSDLT: result.investor.sdlt,
     ftbSDLT: result.ftb.sdlt,
+    mainSDLT: result.main.sdlt,
     investorRating: investorRating.grade,
     investorGrossYield: result.investor.grossYield,
     ftbGrossYield: result.ftb.grossYield,
+    mainGrossYield: result.main.grossYield,
     annualCashFlow: isSimple
       ? (result.investor.annualRent)
       : ((result.investor.effectiveAnnualRent || result.investor.annualRent) - (getRunningCostItemsTotal() || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual()),
@@ -2716,15 +2750,21 @@ function renderCompareTable() {
   const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
   
   const entries = history.map(entry => {
-    const isFtb = entry.buyerType === 'ftb';
-    const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
-    const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
+    const bt = entry.buyerType || 'investor';
+    const netYield = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
+      : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
+      : entry.investorNetYield;
+    const sdlt = bt === 'ftb' ? (entry.ftbSDLT || entry.investorSDLT)
+      : bt === 'main' ? (entry.mainSDLT || entry.investorSDLT)
+      : entry.investorSDLT;
     const rating = getDealRating(netYield, entry.targetYield);
 
     const annualRent = entry.monthlyRent * 12;
     const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
-    const grossYield = isFtb
+    const grossYield = bt === 'ftb'
       ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
+      : bt === 'main'
+      ? (entry.mainGrossYield || entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
       : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
 
     const lettingPct = entry.lettingAgentPct || 0;
@@ -2802,7 +2842,7 @@ function renderCompareTable() {
           </div>
         </div>
         <div class="compare-card-footer">
-          <span class="compare-card-buyer">${entry.buyerType === 'ftb' ? 'First-Time Buyer' : 'Investor'}</span>
+          <span class="compare-card-buyer">${getBuyerTypeLabel(entry.buyerType || 'investor')}</span>
           <span class="compare-card-date">${entry.date}</span>
         </div>
       </div>
@@ -2841,15 +2881,22 @@ function downloadComparePdf() {
     const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
 
     const entries = history.map(entry => {
-      const isFtb = entry.buyerType === 'ftb';
-      const netYield = isFtb ? (entry.ftbNetYield || entry.investorNetYield) : entry.investorNetYield;
-      const sdlt = isFtb ? (entry.ftbSDLT || entry.investorSDLT) : entry.investorSDLT;
+      const bt = entry.buyerType || 'investor';
+      const netYield = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
+        : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
+        : entry.investorNetYield;
+      const sdlt = bt === 'ftb' ? (entry.ftbSDLT || entry.investorSDLT)
+        : bt === 'main' ? (entry.mainSDLT || entry.investorSDLT)
+        : entry.investorSDLT;
       const rating = getDealRating(netYield, entry.targetYield);
       const annualRent = entry.monthlyRent * 12;
       const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
-      const grossYield = isFtb
-        ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
-        : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
+      const defaultGross = entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0;
+      const grossYield = bt === 'ftb'
+        ? (entry.ftbGrossYield || defaultGross)
+        : bt === 'main'
+        ? (entry.mainGrossYield || entry.investorGrossYield || defaultGross)
+        : (entry.investorGrossYield || defaultGross);
       const lettingPct = entry.lettingAgentPct || 0;
       let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
       if (entry.lettingAgentVat) lettingMonthly *= 1.2;
@@ -2987,7 +3034,7 @@ function downloadComparePdf() {
       pdf.text(fmt(e.displaySdlt), cx, textY);
       cx += colW[9];
 
-      pdf.text(e.buyerType === 'ftb' ? 'FTB' : 'Investor', cx, textY);
+      pdf.text(e.buyerType === 'ftb' ? 'FTB' : e.buyerType === 'main' ? 'Main Res.' : 'Investor', cx, textY);
 
       h.setY(textY + dynRowH - 4);
       pdf.setDrawColor(230, 230, 230);
