@@ -21,7 +21,8 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Header**: Single-row layout with logo and tagline on the left, pill-style mode tabs (Simple Analyser, Deal Analyser, SDLT Calculator Only) and dark mode toggle on the right. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
 - **Mode Toggle**: Functionality to switch between "Deal Analyser" (full analysis) and "SDLT Calculator Only" (price + SDLT).
 - **Dark Mode**: Toggleable with localStorage persistence.
-- **Form Fields**: Utilize placeholders for user guidance (e.g., "e.g. £1,500" for solicitor fees).
+- **Tooltips**: JS-driven tooltip system with 270px max-width bubbles, positioned above (flips below if near viewport top), arrow indicator, fade/scale animation (150ms), hover (desktop) and tap (mobile) support. Dark mode aware.
+- **Form Fields**: Utilize placeholders for user guidance (e.g., "e.g. £1,500" for solicitor fees). Simple Analyser starts with 1 recurring cost row (expandable), and includes Letting Agent Fee (%) with VAT toggle.
 - **Results Display**: Single scenario display (Investor or FTB), not side-by-side. Mortgage calculations are based on cash invested (deposit + SDLT + fees + costs) when a mortgage is active.
 - **Comparison Feature**: "Compare Deals" overlay in the history section, ranking deals by rating/yield with gold/silver/bronze badges for top deals.
 - **PDF Export**: Clean print layout for generating PDF reports.

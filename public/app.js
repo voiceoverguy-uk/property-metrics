@@ -8,7 +8,7 @@ const mapContainer = document.getElementById('mapContainer');
 
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
 let simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
-let runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
+let runningCostItems = [{ label: '', amount: 0 }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
@@ -796,7 +796,7 @@ function calculateMortgage(price, data) {
   const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
   const isSimple = currentMode === 'simple';
   const baseRunningCosts = getRunningCostItemsTotal();
-  const lettingAgentFee = isSimple ? 0 : getLettingAgentFeeMonthly();
+  const lettingAgentFee = getLettingAgentFeeMonthly();
   const maintenanceMonthly = isSimple ? 0 : (getMaintenanceAnnual() / 12);
   const runningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
   const solicitorFees = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
@@ -1723,11 +1723,11 @@ async function runCalculation() {
 
   if (isSimple) {
     totalAdditionalCosts = getSimpleCostItemsTotal();
-    lettingAgentFee = 0;
+    lettingAgentFee = getLettingAgentFeeMonthly();
     baseRunningCosts = getRunningCostItemsTotal();
     maintenanceAnnual = 0;
     maintenanceMonthly = 0;
-    totalRunningCosts = baseRunningCosts;
+    totalRunningCosts = baseRunningCosts + lettingAgentFee;
   } else {
     totalAdditionalCosts = getCostItemsTotal();
     lettingAgentFee = getLettingAgentFeeMonthly();
@@ -1749,8 +1749,8 @@ async function runCalculation() {
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
     runningCosts: totalRunningCosts,
     targetYield: isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0),
-    lettingAgentPct: isSimple ? 0 : getLettingAgentPct(),
-    lettingAgentVat: isSimple ? false : document.getElementById('lettingAgentVat').checked,
+    lettingAgentPct: getLettingAgentPct(),
+    lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     simpleMode: isSimple,
   };
 
@@ -2541,8 +2541,8 @@ function addToHistory(result) {
     runningCosts: getRunningCostItemsTotal(),
     runningCostItems: runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
     mortgageType: mortgageType,
-    lettingAgentPct: isSimple ? 0 : getLettingAgentPct(),
-    lettingAgentVat: isSimple ? false : document.getElementById('lettingAgentVat').checked,
+    lettingAgentPct: getLettingAgentPct(),
+    lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
     purchaseType: selectedPurchaseType,
     maintenanceMode: isSimple ? 'pct' : maintenanceMode,
@@ -3072,8 +3072,8 @@ function shareDeal(btnEl) {
   const target = isSimple ? 6 : (parseFloat(document.getElementById('targetYield').value) || 7);
   const addr = document.getElementById('address').value || '';
 
-  const agentPct = isSimple ? 0 : getLettingAgentPct();
-  const agentVat = isSimple ? false : document.getElementById('lettingAgentVat').checked;
+  const agentPct = getLettingAgentPct();
+  const agentVat = document.getElementById('lettingAgentVat').checked;
 
   const voidPct = isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0);
   const maintMode = isSimple ? 'pct' : maintenanceMode;
@@ -3388,4 +3388,70 @@ document.querySelectorAll('.sdlt-cta a, .landing-underfold a[href^="/"]').forEac
 })();
 
 checkUrlParams();
+
+(function initTooltips() {
+  let activeTooltip = null;
+
+  function showTooltip(el) {
+    hideAllTooltips();
+    let bubble = el.querySelector('.tooltip-bubble');
+    if (!bubble) {
+      bubble = document.createElement('span');
+      bubble.className = 'tooltip-bubble';
+      bubble.textContent = el.getAttribute('data-tip');
+      el.appendChild(bubble);
+    }
+    bubble.classList.remove('below', 'nudge-left', 'nudge-right');
+    bubble.classList.add('visible');
+
+    const rect = bubble.getBoundingClientRect();
+    if (rect.top < 4) {
+      bubble.classList.add('below');
+    }
+    const bRect = bubble.getBoundingClientRect();
+    if (bRect.right > window.innerWidth - 8) {
+      bubble.classList.add('nudge-left');
+    } else if (bRect.left < 8) {
+      bubble.classList.add('nudge-right');
+    }
+    activeTooltip = el;
+  }
+
+  function hideTooltip(el) {
+    const bubble = el.querySelector('.tooltip-bubble');
+    if (bubble) bubble.classList.remove('visible');
+    if (activeTooltip === el) activeTooltip = null;
+  }
+
+  function hideAllTooltips() {
+    document.querySelectorAll('.tooltip-bubble.visible').forEach(b => b.classList.remove('visible'));
+    activeTooltip = null;
+  }
+
+  document.addEventListener('mouseover', (e) => {
+    const tip = e.target.closest('.tooltip');
+    if (tip) showTooltip(tip);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const tip = e.target.closest('.tooltip');
+    if (tip) hideTooltip(tip);
+  });
+
+  document.addEventListener('click', (e) => {
+    const tip = e.target.closest('.tooltip');
+    if (tip) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (activeTooltip === tip) {
+        hideTooltip(tip);
+      } else {
+        showTooltip(tip);
+      }
+    } else {
+      hideAllTooltips();
+    }
+  }, true);
+
+  document.addEventListener('scroll', hideAllTooltips, true);
+})();
 

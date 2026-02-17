@@ -205,26 +205,74 @@ header .subtitle {
   font-weight: 700;
   cursor: help;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.tooltip:hover::after {
-  content: attr(data-tip);
+.tooltip-bubble {
   position: absolute;
   left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%);
-  background: #1a1a1a;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) scale(0.95);
+  background: #1f1f1f;
   color: #fff;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 8px;
-  font-size: 0.78rem;
+  font-size: 13px;
   font-weight: 400;
-  white-space: nowrap;
-  max-width: 260px;
+  line-height: 1.4;
+  width: max-content;
+  max-width: 270px;
+  min-width: 180px;
   white-space: normal;
-  z-index: 10;
-  margin-bottom: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  word-break: normal;
+  overflow-wrap: break-word;
+  z-index: 1000;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.tooltip-bubble.visible {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  pointer-events: auto;
+}
+
+.tooltip-bubble.below {
+  bottom: auto;
+  top: calc(100% + 10px);
+}
+
+.tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -6px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #1f1f1f;
+}
+
+.tooltip-bubble.below::after {
+  bottom: auto;
+  top: -6px;
+  border-top: none;
+  border-bottom: 7px solid #1f1f1f;
+}
+
+.tooltip-bubble.nudge-left {
+  transform: translateX(-80%) scale(1);
+}
+.tooltip-bubble.nudge-left::after {
+  left: 80%;
+}
+.tooltip-bubble.nudge-right {
+  transform: translateX(-20%) scale(1);
+}
+.tooltip-bubble.nudge-right::after {
+  left: 20%;
 }
 
 .btn-calculate {
@@ -2626,9 +2674,19 @@ body.dark .tooltip {
   color: #a0a0b0;
 }
 
-body.dark .tooltip:hover::after {
+body.dark .tooltip-bubble {
   background: #0f0f23;
   color: #e8e8e8;
+}
+
+body.dark .tooltip-bubble::after {
+  border-top-color: #0f0f23;
+}
+
+body.dark .tooltip-bubble.below::after {
+  border-top-color: transparent;
+  border-bottom-color: #0f0f23;
+}
 }
 
 body.dark .results-placeholder {
