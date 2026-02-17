@@ -133,7 +133,7 @@ header .subtitle {
   font-size: 0.95rem;
   margin: 20px 0 12px;
   color: #555;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid #d42027;
   padding-top: 16px;
 }
 
@@ -600,13 +600,13 @@ header .subtitle {
   font-weight: 600;
   color: #333;
   padding: 6px 0 4px;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid #d42027;
   margin-bottom: 4px;
 }
 
 .form-section-divider {
   border: none;
-  border-top: 1px solid #ccc;
+  border-top: 2px solid #d42027;
   margin: 12px 0;
 }
 
@@ -788,7 +788,7 @@ header .subtitle {
 .mortgage-include-row {
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 2px solid #d42027;
 }
 
 .buyer-type-toggle {
@@ -2518,7 +2518,7 @@ body.dark .history-section h2 {
 
 body.dark .input-panel h3 {
   color: #a0a0b0;
-  border-top-color: #2a2a4a;
+  border-top-color: #B11217;
 }
 
 body.dark .form-group label {
@@ -2551,11 +2551,11 @@ body.dark .cost-item-row .cost-item-amount:focus {
 
 body.dark .cost-total-row {
   color: #c0c0d0;
-  border-top-color: #2a2a4a;
+  border-top-color: #B11217;
 }
 
 body.dark .form-section-divider {
-  border-top-color: #2a2a4a;
+  border-top-color: #B11217;
 }
 
 body.dark .btn-add-item {
@@ -2796,7 +2796,7 @@ body.dark .toggle-checkbox-label {
 }
 
 body.dark .mortgage-include-row {
-  border-bottom-color: #2a2a4a;
+  border-bottom-color: #B11217;
 }
 
 body.dark .buyer-type-toggle {
