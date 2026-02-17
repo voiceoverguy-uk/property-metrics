@@ -1903,7 +1903,6 @@ body.dark .dark-mode-toggle-mobile:hover {
 
   .letting-agent-row input[type="text"],
   .letting-agent-row input[type="number"] {
-    min-height: 44px;
     font-size: 16px;
   }
 
