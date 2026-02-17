@@ -80,7 +80,7 @@
     ]
   }
   </script>
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <header id="siteHeader">
@@ -225,6 +225,14 @@
             </div>
           </div>
 
+          <div class="form-group analyser-only full-only target-offer-group">
+            <label for="targetYield">
+              Target Yield (%)
+              <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum offer price to achieve this yield.">?</span>
+            </label>
+            <input type="number" id="targetYield" min="0" max="50" step="any" placeholder="e.g. 7">
+          </div>
+
           <h3 class="analyser-only full-only">
             Recurring Monthly Costs
             <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are separate below.">?</span>
@@ -250,14 +258,6 @@
                 <span class="toggle-checkbox-label">+ 20% VAT</span>
               </label>
             </div>
-          </div>
-
-          <div class="form-group analyser-only full-only target-offer-group">
-            <label for="targetYield">
-              Target Yield (%)
-              <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum offer price to achieve this yield.">?</span>
-            </label>
-            <input type="number" id="targetYield" min="0" max="50" step="any" placeholder="e.g. 7">
           </div>
 
           <hr class="form-section-divider analyser-only">
@@ -594,10 +594,11 @@
 
     <footer class="disclaimer">
       <p><strong>Disclaimer:</strong> Figures are estimates based on your inputs and common UK assumptions. They do not constitute financial advice. Always verify numbers with a qualified professional before committing to a purchase.</p>
+      <p><strong>Your Privacy:</strong> RentalMetrics does not collect, store, or share any of your data. All calculations happen in your browser and nothing is sent to a server. When you close or leave this page, all your inputs are gone.</p>
     </footer>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
