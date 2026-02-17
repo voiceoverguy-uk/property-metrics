@@ -1115,9 +1115,9 @@ function renderRunningCostsBreakdown() {
   const agentFeeTotal = getLettingAgentFeeMonthly();
   const maintenanceAnnual = getMaintenanceAnnual();
   const maintenanceMonthly = maintenanceAnnual / 12;
+  const buyerType = getSelectedBuyerType();
   let mortgageMonthly = 0;
   if (lastMortgageData) {
-    const buyerType = getSelectedBuyerType();
     const mortgageInfo = lastMortgageData[buyerType];
     if (mortgageInfo && mortgageInfo.monthlyPayment > 0) {
       mortgageMonthly = mortgageInfo.monthlyPayment;
