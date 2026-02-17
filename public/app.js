@@ -159,6 +159,36 @@ function formatCurrencyDisplay(val) {
   return '\u00a3' + num.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function addCommasToNumber(str) {
+  const clean = String(str).replace(/[^0-9]/g, '');
+  if (!clean) return '';
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function liveFormatCurrency(input) {
+  const cursorPos = input.selectionStart || 0;
+  const oldVal = input.value;
+  const digitsBeforeCursor = oldVal.slice(0, cursorPos).replace(/[^0-9]/g, '').length;
+  const raw = oldVal.replace(/[^0-9]/g, '');
+  input.dataset.rawValue = raw;
+  if (!raw) { input.value = ''; return; }
+  const formatted = addCommasToNumber(raw);
+  input.value = formatted;
+  let digitsSeen = 0;
+  let newPos = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (formatted[i] !== ',') {
+      digitsSeen++;
+    }
+    if (digitsSeen === digitsBeforeCursor) {
+      newPos = i + 1;
+      break;
+    }
+  }
+  if (digitsBeforeCursor === 0) newPos = 0;
+  input.setSelectionRange(newPos, newPos);
+}
+
 function initCurrencyFormatting() {
   CURRENCY_FIELDS.forEach(id => {
     const input = document.getElementById(id);
@@ -167,19 +197,21 @@ function initCurrencyFormatting() {
     input.setAttribute('inputmode', 'numeric');
     const raw = input.value;
     if (raw) {
-      input.dataset.rawValue = raw;
+      input.dataset.rawValue = String(parseCurrencyValue(raw));
       input.value = formatCurrencyDisplay(raw);
     }
 
-    input.addEventListener('focus', () => {
-      const rv = input.dataset.rawValue || '';
-      input.value = rv;
-    });
+    input.addEventListener('input', () => { liveFormatCurrency(input); });
 
     input.addEventListener('blur', () => {
-      const num = parseCurrencyValue(input.value);
+      const num = parseCurrencyValue(input.dataset.rawValue || input.value);
       input.dataset.rawValue = num || '';
       input.value = num ? formatCurrencyDisplay(num) : '';
+    });
+
+    input.addEventListener('focus', () => {
+      const rv = input.dataset.rawValue || '';
+      input.value = rv ? addCommasToNumber(rv) : '';
     });
   });
 }
@@ -188,18 +220,22 @@ function applyCurrencyToCostAmount(input) {
   input.setAttribute('type', 'text');
   input.setAttribute('inputmode', 'numeric');
 
+  input.addEventListener('input', () => {
+    liveFormatCurrency(input);
+    const idx = parseInt(input.dataset.index);
+    costItems[idx].amount = parseCurrencyValue(input.dataset.rawValue || '0');
+    updateCostTotal();
+  });
+
   input.addEventListener('focus', () => {
     const rv = input.dataset.rawValue || '';
-    input.value = rv;
+    input.value = rv ? addCommasToNumber(rv) : '';
   });
 
   input.addEventListener('blur', () => {
-    const num = parseCurrencyValue(input.value);
+    const num = parseCurrencyValue(input.dataset.rawValue || input.value);
     input.dataset.rawValue = num || '';
     input.value = num ? formatCurrencyDisplay(num) : '';
-    const idx = parseInt(input.dataset.index);
-    costItems[idx].amount = num;
-    updateCostTotal();
   });
 }
 
@@ -207,18 +243,22 @@ function applyCurrencyToRunningCostAmount(input) {
   input.setAttribute('type', 'text');
   input.setAttribute('inputmode', 'numeric');
 
+  input.addEventListener('input', () => {
+    liveFormatCurrency(input);
+    const idx = parseInt(input.dataset.index);
+    runningCostItems[idx].amount = parseCurrencyValue(input.dataset.rawValue || '0');
+    updateRunningCostTotal();
+  });
+
   input.addEventListener('focus', () => {
     const rv = input.dataset.rawValue || '';
-    input.value = rv;
+    input.value = rv ? addCommasToNumber(rv) : '';
   });
 
   input.addEventListener('blur', () => {
-    const num = parseCurrencyValue(input.value);
+    const num = parseCurrencyValue(input.dataset.rawValue || input.value);
     input.dataset.rawValue = num || '';
     input.value = num ? formatCurrencyDisplay(num) : '';
-    const idx = parseInt(input.dataset.index);
-    runningCostItems[idx].amount = num;
-    updateRunningCostTotal();
   });
 }
 
@@ -250,16 +290,32 @@ document.querySelectorAll('.purchase-type-btn').forEach(btn => {
   });
 });
 
+function syncDepositInputType() {
+  const depInput = document.getElementById('depositAmount');
+  if (depositInputMode === 'pounds') {
+    depInput.setAttribute('type', 'text');
+    depInput.setAttribute('inputmode', 'numeric');
+  } else {
+    depInput.setAttribute('type', 'number');
+    depInput.removeAttribute('inputmode');
+  }
+}
+
 document.querySelectorAll('.deposit-mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.deposit-mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     depositInputMode = btn.dataset.depositMode;
     const depInput = document.getElementById('depositAmount');
+    depInput.value = '';
+    depInput.dataset.rawValue = '';
     depInput.placeholder = depositInputMode === 'pct' ? 'e.g. 25' : 'e.g. £40,000';
+    syncDepositInputType();
     updateDepositHelperText();
   });
 });
+
+syncDepositInputType();
 
 document.querySelectorAll('.mortgage-type-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -269,12 +325,19 @@ document.querySelectorAll('.mortgage-type-btn').forEach(btn => {
   });
 });
 
+function getDepositRawValue() {
+  const depInput = document.getElementById('depositAmount');
+  if (depositInputMode === 'pounds') {
+    return parseCurrencyValue(depInput.dataset.rawValue || depInput.value);
+  }
+  return parseFloat(depInput.value) || 0;
+}
+
 function updateDepositHelperText() {
   const helperEl = document.getElementById('depositHelperText');
   if (!helperEl) return;
   const price = getCurrencyFieldValue('price');
-  const depositInput = document.getElementById('depositAmount');
-  const rawVal = parseFloat(depositInput.value) || 0;
+  const rawVal = getDepositRawValue();
 
   if (!price || price <= 0) {
     helperEl.textContent = 'Enter purchase price to calculate';
@@ -293,7 +356,7 @@ function updateDepositHelperText() {
 
 function getDepositAmount() {
   const price = getCurrencyFieldValue('price');
-  const rawVal = parseFloat(document.getElementById('depositAmount').value) || 0;
+  const rawVal = getDepositRawValue();
   if (depositInputMode === 'pct') {
     const clampedPct = Math.min(Math.max(rawVal, 0), 100);
     return Math.round(price * (clampedPct / 100));
@@ -316,7 +379,25 @@ function calcMortgagePayment(loanAmount, annualRate, termYears, type) {
   return loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
 }
 
-document.getElementById('depositAmount').addEventListener('input', updateDepositHelperText);
+document.getElementById('depositAmount').addEventListener('input', function() {
+  if (depositInputMode === 'pounds') {
+    liveFormatCurrency(this);
+  }
+  updateDepositHelperText();
+});
+document.getElementById('depositAmount').addEventListener('focus', function() {
+  if (depositInputMode === 'pounds') {
+    const rv = this.dataset.rawValue || '';
+    this.value = rv ? addCommasToNumber(rv) : '';
+  }
+});
+document.getElementById('depositAmount').addEventListener('blur', function() {
+  if (depositInputMode === 'pounds') {
+    const num = parseCurrencyValue(this.dataset.rawValue || this.value);
+    this.dataset.rawValue = num || '';
+    this.value = num ? formatCurrencyDisplay(num) : '';
+  }
+});
 document.getElementById('price').addEventListener('input', updateDepositHelperText);
 document.getElementById('price').addEventListener('blur', updateDepositHelperText);
 
@@ -1714,6 +1795,12 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   const poundsBtn = document.querySelector('.deposit-mode-btn[data-deposit-mode="pounds"]');
   if (poundsBtn) poundsBtn.classList.add('active');
   document.getElementById('depositAmount').placeholder = 'e.g. £40,000';
+  document.getElementById('depositAmount').dataset.rawValue = '';
+  syncDepositInputType();
+  CURRENCY_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.dataset.rawValue = '';
+  });
   const helperEl = document.getElementById('depositHelperText');
   if (helperEl) helperEl.textContent = '';
   mortgageType = 'interest-only';
