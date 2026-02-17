@@ -188,6 +188,7 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
   }
 
   function updateActive() {
+    dropdown.classList.add('keyboard-nav');
     const items = getItems();
     items.forEach((el, i) => {
       el.classList.toggle('autocomplete-active', i === activeIndex);
@@ -206,6 +207,7 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
 
   function showFiltered() {
     activeIndex = -1;
+    dropdown.classList.remove('keyboard-nav');
     const typed = input.value.trim().toLowerCase();
     if (!typed) { dropdown.style.display = 'none'; return; }
     const custom = getCustomCostLabels();
@@ -227,6 +229,9 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
       item.addEventListener('mousedown', (e) => {
         e.preventDefault();
         selectItem(item);
+      });
+      item.addEventListener('mousemove', () => {
+        dropdown.classList.remove('keyboard-nav');
       });
     });
   }

@@ -808,6 +808,11 @@ header .subtitle {
   color: #B11217;
 }
 
+.autocomplete-dropdown.keyboard-nav .autocomplete-item:hover:not(.autocomplete-active) {
+  background: transparent;
+  color: inherit;
+}
+
 .btn-save-pdf {
   width: 100%;
   padding: 13px;
@@ -3153,6 +3158,11 @@ body.dark .autocomplete-item:hover,
 body.dark .autocomplete-item.autocomplete-active {
   background: rgba(177,18,23,0.1);
   color: #B11217;
+}
+
+body.dark .autocomplete-dropdown.keyboard-nav .autocomplete-item:hover:not(.autocomplete-active) {
+  background: transparent;
+  color: #e8e8e8;
 }
 
 body.dark #mapContainer {
