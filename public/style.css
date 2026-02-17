@@ -769,6 +769,44 @@ header .subtitle {
   color: #B11217;
 }
 
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 1000;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.autocomplete-dropdown.cost-autocomplete {
+  left: 0;
+  right: auto;
+  width: calc(100% - 100px - 28px - 16px);
+}
+
+.autocomplete-item {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover {
+  background: #fef2f2;
+  color: #B11217;
+}
+
 .btn-save-pdf {
   width: 100%;
   padding: 13px;
@@ -2037,6 +2075,10 @@ body.dark .dark-mode-toggle-mobile:hover {
   .cost-item-row .cost-item-amount {
     font-size: 16px;
   }
+
+  .autocomplete-dropdown.cost-autocomplete {
+    width: 100%;
+  }
 }
 
 /* Compare Deals Overlay */
@@ -2429,6 +2471,7 @@ body.dark .compare-card-buyer {
   .btn-remove-item,
   .tooltip,
   .address-dropdown,
+  .autocomplete-dropdown,
   .mode-toggle,
   .yield-gauge,
   .sdlt-comparison-chart,
@@ -3090,6 +3133,22 @@ body.dark .address-dropdown-item {
 
 body.dark .address-dropdown-item:hover,
 body.dark .address-dropdown-item.active {
+  background: rgba(177,18,23,0.1);
+  color: #B11217;
+}
+
+body.dark .autocomplete-dropdown {
+  background: #16213e;
+  border-color: #2a2a4a;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+body.dark .autocomplete-item {
+  color: #e8e8e8;
+  border-bottom-color: #2a2a4a;
+}
+
+body.dark .autocomplete-item:hover {
   background: rgba(177,18,23,0.1);
   color: #B11217;
 }

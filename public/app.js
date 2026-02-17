@@ -13,6 +13,139 @@ let map = null;
 let marker = null;
 let selectedLocation = null;
 let currentMode = 'analyser';
+
+const PROPERTY_COST_SUGGESTIONS = [
+  "Refurb / repairs","Decorating","Redecoration","Painting","Plastering",
+  "Electrics","Rewiring","New consumer unit","Lighting upgrades","Plumbing",
+  "Boiler replacement","Central heating system","Radiators","Bathroom installation",
+  "Kitchen installation","Flooring","Carpets","Laminate flooring","Tiling",
+  "Windows replacement","Doors replacement","Roof repairs","New roof","Damp proofing",
+  "Structural works","Extension","Loft conversion","Garage conversion","Chimney repairs",
+  "Insulation","Solicitor fees","Stamp duty","Survey","Valuation fee","Broker fee",
+  "Mortgage arrangement fee","Lender fee","Sourcing fee","Auction fees","Legal searches",
+  "Land Registry fee","Bridging loan interest","Bridging arrangement fee","Refinance costs",
+  "Product transfer fee","Early repayment charge","Mortgage exit fee","Accountant fees",
+  "Company setup costs","Incorporation fee","Gas safety certificate","EICR","EPC",
+  "Fire doors","Smoke alarms","Carbon monoxide alarms","HMO licence","Selective licence",
+  "Planning permission","Building control","PAT testing","Legionella assessment",
+  "Fire risk assessment","Tenancy agreement setup","Inventory","Deposit protection fee",
+  "Referencing","Letting agent setup fee","Letting agent tenant-find fee",
+  "Compliance upgrades","Furniture","Appliances","White goods","Beds","Sofas",
+  "Wardrobes","Curtains / blinds","Garden works","Landscaping","Fence replacement",
+  "Driveway works","Clearance","Waste removal","Skip hire","Deep cleaning",
+  "Professional cleaning","End of tenancy clean","Pest control","Security system",
+  "CCTV installation","Insurance","Landlord insurance","Service charge","Ground rent",
+  "Maintenance allowance","Void allowance","Management fee","Bookkeeping",
+  "Software subscriptions","Marketing costs"
+];
+
+function getShortAddress() {
+  const addr = document.getElementById('address').value.trim();
+  if (!addr) return '';
+  const parts = addr.split(',');
+  let short = parts[0].trim();
+  short = short.replace(/^\d+\s+/, '');
+  return short;
+}
+
+function updateDealRefPlaceholder() {
+  const dealRefInput = document.getElementById('dealReference');
+  if (!dealRefInput) return;
+  const short = getShortAddress();
+  dealRefInput.placeholder = short ? `${short} \u2013 BTL` : 'e.g. house with mortgage';
+}
+
+function setupDealRefAutocomplete() {
+  const dealRefInput = document.getElementById('dealReference');
+  if (!dealRefInput) return;
+  const wrapper = dealRefInput.parentElement;
+  wrapper.style.position = 'relative';
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'autocomplete-dropdown';
+  dropdown.style.display = 'none';
+  wrapper.appendChild(dropdown);
+
+  const suffixes = ['BTL', 'Mortgage', 'Project', 'Refurb'];
+
+  function showSuggestions() {
+    const short = getShortAddress();
+    if (!short) { dropdown.style.display = 'none'; return; }
+    const typed = dealRefInput.value.trim().toLowerCase();
+    const suggestions = suffixes
+      .map(s => `${short} \u2013 ${s}`)
+      .filter(s => !typed || s.toLowerCase().includes(typed));
+    if (suggestions.length === 0) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = suggestions.map(s =>
+      `<div class="autocomplete-item">${escHtml(s)}</div>`
+    ).join('');
+    dropdown.style.display = 'block';
+    dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        dealRefInput.value = item.textContent;
+        dropdown.style.display = 'none';
+      });
+    });
+  }
+
+  dealRefInput.addEventListener('focus', showSuggestions);
+  dealRefInput.addEventListener('input', showSuggestions);
+  dealRefInput.addEventListener('blur', () => {
+    setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+  });
+
+  const addressInput = document.getElementById('address');
+  if (addressInput) {
+    addressInput.addEventListener('input', updateDealRefPlaceholder);
+    addressInput.addEventListener('change', updateDealRefPlaceholder);
+    const origSetValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    const observer = new MutationObserver(() => updateDealRefPlaceholder());
+    observer.observe(addressInput, { attributes: true });
+  }
+}
+
+function attachCostLabelAutocomplete(input) {
+  const row = input.closest('.cost-item-row');
+  if (!row) return;
+  row.style.position = 'relative';
+
+  let dropdown = input._acDropdown;
+  if (!dropdown) {
+    dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown cost-autocomplete';
+    dropdown.style.display = 'none';
+    row.appendChild(dropdown);
+    input._acDropdown = dropdown;
+  }
+
+  function showFiltered() {
+    const typed = input.value.trim().toLowerCase();
+    if (!typed) { dropdown.style.display = 'none'; return; }
+    const matches = PROPERTY_COST_SUGGESTIONS
+      .filter(s => s.toLowerCase().includes(typed))
+      .slice(0, 6);
+    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = matches.map(m =>
+      `<div class="autocomplete-item">${escHtml(m)}</div>`
+    ).join('');
+    dropdown.style.display = 'block';
+    dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        input.value = item.textContent;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        dropdown.style.display = 'none';
+      });
+    });
+  }
+
+  input.addEventListener('input', showFiltered);
+  input.addEventListener('focus', showFiltered);
+  input.addEventListener('blur', () => {
+    setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+  });
+}
 let lastSdltData = null;
 let lastSdltPrice = null;
 
@@ -574,6 +707,7 @@ function setupAutocomplete(placesLib) {
     addressInput.value = pred.text.text;
     dropdown.style.display = 'none';
     activeIndex = -1;
+    updateDealRefPlaceholder();
 
     (async () => {
       try {
@@ -696,6 +830,7 @@ function setupClassicAutocomplete(addressInput, dropdown) {
       };
       showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
     }
+    updateDealRefPlaceholder();
   });
 }
 
@@ -892,6 +1027,7 @@ function renderCostItems() {
     input.addEventListener('input', (e) => {
       costItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
+    attachCostLabelAutocomplete(input);
   });
 
   costItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
@@ -946,6 +1082,7 @@ function renderSimpleCostItems() {
     input.addEventListener('input', (e) => {
       simpleCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
+    attachCostLabelAutocomplete(input);
   });
 
   simpleCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
@@ -973,6 +1110,7 @@ function renderSimpleCostItems() {
 }
 
 renderSimpleCostItems();
+setupDealRefAutocomplete();
 
 const runningCostItemsList = document.getElementById('runningCostItemsList');
 const runningCostItemsTotalEl = document.getElementById('runningCostItemsTotal');
@@ -1004,6 +1142,7 @@ function renderRunningCostItems() {
     input.addEventListener('input', (e) => {
       runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
+    attachCostLabelAutocomplete(input);
   });
 
   runningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
@@ -1056,6 +1195,7 @@ function renderSimpleRunningCostItems() {
     input.addEventListener('input', (e) => {
       runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
+    attachCostLabelAutocomplete(input);
   });
 
   simpleRunningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
