@@ -1957,7 +1957,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.querySelector('.maint-mode-btn[data-maint="pct"]').classList.add('active');
   document.getElementById('maintPctInput').style.display = '';
   document.getElementById('maintFixedInput').style.display = 'none';
-  document.getElementById('targetYield').value = '';
+  document.getElementById('targetYield').value = '7';
   document.getElementById('interestRate').value = '';
   document.getElementById('mortgageTerm').value = '25';
   document.getElementById('stressTestRate').value = '7.0';
@@ -1989,7 +1989,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('dealReference').value = '';
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderSimpleCostItems();
-  document.getElementById('targetYield').value = '';
+  document.getElementById('targetYield').value = '7';
   document.getElementById('showStressTest').checked = false;
   document.getElementById('stressTestInput').style.display = 'none';
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
