@@ -1570,7 +1570,6 @@ function renderScenario(data, label, targetYield, mortgage) {
 
     <div class="result-section">
       <h3>SDLT — ${label}</h3>
-      <p class="sdlt-calc-type">Calculation type: <strong>${label}</strong></p>
       <p class="sdlt-rates-note">Rates based on current GOV.UK guidance (England &amp; Northern Ireland).</p>
       ${renderSDLTTable(data.sdltBreakdown)}
       <div class="result-row total">
@@ -2457,7 +2456,6 @@ function renderSDLTStandaloneResults(data, price) {
         </div>
       </div>
 
-      <p class="sdlt-calc-type">Calculation type: <strong>${sdltLabel}</strong></p>
       ${renderSDLTSection(sdltLabel, sdltData)}
     </div>
   `;
