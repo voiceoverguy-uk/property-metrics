@@ -904,7 +904,7 @@ function getSimpleCostItemsTotal() {
 
 function renderSimpleCostItems() {
   simpleCostItemsList.innerHTML = '';
-  const placeholders = ['e.g. Solicitor Fees', 'e.g. Electrics'];
+  const placeholders = ['e.g. Solicitor Fees', 'e.g. Refurb'];
   simpleCostItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
