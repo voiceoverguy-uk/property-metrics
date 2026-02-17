@@ -1182,7 +1182,7 @@ function renderMortgageSection(mortgage) {
       <h3>Mortgage Analysis</h3>
       <div class="result-row"><span class="label">Deposit (${fmtPct(mortgage.depositPct)})</span><span class="value">${fmt(mortgage.depositAmount)}</span></div>
       <div class="result-row"><span class="label">Mortgage Amount</span><span class="value">${fmt(mortgage.mortgageAmount)}</span></div>
-      <div class="result-row"><span class="label">Monthly Mortgage Payment <span class="mortgage-type-label">(${mortgage.mortgageType === 'interest-only' ? 'Interest Only' : 'Repayment'})</span></span><span class="value">${fmt(mortgage.monthlyPayment)}/mo</span></div>
+      <div class="result-row"><span class="label">Monthly Mortgage Payment <span class="mortgage-type-label">(${mortgage.mortgageType === 'interest-only' ? 'Interest Only' : 'Repayment'} @ ${mortgage.interestRate}%, ${mortgage.mortgageTerm}yr)</span></span><span class="value">${fmt(mortgage.monthlyPayment)}/mo</span></div>
       <div class="result-row"><span class="label">Monthly Cash Flow <span class="tooltip" data-tip="Monthly rent minus monthly costs (and mortgage if used).">?</span></span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
       <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
       <div class="result-row"><span class="label">Cash Invested <span class="tooltip" data-tip="Deposit + buying costs + any refurb/extra costs.">?</span></span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
@@ -1618,7 +1618,7 @@ function renderScenario(data, label, targetYield, mortgage) {
     ${!isSimple && mortgage ? renderSection24(mortgage, data) : ''}
     ${isSimple ? '' : renderCapitalGrowth(data.breakdown.price, mortgage)}
 
-    ${!isSimple && document.getElementById('showTargetOffer').checked ? `
+    ${!isSimple ? `
     <div class="result-section">
       <h3>Target Offer Price</h3>
       ${offerHtml}
@@ -1813,8 +1813,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('dealReference').value = '';
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderSimpleCostItems();
-  document.getElementById('showTargetOffer').checked = false;
-  document.getElementById('targetYieldGroup').style.display = 'none';
+  document.getElementById('targetYield').value = '';
   document.getElementById('showStressTest').checked = false;
   document.getElementById('stressTestInput').style.display = 'none';
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
@@ -1822,10 +1821,6 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('startAgainBtn').style.display = 'none';
   lastResult = null;
   lastMortgageData = null;
-});
-
-document.getElementById('showTargetOffer').addEventListener('change', function() {
-  document.getElementById('targetYieldGroup').style.display = this.checked ? '' : 'none';
 });
 
 document.getElementById('showStressTest').addEventListener('change', function() {

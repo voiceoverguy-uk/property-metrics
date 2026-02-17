@@ -80,7 +80,7 @@
     ]
   }
   </script>
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <header id="siteHeader">
@@ -253,19 +253,11 @@
           </div>
 
           <div class="form-group analyser-only full-only target-offer-group">
-            <div class="target-offer-toggle-row">
-              <label class="toggle-switch">
-                <input type="checkbox" id="showTargetOffer">
-                <span class="toggle-slider"></span>
-              </label>
-              <div class="form-group target-yield-input" id="targetYieldGroup" style="display:none;">
-                <label for="targetYield">
-                  Target Yield (%)
-                  <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum price to achieve this.">?</span>
-                </label>
-                <input type="number" id="targetYield" min="0" max="50" step="any" placeholder="e.g. 7">
-              </div>
-            </div>
+            <label for="targetYield">
+              Target Yield (%)
+              <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum offer price to achieve this yield.">?</span>
+            </label>
+            <input type="number" id="targetYield" min="0" max="50" step="any" placeholder="e.g. 7">
           </div>
 
           <hr class="form-section-divider analyser-only">
@@ -606,6 +598,6 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>
