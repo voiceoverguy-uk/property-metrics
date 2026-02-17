@@ -255,6 +255,8 @@ document.querySelectorAll('.deposit-mode-btn').forEach(btn => {
     document.querySelectorAll('.deposit-mode-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     depositInputMode = btn.dataset.depositMode;
+    const depInput = document.getElementById('depositAmount');
+    depInput.placeholder = depositInputMode === 'pct' ? 'e.g. 25' : 'e.g. £40,000';
     updateDepositHelperText();
   });
 });
@@ -1711,6 +1713,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.querySelectorAll('.deposit-mode-btn').forEach(b => b.classList.remove('active'));
   const poundsBtn = document.querySelector('.deposit-mode-btn[data-deposit-mode="pounds"]');
   if (poundsBtn) poundsBtn.classList.add('active');
+  document.getElementById('depositAmount').placeholder = 'e.g. £40,000';
   const helperEl = document.getElementById('depositHelperText');
   if (helperEl) helperEl.textContent = '';
   mortgageType = 'interest-only';
