@@ -725,6 +725,13 @@ function showMap(lat, lng, title) {
     title: title || 'Property Location',
     animation: google.maps.Animation.DROP,
   });
+
+  const dirBtn = document.getElementById('getDirectionsBtn');
+  if (dirBtn) {
+    const dest = title ? encodeURIComponent(title) : `${lat},${lng}`;
+    dirBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+    dirBtn.style.display = '';
+  }
 }
 
 initGoogleMaps();
