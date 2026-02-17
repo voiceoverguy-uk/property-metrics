@@ -1140,8 +1140,8 @@ function renderCostItems() {
   costItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholders = ['e.g. Refurb / Repairs', 'e.g. Decorating', 'e.g. Electrics'];
-    const placeholder = placeholders[index] || 'e.g. Cost item';
+    const placeholders = ['e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors', 'e.g. Damp / Timber Treatment'];
+    const placeholder = placeholders[index] || 'e.g. Cost description';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
@@ -1193,11 +1193,11 @@ function getSimpleCostItemsTotal() {
 
 function renderSimpleCostItems() {
   simpleCostItemsList.innerHTML = '';
-  const placeholders = ['e.g. Solicitor Fees', 'e.g. Refurb'];
+  const placeholders = ['e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors', 'e.g. Damp / Timber Treatment'];
   simpleCostItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholder = placeholders[index] || 'e.g. Cost item';
+    const placeholder = placeholders[index] || 'e.g. Cost description';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
@@ -1255,8 +1255,8 @@ function renderRunningCostItems() {
   runningCostItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholders = ['e.g. Insurance', 'e.g. Ground Rent'];
-    const placeholder = placeholders[index] || 'e.g. Service charge';
+    const placeholders = ['e.g. Landlord Insurance', 'e.g. Service Charge', 'e.g. Ground Rent', 'e.g. Boiler Cover', 'e.g. Buildings Insurance', 'e.g. Maintenance Allowance', 'e.g. Letting Agent Fee', 'e.g. Rent Guarantee Insurance', 'e.g. Communal Cleaning', 'e.g. Property Management'];
+    const placeholder = placeholders[index] || 'e.g. Monthly cost';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${escHtml(item.label)}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
@@ -1308,8 +1308,8 @@ function renderSimpleRunningCostItems() {
   runningCostItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholders = ['e.g. Insurance', 'e.g. Ground Rent'];
-    const placeholder = placeholders[index] || 'e.g. Service charge';
+    const placeholders = ['e.g. Landlord Insurance', 'e.g. Service Charge', 'e.g. Ground Rent', 'e.g. Boiler Cover', 'e.g. Buildings Insurance', 'e.g. Maintenance Allowance', 'e.g. Letting Agent Fee', 'e.g. Rent Guarantee Insurance', 'e.g. Communal Cleaning', 'e.g. Property Management'];
+    const placeholder = placeholders[index] || 'e.g. Monthly cost';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${escHtml(item.label)}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
