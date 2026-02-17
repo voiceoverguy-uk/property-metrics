@@ -170,6 +170,84 @@ app.post('/api/calculate', (req, res) => {
   }
 });
 
+const SUGGESTIONS_FILE = path.join(__dirname, 'data', 'cost-label-suggestions.json');
+const rateLimitMap = new Map();
+
+function loadSuggestions() {
+  try {
+    if (fs.existsSync(SUGGESTIONS_FILE)) {
+      return JSON.parse(fs.readFileSync(SUGGESTIONS_FILE, 'utf8'));
+    }
+  } catch {}
+  return {};
+}
+
+function saveSuggestions(data) {
+  const dir = path.dirname(SUGGESTIONS_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(data, null, 2));
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 3600000 });
+    return false;
+  }
+  if (now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 3600000 });
+    return false;
+  }
+  if (entry.count >= 10) return true;
+  entry.count++;
+  return false;
+}
+
+app.post('/api/suggestions/cost-label', (req, res) => {
+  try {
+    const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+
+    const { label, source } = req.body;
+    if (!label || typeof label !== 'string') {
+      return res.status(400).json({ error: 'Label is required' });
+    }
+
+    const cleaned = label.trim();
+    if (cleaned.length < 3 || cleaned.length > 40) {
+      return res.status(400).json({ error: 'Label must be 3-40 characters' });
+    }
+
+    if (/https?:\/\/|www\./i.test(cleaned)) {
+      return res.status(400).json({ error: 'Invalid label' });
+    }
+
+    const blocked = ['fuck','shit','damn','crap','ass','dick','bitch','bastard','cunt','piss'];
+    if (blocked.some(w => cleaned.toLowerCase().includes(w))) {
+      return res.status(400).json({ error: 'Invalid label' });
+    }
+
+    const validSource = source === 'recurring_costs' ? 'recurring_costs' : 'additional_costs';
+    const suggestions = loadSuggestions();
+    const key = cleaned.toLowerCase();
+
+    if (!suggestions[key]) {
+      suggestions[key] = { label: cleaned, source: validSource, count: 1, firstSeen: new Date().toISOString() };
+    } else {
+      suggestions[key].count++;
+      suggestions[key].lastSeen = new Date().toISOString();
+    }
+
+    saveSuggestions(suggestions);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

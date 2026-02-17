@@ -36,7 +36,20 @@ const PROPERTY_COST_SUGGESTIONS = [
   "Professional cleaning","End of tenancy clean","Pest control","Security system",
   "CCTV installation","Insurance","Landlord insurance","Service charge","Ground rent",
   "Maintenance allowance","Void allowance","Management fee","Bookkeeping",
-  "Software subscriptions","Marketing costs"
+  "Software subscriptions","Marketing costs",
+  "Brickwork repairs","Repointing","Lintel replacement","Steel beam installation",
+  "Wall removal","Load-bearing wall removal","Skimming","Ceiling replacement",
+  "Artex removal","Chimney removal","Chimney breast removal","Chimney stack repair",
+  "Gutter replacement","Soffits and fascias","Downpipes","Drainage repairs",
+  "Unblocking drains","Manhole repair","Water main replacement","Stop tap replacement",
+  "Loft insulation","Cavity wall insulation","Internal wall insulation",
+  "External wall insulation","Double glazing upgrade","Triple glazing","Solar panels",
+  "Battery storage","Air source heat pump","Extractor fans","Fire alarm system",
+  "Emergency lighting","Fire panel","Intumescent strips","Fire door closers",
+  "Thumb-turn locks","Handrails","Balustrade installation","Window restrictors",
+  "Asbestos survey","Additional bathroom","Additional kitchen","Partition walls",
+  "Soundproofing","Interlinked smoke alarms","Communal area refurb","Meter separation",
+  "Sub-meter installation","Door entry system","Intercom system"
 ];
 
 function getShortAddress() {
@@ -105,6 +118,42 @@ function setupDealRefAutocomplete() {
   }
 }
 
+const CUSTOM_LABELS_KEY = 'rm_cost_label_custom_suggestions';
+
+function getCustomCostLabels() {
+  try {
+    return JSON.parse(localStorage.getItem(CUSTOM_LABELS_KEY)) || [];
+  } catch { return []; }
+}
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
+}
+
+function saveCustomCostLabel(raw, source) {
+  const label = toTitleCase(raw.trim());
+  if (label.length < 3 || label.length > 40) return;
+  const lowerLabel = label.toLowerCase();
+  if (PROPERTY_COST_SUGGESTIONS.some(s => s.toLowerCase() === lowerLabel)) return;
+  let custom = getCustomCostLabels();
+  if (custom.some(c => c.toLowerCase() === lowerLabel)) return;
+  custom.unshift(label);
+  if (custom.length > 30) custom = custom.slice(0, 30);
+  localStorage.setItem(CUSTOM_LABELS_KEY, JSON.stringify(custom));
+  try {
+    fetch('/api/suggestions/cost-label', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label, source: source || 'additional_costs' }),
+    }).catch(() => {});
+  } catch {}
+}
+
+function getCostLabelSource(input) {
+  const list = input.closest('#runningCostItemsList, #simpleRunningCostItemsList');
+  return list ? 'recurring_costs' : 'additional_costs';
+}
+
 function attachCostLabelAutocomplete(input) {
   const row = input.closest('.cost-item-row');
   if (!row) return;
@@ -122,11 +171,18 @@ function attachCostLabelAutocomplete(input) {
   function showFiltered() {
     const typed = input.value.trim().toLowerCase();
     if (!typed) { dropdown.style.display = 'none'; return; }
-    const matches = PROPERTY_COST_SUGGESTIONS
-      .filter(s => s.toLowerCase().includes(typed))
-      .slice(0, 6);
-    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
-    dropdown.innerHTML = matches.map(m =>
+    const custom = getCustomCostLabels();
+    const customMatches = custom.filter(s => s.toLowerCase().includes(typed));
+    const builtinMatches = PROPERTY_COST_SUGGESTIONS.filter(s => s.toLowerCase().includes(typed));
+    const seen = new Set();
+    const combined = [];
+    for (const m of [...customMatches, ...builtinMatches]) {
+      const key = m.toLowerCase();
+      if (!seen.has(key)) { seen.add(key); combined.push(m); }
+      if (combined.length >= 8) break;
+    }
+    if (combined.length === 0) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = combined.map(m =>
       `<div class="autocomplete-item">${escHtml(m)}</div>`
     ).join('');
     dropdown.style.display = 'block';
@@ -144,6 +200,16 @@ function attachCostLabelAutocomplete(input) {
   input.addEventListener('focus', showFiltered);
   input.addEventListener('blur', () => {
     setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    const val = input.value.trim();
+    if (val.length >= 3) saveCustomCostLabel(val, getCostLabelSource(input));
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      dropdown.style.display = 'none';
+      const val = input.value.trim();
+      if (val.length >= 3) saveCustomCostLabel(val, getCostLabelSource(input));
+    }
   });
 }
 let lastSdltData = null;
