@@ -1507,6 +1507,27 @@ body.sdlt-mode .hide-in-sdlt {
   display: none !important;
 }
 
+body.sdlt-mode #dealForm {
+  display: flex;
+  flex-direction: column;
+}
+
+body.sdlt-mode #dealForm .address-group {
+  order: -2;
+}
+
+body.sdlt-mode #dealForm .price-group {
+  order: -1;
+}
+
+body.sdlt-mode #dealForm .buyer-type-group {
+  order: 0;
+}
+
+body.sdlt-mode #dealForm .form-divider {
+  display: none !important;
+}
+
 body.simple-mode .simple-only {
   display: block !important;
 }
