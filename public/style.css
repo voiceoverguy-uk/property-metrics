@@ -600,7 +600,6 @@ header .subtitle {
   font-weight: 600;
   color: #333;
   padding: 6px 0 4px;
-  border-top: 2px solid #d42027;
   margin-bottom: 4px;
 }
 
@@ -2551,7 +2550,6 @@ body.dark .cost-item-row .cost-item-amount:focus {
 
 body.dark .cost-total-row {
   color: #c0c0d0;
-  border-top-color: #B11217;
 }
 
 body.dark .form-section-divider {
