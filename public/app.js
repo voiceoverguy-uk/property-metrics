@@ -444,6 +444,8 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
   }
 
   const mortgageAmt = Math.max(price - deposit, 0);
+  const depositPctCalc = price > 0 ? ((deposit / price) * 100) : 0;
+  document.getElementById('borrowingDepositLabel').textContent = 'Cash Deposit (' + depositPctCalc.toFixed(1).replace(/\.0$/, '') + '%)';
   document.getElementById('borrowingDeposit').textContent = fmt(deposit);
   document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
   document.getElementById('borrowingMortgage').textContent = fmt(mortgageAmt);
