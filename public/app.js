@@ -2056,8 +2056,58 @@ async function runCalculation() {
   }
 }
 
+function scrollToFieldBelowHeader(field) {
+  const header = document.querySelector('header');
+  const headerHeight = header ? header.getBoundingClientRect().height : 0;
+  const offset = headerHeight + 16;
+  const top = field.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+  setTimeout(() => {
+    field.focus({ preventScroll: true });
+    if (!field.hasAttribute('required')) {
+      field.setCustomValidity('Please fill in this field.');
+      field.reportValidity();
+      field.addEventListener('input', function clearMsg() {
+        field.setCustomValidity('');
+        field.removeEventListener('input', clearMsg);
+      });
+    } else {
+      field.reportValidity();
+    }
+  }, 400);
+}
+
+function validateDealForm() {
+  const requiredFields = currentMode === 'sdlt'
+    ? [{ el: document.getElementById('price'), name: 'Asking Price' }]
+    : [
+        { el: document.getElementById('address'), name: 'Address' },
+        { el: document.getElementById('price'), name: 'Asking Price' },
+        { el: document.getElementById('monthlyRent'), name: 'Monthly Rent' }
+      ];
+
+  document.querySelectorAll('.field-validation-error').forEach(el => {
+    el.classList.remove('field-validation-error');
+  });
+
+  for (const f of requiredFields) {
+    const val = f.el.value.trim();
+    if (!val || (f.el.type === 'number' && (isNaN(parseFloat(val)) || parseFloat(val) <= 0))) {
+      f.el.classList.add('field-validation-error');
+      f.el.addEventListener('input', function onFix() {
+        f.el.classList.remove('field-validation-error');
+        f.el.removeEventListener('input', onFix);
+      });
+      scrollToFieldBelowHeader(f.el);
+      return false;
+    }
+  }
+  return true;
+}
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
+  if (!validateDealForm()) return;
   runCalculation();
   document.getElementById('startAgainBtn').style.display = '';
 });
