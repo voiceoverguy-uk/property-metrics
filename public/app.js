@@ -2483,7 +2483,9 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     setTimeout(() => {
       const buyerTypeEl = document.querySelector('.buyer-type-group');
       if (buyerTypeEl) {
-        buyerTypeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+        const top = buyerTypeEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
+        window.scrollTo({ top, behavior: 'smooth' });
       } else {
         resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
