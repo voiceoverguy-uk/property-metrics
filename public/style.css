@@ -1086,13 +1086,13 @@ header .subtitle {
 
 .letting-agent-row {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 12px;
 }
 
 .letting-agent-row input[type="number"] {
   flex: 0 0 auto;
-  width: 120px;
+  width: 140px;
   padding: 10px 12px;
   border: 1.5px solid #ddd;
   border-radius: 10px;
@@ -1114,9 +1114,12 @@ header .subtitle {
   color: #555;
   background: #f8f9fb;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1.5px solid #ddd;
   transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .vat-checkbox:has(input:checked) {
