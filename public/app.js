@@ -181,7 +181,31 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
     input._acDropdown = dropdown;
   }
 
+  let activeIndex = -1;
+
+  function getItems() {
+    return dropdown.querySelectorAll('.autocomplete-item');
+  }
+
+  function updateActive() {
+    const items = getItems();
+    items.forEach((el, i) => {
+      el.classList.toggle('autocomplete-active', i === activeIndex);
+    });
+    if (activeIndex >= 0 && items[activeIndex]) {
+      items[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function selectItem(item) {
+    input.value = item.textContent;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    dropdown.style.display = 'none';
+    activeIndex = -1;
+  }
+
   function showFiltered() {
+    activeIndex = -1;
     const typed = input.value.trim().toLowerCase();
     if (!typed) { dropdown.style.display = 'none'; return; }
     const custom = getCustomCostLabels();
@@ -202,9 +226,7 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
     dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
       item.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        input.value = item.textContent;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        dropdown.style.display = 'none';
+        selectItem(item);
       });
     });
   }
@@ -212,16 +234,37 @@ function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
   input.addEventListener('input', showFiltered);
   input.addEventListener('focus', showFiltered);
   input.addEventListener('blur', () => {
-    setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    setTimeout(() => { dropdown.style.display = 'none'; activeIndex = -1; }, 150);
     const val = input.value.trim();
     if (val.length >= 3) saveCustomCostLabel(val, getCostLabelSource(input));
   });
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+    const items = getItems();
+    const isOpen = dropdown.style.display === 'block' && items.length > 0;
+
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      dropdown.style.display = 'none';
+      if (!isOpen) { showFiltered(); activeIndex = 0; updateActive(); return; }
+      activeIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+      updateActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) return;
+      activeIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+      updateActive();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isOpen && activeIndex >= 0 && items[activeIndex]) {
+        selectItem(items[activeIndex]);
+      } else {
+        dropdown.style.display = 'none';
+        activeIndex = -1;
+      }
       const val = input.value.trim();
       if (val.length >= 3) saveCustomCostLabel(val, getCostLabelSource(input));
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+      activeIndex = -1;
     }
   });
 }

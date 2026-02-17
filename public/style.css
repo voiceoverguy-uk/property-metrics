@@ -802,7 +802,8 @@ header .subtitle {
   border-bottom: none;
 }
 
-.autocomplete-item:hover {
+.autocomplete-item:hover,
+.autocomplete-item.autocomplete-active {
   background: #fef2f2;
   color: #B11217;
 }
@@ -3148,7 +3149,8 @@ body.dark .autocomplete-item {
   border-bottom-color: #2a2a4a;
 }
 
-body.dark .autocomplete-item:hover {
+body.dark .autocomplete-item:hover,
+body.dark .autocomplete-item.autocomplete-active {
   background: rgba(177,18,23,0.1);
   color: #B11217;
 }
