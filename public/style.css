@@ -1091,7 +1091,8 @@ header .subtitle {
 }
 
 .letting-agent-row input[type="number"] {
-  flex: 1;
+  flex: 0 0 auto;
+  width: 120px;
   padding: 10px 12px;
   border: 1.5px solid #ddd;
   border-radius: 10px;
@@ -1896,11 +1897,6 @@ body.dark .dark-mode-toggle-mobile:hover {
 
   .cost-item-row .cost-item-amount {
     width: 80px;
-  }
-
-  .letting-agent-row {
-    flex-direction: column;
-    gap: 8px;
   }
 
   .letting-agent-row input[type="text"],
