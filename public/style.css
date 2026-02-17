@@ -137,6 +137,12 @@ header .subtitle {
   padding-top: 16px;
 }
 
+.form-divider {
+  border: none;
+  border-top: 2px solid #B11217;
+  margin: 18px 0 14px;
+}
+
 .form-group {
   margin-bottom: 14px;
 }

@@ -52,9 +52,9 @@ const modeFaqs = {
     { q: 'What costs are included in a deal analysis?', a: 'A full deal analysis includes the purchase price, Stamp Duty Land Tax, solicitor fees, survey costs, refurbishment and any other acquisition costs. It also factors in ongoing costs such as mortgage payments, letting agent fees with VAT, maintenance allowance, insurance and void periods to calculate accurate net yield and cash flow.' }
   ],
   sdlt: [
-    { q: 'What are the current SDLT rates in England?', a: 'For standard purchases the rates are 0% up to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.' },
+    { q: 'What are the current SDLT rates in England?', a: 'For standard residential purchases the rates are 0% up to \u00a3125,000, 2% from \u00a3125,001 to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.' },
     { q: 'What is the additional property SDLT surcharge?', a: 'Since April 2025, buyers purchasing an additional residential property in England or Northern Ireland pay a 5% surcharge on top of standard SDLT rates. This applies to buy-to-let investments and second homes. The surcharge is calculated on the entire purchase price and significantly increases the total tax bill on investment properties.' },
-    { q: 'Do first-time buyers pay less Stamp Duty?', a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3425,000 and 5% on the portion from \u00a3425,001 to \u00a3625,000. If the property costs more than \u00a3625,000, the relief is lost entirely and standard rates apply to the full price.' },
+    { q: 'Do first-time buyers pay less Stamp Duty?', a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3300,000 and 5% on the portion from \u00a3300,001 to \u00a3500,000. If the property costs more than \u00a3500,000, the relief is lost entirely and standard rates apply to the full price.' },
     { q: 'Does SDLT apply in Scotland and Wales?', a: 'No, SDLT only applies in England and Northern Ireland. Scotland uses Land and Buildings Transaction Tax with different rate bands and thresholds. Wales uses Land Transaction Tax, also with its own structure. This calculator covers England and Northern Ireland only; separate tools are needed for Scottish and Welsh calculations.' }
   ]
 };
@@ -1571,7 +1571,7 @@ function renderScenario(data, label, targetYield, mortgage) {
     <div class="result-section">
       <h3>SDLT — ${label}</h3>
       <p class="sdlt-calc-type">Calculation type: <strong>${label}</strong></p>
-      <p class="sdlt-rates-note">Rates correct as at February 2026</p>
+      <p class="sdlt-rates-note">Rates based on current GOV.UK guidance (England &amp; Northern Ireland).</p>
       ${renderSDLTTable(data.sdltBreakdown)}
       <div class="result-row total">
         <span class="label">Total SDLT</span>
@@ -2449,7 +2449,7 @@ function renderSDLTStandaloneResults(data, price) {
       <div class="results-header-row">
         <div>
           <h2>SDLT Calculation</h2>
-          <p class="sdlt-rates-note">Rates correct as at February 2026</p>
+          <p class="sdlt-rates-note">Rates based on current GOV.UK guidance (England &amp; Northern Ireland).</p>
           <p class="address-line">${escHtml(address)} — ${fmt(price)}</p>
         </div>
         <div class="results-header-buttons">
