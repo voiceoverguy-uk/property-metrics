@@ -213,21 +213,22 @@ header .subtitle {
   left: 50%;
   bottom: calc(100% + 10px);
   transform: translateX(-50%) scale(0.95);
-  background: #1f1f1f;
-  color: #fff;
-  padding: 10px 12px;
+  background: #2b2b2b;
+  color: #ffffff;
+  padding: 10px 14px;
+  border: 1px solid #d42027;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.45;
   width: max-content;
-  max-width: 270px;
+  max-width: 260px;
   min-width: 180px;
   white-space: normal;
   word-break: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
   z-index: 1000;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   opacity: 0;
   pointer-events: none;
   transition: opacity 150ms ease, transform 150ms ease;
@@ -244,6 +245,17 @@ header .subtitle {
   top: calc(100% + 10px);
 }
 
+.tooltip-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -8px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #d42027;
+}
+
 .tooltip-bubble::after {
   content: '';
   position: absolute;
@@ -252,25 +264,34 @@ header .subtitle {
   bottom: -6px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-top: 7px solid #1f1f1f;
+  border-top: 7px solid #2b2b2b;
+}
+
+.tooltip-bubble.below::before {
+  bottom: auto;
+  top: -8px;
+  border-top: none;
+  border-bottom: 8px solid #d42027;
 }
 
 .tooltip-bubble.below::after {
   bottom: auto;
   top: -6px;
   border-top: none;
-  border-bottom: 7px solid #1f1f1f;
+  border-bottom: 7px solid #2b2b2b;
 }
 
 .tooltip-bubble.nudge-left {
   transform: translateX(-80%) scale(1);
 }
+.tooltip-bubble.nudge-left::before,
 .tooltip-bubble.nudge-left::after {
   left: 80%;
 }
 .tooltip-bubble.nudge-right {
   transform: translateX(-20%) scale(1);
 }
+.tooltip-bubble.nudge-right::before,
 .tooltip-bubble.nudge-right::after {
   left: 20%;
 }
@@ -2714,17 +2735,27 @@ body.dark .tooltip {
 }
 
 body.dark .tooltip-bubble {
-  background: #0f0f23;
+  background: #1a1a2e;
   color: #e8e8e8;
+  border-color: #d42027;
+}
+
+body.dark .tooltip-bubble::before {
+  border-top-color: #d42027;
 }
 
 body.dark .tooltip-bubble::after {
-  border-top-color: #0f0f23;
+  border-top-color: #1a1a2e;
+}
+
+body.dark .tooltip-bubble.below::before {
+  border-top-color: transparent;
+  border-bottom-color: #d42027;
 }
 
 body.dark .tooltip-bubble.below::after {
   border-top-color: transparent;
-  border-bottom-color: #0f0f23;
+  border-bottom-color: #1a1a2e;
 }
 }
 
