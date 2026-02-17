@@ -1502,7 +1502,8 @@ body.sdlt-mode .sdlt-only {
   display: block !important;
 }
 
-body.sdlt-mode .analyser-only {
+body.sdlt-mode .analyser-only,
+body.sdlt-mode .hide-in-sdlt {
   display: none !important;
 }
 
