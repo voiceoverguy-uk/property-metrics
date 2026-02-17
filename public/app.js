@@ -866,6 +866,9 @@ renderSimpleCostItems();
 const runningCostItemsList = document.getElementById('runningCostItemsList');
 const runningCostItemsTotalEl = document.getElementById('runningCostItemsTotal');
 const addRunningCostItemBtn = document.getElementById('addRunningCostItem');
+const simpleRunningCostItemsList = document.getElementById('simpleRunningCostItemsList');
+const simpleRunningCostItemsTotalEl = document.getElementById('simpleRunningCostItemsTotal');
+const addSimpleRunningCostItemBtn = document.getElementById('addSimpleRunningCostItem');
 
 function getRunningCostItemsTotal() {
   return runningCostItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -921,10 +924,6 @@ addRunningCostItemBtn.addEventListener('click', () => {
 });
 
 renderRunningCostItems();
-
-const simpleRunningCostItemsList = document.getElementById('simpleRunningCostItemsList');
-const simpleRunningCostItemsTotalEl = document.getElementById('simpleRunningCostItemsTotal');
-const addSimpleRunningCostItemBtn = document.getElementById('addSimpleRunningCostItem');
 
 function renderSimpleRunningCostItems() {
   if (!simpleRunningCostItemsList) return;
