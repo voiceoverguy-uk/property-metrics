@@ -208,6 +208,9 @@ document.querySelectorAll('.buyer-type-btn').forEach(btn => {
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedBuyerType = btn.dataset.buyer;
+    if (currentMode === 'sdlt' && lastSdltData && lastSdltPrice) {
+      renderSDLTStandaloneResults(lastSdltData, lastSdltPrice);
+    }
   });
 });
 
@@ -2165,6 +2168,8 @@ function printReport() {
 }
 
 let currentMode = 'simple';
+let lastSdltData = null;
+let lastSdltPrice = null;
 
 const routeToMode = { '/': 'simple', '/deal-analyser': 'analyser', '/sdlt-calculator': 'sdlt' };
 const modeToRoute = { 'simple': '/', 'analyser': '/deal-analyser', 'sdlt': '/sdlt-calculator' };
@@ -2399,6 +2404,8 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
       throw new Error(err.error || 'SDLT calculation failed');
     }
     const data = await res.json();
+    lastSdltData = data;
+    lastSdltPrice = price;
     renderSDLTStandaloneResults(data, price);
     if (window.innerWidth <= 860) {
       setTimeout(() => {
