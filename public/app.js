@@ -2481,7 +2481,12 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     lastSdltPrice = price;
     renderSDLTStandaloneResults(data, price);
     setTimeout(() => {
-      resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const buyerTypeEl = document.querySelector('.buyer-type-group');
+      if (buyerTypeEl) {
+        buyerTypeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }, 100);
   } catch (err) {
     resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
