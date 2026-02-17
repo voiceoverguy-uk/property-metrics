@@ -1721,8 +1721,10 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('dealReference').value = '';
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderSimpleCostItems();
-  document.getElementById('showTargetOffer').checked = true;
-  document.getElementById('targetYieldGroup').style.display = '';
+  document.getElementById('showTargetOffer').checked = false;
+  document.getElementById('targetYieldGroup').style.display = 'none';
+  document.getElementById('showStressTest').checked = false;
+  document.getElementById('stressTestInput').style.display = 'none';
   resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
   document.getElementById('savePdfBtn').style.display = 'none';
   document.getElementById('startAgainBtn').style.display = 'none';
@@ -1732,6 +1734,10 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
 
 document.getElementById('showTargetOffer').addEventListener('change', function() {
   document.getElementById('targetYieldGroup').style.display = this.checked ? '' : 'none';
+});
+
+document.getElementById('showStressTest').addEventListener('change', function() {
+  document.getElementById('stressTestInput').style.display = this.checked ? '' : 'none';
 });
 
 function safeStr(v) { return v == null ? '' : String(v); }
