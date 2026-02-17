@@ -52,6 +52,17 @@ const PROPERTY_COST_SUGGESTIONS = [
   "Sub-meter installation","Door entry system","Intercom system"
 ];
 
+const RECURRING_MONTHLY_COST_SUGGESTIONS = [
+  "Landlord insurance","Buildings insurance","Contents insurance",
+  "Letting agent management fee","Rent guarantee insurance","Boiler cover",
+  "Home emergency cover","Service charge","Ground rent","Maintenance allowance",
+  "Void allowance","Repairs sinking fund","Property management software",
+  "Accounting / bookkeeping","Company account fees","Mortgage protection insurance",
+  "Portfolio admin costs","Marketing costs","Subscription services",
+  "Compliance monitoring","Waste collection (private)","Communal electricity",
+  "Communal cleaning","CCTV maintenance","Security monitoring"
+];
+
 function getShortAddress() {
   const addr = document.getElementById('address').value.trim();
   if (!addr) return '';
@@ -154,7 +165,9 @@ function getCostLabelSource(input) {
   return list ? 'recurring_costs' : 'additional_costs';
 }
 
-function attachCostLabelAutocomplete(input) {
+function attachCostLabelAutocomplete(input, suggestionsList, maxItems) {
+  const sourceList = suggestionsList || PROPERTY_COST_SUGGESTIONS;
+  const maxShow = maxItems || 8;
   const row = input.closest('.cost-item-row');
   if (!row) return;
   row.style.position = 'relative';
@@ -173,13 +186,13 @@ function attachCostLabelAutocomplete(input) {
     if (!typed) { dropdown.style.display = 'none'; return; }
     const custom = getCustomCostLabels();
     const customMatches = custom.filter(s => s.toLowerCase().includes(typed));
-    const builtinMatches = PROPERTY_COST_SUGGESTIONS.filter(s => s.toLowerCase().includes(typed));
+    const builtinMatches = sourceList.filter(s => s.toLowerCase().includes(typed));
     const seen = new Set();
     const combined = [];
     for (const m of [...customMatches, ...builtinMatches]) {
       const key = m.toLowerCase();
       if (!seen.has(key)) { seen.add(key); combined.push(m); }
-      if (combined.length >= 8) break;
+      if (combined.length >= maxShow) break;
     }
     if (combined.length === 0) { dropdown.style.display = 'none'; return; }
     dropdown.innerHTML = combined.map(m =>
@@ -1208,7 +1221,7 @@ function renderRunningCostItems() {
     input.addEventListener('input', (e) => {
       runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
-    attachCostLabelAutocomplete(input);
+    attachCostLabelAutocomplete(input, RECURRING_MONTHLY_COST_SUGGESTIONS, 6);
   });
 
   runningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
@@ -1261,7 +1274,7 @@ function renderSimpleRunningCostItems() {
     input.addEventListener('input', (e) => {
       runningCostItems[parseInt(e.target.dataset.index)].label = e.target.value;
     });
-    attachCostLabelAutocomplete(input);
+    attachCostLabelAutocomplete(input, RECURRING_MONTHLY_COST_SUGGESTIONS, 6);
   });
 
   simpleRunningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
