@@ -55,6 +55,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
 - **Currency Formatting**: Automatic formatting with £ and commas.
 - **"Start Again" Reset Button**.
+- **Deal Snapshot (Live Running Totals)**: Real-time Upfront Total and Monthly Cashflow display in the results panel (desktop) and a sticky bottom bar (mobile). Uses client-side SDLT calculation (`calcSDLTClient`) and shared helpers (`computeSnapshot`). Updates live as user types — no need to click Analyse. Shows progressive validation warnings with click-to-scroll. Breakdown details collapsed by default. Hidden in SDLT-only mode.
 
 ## External Dependencies
 - **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`.
