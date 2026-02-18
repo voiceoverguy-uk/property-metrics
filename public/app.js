@@ -120,10 +120,51 @@ function setupDealRefAutocomplete() {
     });
   }
 
+  let activeIndex = -1;
+
+  function getItems() {
+    return dropdown.querySelectorAll('.autocomplete-item');
+  }
+
+  function updateActive() {
+    getItems().forEach((el, i) => {
+      el.classList.toggle('autocomplete-active', i === activeIndex);
+    });
+  }
+
   dealRefInput.addEventListener('focus', showSuggestions);
-  dealRefInput.addEventListener('input', showSuggestions);
+  dealRefInput.addEventListener('input', () => { activeIndex = -1; showSuggestions(); });
   dealRefInput.addEventListener('blur', () => {
-    setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    setTimeout(() => { dropdown.style.display = 'none'; activeIndex = -1; }, 150);
+  });
+  dealRefInput.addEventListener('keydown', (e) => {
+    const items = getItems();
+    const isOpen = dropdown.style.display === 'block' && items.length > 0;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) { showSuggestions(); activeIndex = 0; updateActive(); return; }
+      activeIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+      updateActive();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) return;
+      activeIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+      updateActive();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (isOpen && activeIndex >= 0 && items[activeIndex]) {
+        dealRefInput.value = items[activeIndex].textContent;
+        dropdown.style.display = 'none';
+        activeIndex = -1;
+      } else {
+        dropdown.style.display = 'none';
+        activeIndex = -1;
+      }
+    } else if (e.key === 'Escape') {
+      dropdown.style.display = 'none';
+      activeIndex = -1;
+    }
   });
 
   const addressInput = document.getElementById('address');
