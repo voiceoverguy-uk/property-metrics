@@ -4061,30 +4061,37 @@ checkUrlParams();
     if (el) el.addEventListener('click', () => setTimeout(renderSnapshot, 50));
   });
 
-  const isMobileWidth = () => window.innerWidth < 992;
-  let keyboardFocusTimer = null;
+  const header = document.querySelector('header');
+  function setHeaderHeight() {
+    if (header) {
+      document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+    }
+  }
+  setHeaderHeight();
+  window.addEventListener('resize', setHeaderHeight);
+  if (window.ResizeObserver && header) {
+    new ResizeObserver(setHeaderHeight).observe(header);
+  }
 
+  const isMobileWidth = () => window.innerWidth < 992;
+  let scrollTimer = null;
   document.addEventListener('focusin', (e) => {
     if (!isMobileWidth()) return;
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
-      clearTimeout(keyboardFocusTimer);
-      mobileBar.classList.add('keyboard-open');
-      if (mobileExpanded) {
-        mobileExpanded = false;
-        mobileDetails.classList.remove('expanded');
-        mobileToggle.textContent = 'Details';
-        mobileToggle.setAttribute('aria-expanded', false);
-      }
+      clearTimeout(scrollTimer);
+      const targetEl = e.target;
+      scrollTimer = setTimeout(() => {
+        if (document.activeElement !== targetEl) return;
+        const barH = mobileBar.offsetHeight || 0;
+        const headerH = header ? header.offsetHeight : 0;
+        const topOffset = headerH + barH + 12;
+        const rect = targetEl.getBoundingClientRect();
+        if (rect.top < topOffset) {
+          window.scrollBy({ top: rect.top - topOffset, behavior: 'smooth' });
+        }
+      }, 350);
     }
-  });
-
-  document.addEventListener('focusout', () => {
-    if (!isMobileWidth()) return;
-    clearTimeout(keyboardFocusTimer);
-    keyboardFocusTimer = setTimeout(() => {
-      mobileBar.classList.remove('keyboard-open');
-    }, 150);
   });
 
   window.updateSnapshot = renderSnapshot;
