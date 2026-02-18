@@ -3765,12 +3765,21 @@ body.dark .mortgage-type-label {
 }
 
 .snapshot-title {
-  font-size: 0.82rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888;
-  margin-bottom: 10px;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.snapshot-hint {
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 400;
+}
+
+.snapshot-breakdown-highlight {
+  font-weight: 600;
+  color: #1a8c3a;
 }
 
 .snapshot-warning {
@@ -3963,7 +3972,15 @@ body.dark .snapshot-card-warning {
 }
 
 body.dark .snapshot-title {
-  color: #999;
+  color: #eee;
+}
+
+body.dark .snapshot-hint {
+  color: #777;
+}
+
+body.dark .snapshot-breakdown-highlight {
+  color: #2ecc71;
 }
 
 body.dark .snapshot-warning {

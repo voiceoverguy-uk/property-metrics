@@ -709,6 +709,7 @@ function computeSnapshot() {
       baseRunningCosts,
       maintenanceMonthly,
       mortgagePayment,
+      mortgageAmount,
       effectiveMonthlyRent,
       isMortgage
     }
@@ -3882,6 +3883,7 @@ checkUrlParams();
   const mobileDetails = document.getElementById('snapshotMobileDetails');
   const mobileToggle = document.getElementById('snapshotMobileToggle');
   let mobileExpanded = false;
+  let breakdownOpen = false;
 
   const fieldLabels = { address: 'Address / Postcode', price: 'Asking Price', rent: 'Expected Monthly Rent' };
 
@@ -3898,7 +3900,7 @@ checkUrlParams();
     if (snap.missing.length > 0 && snap.missing.includes('price') && snap.missing.includes('rent')) {
       const warningItems = snap.missing.map(k => `<span class="snapshot-missing-field" data-field="${k}">${fieldLabels[k]}</span>`).join(', ');
       snapshotEl.innerHTML = `<div class="snapshot-card snapshot-card-warning">
-        <div class="snapshot-title">Deal Snapshot</div>
+        <h2 class="snapshot-title">Deal Snapshot</h2>
         <div class="snapshot-warning">Enter ${warningItems} to see live totals</div>
       </div>`;
       mobileBar.classList.remove('visible');
@@ -3912,14 +3914,16 @@ checkUrlParams();
     const cashflowClass = snap.monthlyCashflow >= 0 ? 'snapshot-positive' : 'snapshot-negative';
     const cashflowSign = snap.monthlyCashflow >= 0 ? '+' : '';
 
-    let breakdownHtml = `<div class="snapshot-breakdown-row"><span>SDLT</span><span>${fmt(b.sdlt)}</span></div>`;
+    let breakdownHtml = '';
     if (b.isMortgage) {
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Deposit</span><span>${fmt(b.deposit)}</span></div>`;
     } else {
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
     }
+    breakdownHtml += `<div class="snapshot-breakdown-row"><span>SDLT</span><span>${fmt(b.sdlt)}</span></div>`;
     if (b.solicitorFees > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Solicitor Fees</span><span>${fmt(b.solicitorFees)}</span></div>`;
-    if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs</span><span>${fmt(b.additionalCosts)}</span></div>`;
+    if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs <span class="snapshot-hint">(electrics, decorating, carpets etc)</span></span><span>${fmt(b.additionalCosts)}</span></div>`;
+    if (b.isMortgage && b.mortgageAmount > 0) breakdownHtml += `<div class="snapshot-breakdown-row snapshot-breakdown-highlight"><span>Mortgage Amount</span><span>${fmt(b.mortgageAmount)}</span></div>`;
 
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>Rent</span><span>${fmt(b.effectiveMonthlyRent)}/mo</span></div>`;
@@ -3929,7 +3933,7 @@ checkUrlParams();
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
     snapshotEl.innerHTML = `<div class="snapshot-card">
-      <div class="snapshot-title">Deal Snapshot</div>
+      <h2 class="snapshot-title">Deal Snapshot</h2>
       <div class="snapshot-totals">
         <div class="snapshot-total-item">
           <span class="snapshot-total-label">Upfront Total</span>
@@ -3940,11 +3944,15 @@ checkUrlParams();
           <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
         </div>
       </div>
-      <details class="snapshot-details">
+      <details class="snapshot-details"${breakdownOpen ? ' open' : ''}>
         <summary>Breakdown</summary>
         <div class="snapshot-breakdown">${breakdownHtml}</div>
       </details>
     </div>`;
+
+    snapshotEl.querySelector('.snapshot-details').addEventListener('toggle', function() {
+      breakdownOpen = this.open;
+    });
 
     mobileBar.classList.add('visible');
     mobileUpfront.textContent = fmt(Math.round(snap.upfrontTotal));
