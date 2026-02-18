@@ -4061,6 +4061,17 @@ checkUrlParams();
     if (el) el.addEventListener('click', () => setTimeout(renderSnapshot, 50));
   });
 
+  if (window.visualViewport) {
+    function adjustMobileBarForKeyboard() {
+      const vv = window.visualViewport;
+      const offset = window.innerHeight - vv.height - vv.offsetTop;
+      mobileBar.style.bottom = offset > 0 ? offset + 'px' : '0';
+    }
+    window.visualViewport.addEventListener('resize', adjustMobileBarForKeyboard);
+    window.visualViewport.addEventListener('scroll', adjustMobileBarForKeyboard);
+    adjustMobileBarForKeyboard();
+  }
+
   window.updateSnapshot = renderSnapshot;
   renderSnapshot();
 })();

@@ -3927,6 +3927,14 @@ body.dark .mortgage-type-label {
   color: #1a1a1a;
 }
 
+.snapshot-mobile-item > span.snapshot-positive {
+  color: #1a8c3a;
+}
+
+.snapshot-mobile-item > span.snapshot-negative {
+  color: #c0392b;
+}
+
 .snapshot-mobile-toggle {
   background: #f0f0f0;
   border: 1px solid #ddd;
@@ -4011,6 +4019,14 @@ body.dark .snapshot-mobile-bar {
 
 body.dark .snapshot-mobile-item > span:last-child {
   color: #eee;
+}
+
+body.dark .snapshot-mobile-item > span.snapshot-positive {
+  color: #2ecc71;
+}
+
+body.dark .snapshot-mobile-item > span.snapshot-negative {
+  color: #e74c3c;
 }
 
 body.dark .snapshot-mobile-toggle {
