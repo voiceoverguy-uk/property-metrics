@@ -3888,12 +3888,25 @@ body.dark .mortgage-type-label {
   padding: 10px 16px;
   display: none;
   transform: translateY(100%);
-  transition: transform 0.25s ease;
+  transition: transform 0.25s ease, top 0.25s ease, bottom 0.25s ease;
 }
 
 .snapshot-mobile-bar.visible {
   display: block;
   transform: translateY(0);
+}
+
+.snapshot-mobile-bar.keyboard-open {
+  bottom: auto;
+  top: 0;
+  z-index: 1001;
+  border-top: none;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+
+.snapshot-mobile-bar.keyboard-open .snapshot-mobile-toggle {
+  display: none;
 }
 
 .snapshot-mobile-summary {
@@ -4015,6 +4028,10 @@ body.dark .snapshot-mobile-bar {
   background: #1e1e1e;
   border-color: #444;
   box-shadow: 0 -2px 12px rgba(0,0,0,0.3);
+}
+
+body.dark .snapshot-mobile-bar.keyboard-open {
+  border-bottom-color: #444;
 }
 
 body.dark .snapshot-mobile-item > span:last-child {

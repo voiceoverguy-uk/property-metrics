@@ -4061,16 +4061,31 @@ checkUrlParams();
     if (el) el.addEventListener('click', () => setTimeout(renderSnapshot, 50));
   });
 
-  if (window.visualViewport) {
-    function adjustMobileBarForKeyboard() {
-      const vv = window.visualViewport;
-      const offset = window.innerHeight - vv.height - vv.offsetTop;
-      mobileBar.style.bottom = offset > 0 ? offset + 'px' : '0';
+  const isMobileWidth = () => window.innerWidth < 992;
+  let keyboardFocusTimer = null;
+
+  document.addEventListener('focusin', (e) => {
+    if (!isMobileWidth()) return;
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+      clearTimeout(keyboardFocusTimer);
+      mobileBar.classList.add('keyboard-open');
+      if (mobileExpanded) {
+        mobileExpanded = false;
+        mobileDetails.classList.remove('expanded');
+        mobileToggle.textContent = 'Details';
+        mobileToggle.setAttribute('aria-expanded', false);
+      }
     }
-    window.visualViewport.addEventListener('resize', adjustMobileBarForKeyboard);
-    window.visualViewport.addEventListener('scroll', adjustMobileBarForKeyboard);
-    adjustMobileBarForKeyboard();
-  }
+  });
+
+  document.addEventListener('focusout', () => {
+    if (!isMobileWidth()) return;
+    clearTimeout(keyboardFocusTimer);
+    keyboardFocusTimer = setTimeout(() => {
+      mobileBar.classList.remove('keyboard-open');
+    }, 150);
+  });
 
   window.updateSnapshot = renderSnapshot;
   renderSnapshot();
