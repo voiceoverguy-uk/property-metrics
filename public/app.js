@@ -6,6 +6,13 @@ const costItemsTotalEl = document.getElementById('costItemsTotal');
 const mapSection = document.getElementById('mapSection');
 const mapContainer = document.getElementById('mapContainer');
 
+function setResultsPanelContent(html) {
+  const snap = document.getElementById('dealSnapshot');
+  resultsPanel.innerHTML = '';
+  if (snap) resultsPanel.appendChild(snap);
+  resultsPanel.insertAdjacentHTML('beforeend', html);
+}
+
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
 let simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let runningCostItems = [{ label: '', amount: 0 }];
@@ -382,16 +389,17 @@ function setMode(mode, pushHistory) {
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
     document.getElementById('monthlyRent').removeAttribute('required');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>';
+    setResultsPanelContent('<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>');
   } else if (mode === 'simple') {
     document.body.classList.add('simple-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+    setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
-    resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+    setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   }
+  if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   updateMeta(mode);
   updateFaqSchema(mode);
   if (pushHistory !== false) {
@@ -622,6 +630,89 @@ function getDepositAmount() {
     return Math.round(price * (clampedPct / 100));
   }
   return Math.min(rawVal, price || Infinity);
+}
+
+function calcSDLTClient(price, buyerType) {
+  if (price <= 0) return 0;
+  const applyBands = (p, bands) => {
+    let tax = 0, prev = 0;
+    for (const b of bands) {
+      if (p <= prev) break;
+      const taxable = Math.min(p, b.t) - prev;
+      if (taxable > 0) tax += taxable * b.r;
+      prev = b.t;
+    }
+    return Math.round(tax);
+  };
+  if (buyerType === 'ftb' && price <= 500000) {
+    return applyBands(price, [{ t: 300000, r: 0 }, { t: 500000, r: 0.05 }]);
+  }
+  if (buyerType === 'investor' || buyerType === 'additional') {
+    return applyBands(price, [{ t: 125000, r: 0.05 }, { t: 250000, r: 0.07 }, { t: 925000, r: 0.10 }, { t: 1500000, r: 0.15 }, { t: Infinity, r: 0.17 }]);
+  }
+  return applyBands(price, [{ t: 125000, r: 0 }, { t: 250000, r: 0.02 }, { t: 925000, r: 0.05 }, { t: 1500000, r: 0.10 }, { t: Infinity, r: 0.12 }]);
+}
+
+function computeSnapshot() {
+  const isSimple = currentMode === 'simple';
+  const price = getCurrencyFieldValue('price');
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+  const buyerType = getSelectedBuyerType();
+
+  const missing = [];
+  if (!document.getElementById('address').value.trim()) missing.push('address');
+  if (!price || price <= 0) missing.push('price');
+  if (!monthlyRent || monthlyRent <= 0) missing.push('rent');
+
+  const sdlt = price > 0 ? calcSDLTClient(price, buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main')) : 0;
+  const solicitorFees = isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 0);
+  const additionalCosts = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
+
+  const isMortgage = selectedPurchaseType === 'mortgage';
+  const deposit = isMortgage ? getDepositAmount() : 0;
+  const mortgageAmount = isMortgage ? Math.max(price - deposit, 0) : 0;
+  const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+  const mortgageTerm = parseFloat(document.getElementById('mortgageTerm').value) || 25;
+  const mortgagePayment = isMortgage && mortgageAmount > 0 ? calcMortgagePayment(mortgageAmount, interestRate, mortgageTerm, mortgageType) : 0;
+
+  let upfrontTotal;
+  if (isMortgage) {
+    upfrontTotal = deposit + sdlt + solicitorFees + additionalCosts;
+  } else {
+    upfrontTotal = price + sdlt + solicitorFees + additionalCosts;
+  }
+
+  const lettingAgentFee = getLettingAgentFeeMonthly();
+  const baseRunningCosts = getRunningCostItemsTotal();
+  let effectiveMonthlyRent = monthlyRent;
+  let maintenanceMonthly = 0;
+
+  if (!isSimple) {
+    const voidPct = parseFloat(document.getElementById('voidAllowance').value) || 0;
+    effectiveMonthlyRent = monthlyRent * (1 - voidPct / 100);
+    maintenanceMonthly = getMaintenanceAnnual() / 12;
+  }
+
+  const monthlyCashflow = effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly - mortgagePayment;
+
+  return {
+    missing,
+    upfrontTotal,
+    monthlyCashflow,
+    breakdown: {
+      price,
+      deposit,
+      sdlt,
+      solicitorFees,
+      additionalCosts,
+      lettingAgentFee,
+      baseRunningCosts,
+      maintenanceMonthly,
+      mortgagePayment,
+      effectiveMonthlyRent,
+      isMortgage
+    }
+  };
 }
 
 function calcMortgagePayment(loanAmount, annualRate, termYears, type) {
@@ -1974,7 +2065,7 @@ function renderResults(result) {
     </div>
   `;
 
-  resultsPanel.innerHTML = html;
+  setResultsPanelContent(html);
 }
 
 async function runCalculation() {
@@ -2027,7 +2118,7 @@ async function runCalculation() {
     simpleMode: isSimple,
   };
 
-  resultsPanel.innerHTML = '<div class="results-placeholder"><p>Calculating...</p></div>';
+  setResultsPanelContent('<div class="results-placeholder"><p>Calculating...</p></div>');
 
   try {
     const res = await fetch('/api/calculate', {
@@ -2052,7 +2143,7 @@ async function runCalculation() {
       }, 100);
     }
   } catch (err) {
-    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
+    setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
   }
 }
 
@@ -2169,7 +2260,8 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('targetYield').value = '7';
   document.getElementById('showStressTest').checked = false;
   document.getElementById('stressTestInput').style.display = 'none';
-  resultsPanel.innerHTML = '<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>';
+  setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
+  if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   document.getElementById('savePdfBtn').style.display = 'none';
   document.getElementById('startAgainBtn').style.display = 'none';
   lastResult = null;
@@ -2784,7 +2876,7 @@ function renderSDLTStandaloneResults(data, price) {
     </div>
   `;
 
-  resultsPanel.innerHTML = html;
+  setResultsPanelContent(html);
 }
 
 document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
@@ -2793,7 +2885,7 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     alert('Please enter a valid asking price.');
     return;
   }
-  resultsPanel.innerHTML = '<div class="results-placeholder"><p>Calculating...</p></div>';
+  setResultsPanelContent('<div class="results-placeholder"><p>Calculating...</p></div>');
   try {
     const res = await fetch(`/api/sdlt?price=${encodeURIComponent(price)}`);
     if (!res.ok) {
@@ -2815,7 +2907,7 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
       }
     }, 100);
   } catch (err) {
-    resultsPanel.innerHTML = `<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`;
+    setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
   }
 });
 
@@ -3780,5 +3872,147 @@ checkUrlParams();
   }, true);
 
   document.addEventListener('scroll', hideAllTooltips, true);
+})();
+
+(function initDealSnapshot() {
+  const snapshotEl = document.getElementById('dealSnapshot');
+  const mobileBar = document.getElementById('snapshotMobileBar');
+  const mobileUpfront = document.getElementById('snapshotMobileUpfront');
+  const mobileCashflow = document.getElementById('snapshotMobileCashflow');
+  const mobileDetails = document.getElementById('snapshotMobileDetails');
+  const mobileToggle = document.getElementById('snapshotMobileToggle');
+  let mobileExpanded = false;
+
+  const fieldLabels = { address: 'Address / Postcode', price: 'Asking Price', rent: 'Expected Monthly Rent' };
+
+  function renderSnapshot() {
+    if (currentMode === 'sdlt') {
+      snapshotEl.style.display = 'none';
+      mobileBar.classList.remove('visible');
+      return;
+    }
+
+    const snap = computeSnapshot();
+    snapshotEl.style.display = '';
+
+    if (snap.missing.length > 0 && snap.missing.includes('price') && snap.missing.includes('rent')) {
+      const warningItems = snap.missing.map(k => `<span class="snapshot-missing-field" data-field="${k}">${fieldLabels[k]}</span>`).join(', ');
+      snapshotEl.innerHTML = `<div class="snapshot-card snapshot-card-warning">
+        <div class="snapshot-title">Deal Snapshot</div>
+        <div class="snapshot-warning">Enter ${warningItems} to see live totals</div>
+      </div>`;
+      mobileBar.classList.remove('visible');
+      snapshotEl.querySelectorAll('.snapshot-missing-field').forEach(el => {
+        el.addEventListener('click', () => scrollToSnapshotField(el.dataset.field));
+      });
+      return;
+    }
+
+    const b = snap.breakdown;
+    const cashflowClass = snap.monthlyCashflow >= 0 ? 'snapshot-positive' : 'snapshot-negative';
+    const cashflowSign = snap.monthlyCashflow >= 0 ? '+' : '';
+
+    let breakdownHtml = `<div class="snapshot-breakdown-row"><span>SDLT</span><span>${fmt(b.sdlt)}</span></div>`;
+    if (b.isMortgage) {
+      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Deposit</span><span>${fmt(b.deposit)}</span></div>`;
+    } else {
+      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
+    }
+    if (b.solicitorFees > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Solicitor Fees</span><span>${fmt(b.solicitorFees)}</span></div>`;
+    if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs</span><span>${fmt(b.additionalCosts)}</span></div>`;
+
+    breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
+    breakdownHtml += `<div class="snapshot-breakdown-row"><span>Rent</span><span>${fmt(b.effectiveMonthlyRent)}/mo</span></div>`;
+    if (b.lettingAgentFee > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Agent Fee</span><span>-${fmt(b.lettingAgentFee)}/mo</span></div>`;
+    if (b.baseRunningCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Running Costs</span><span>-${fmt(b.baseRunningCosts)}/mo</span></div>`;
+    if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
+    if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
+
+    snapshotEl.innerHTML = `<div class="snapshot-card">
+      <div class="snapshot-title">Deal Snapshot</div>
+      <div class="snapshot-totals">
+        <div class="snapshot-total-item">
+          <span class="snapshot-total-label">Upfront Total</span>
+          <span class="snapshot-total-value">${fmt(Math.round(snap.upfrontTotal))}</span>
+        </div>
+        <div class="snapshot-total-item">
+          <span class="snapshot-total-label">Monthly Cashflow</span>
+          <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
+        </div>
+      </div>
+      <details class="snapshot-details">
+        <summary>Breakdown</summary>
+        <div class="snapshot-breakdown">${breakdownHtml}</div>
+      </details>
+    </div>`;
+
+    mobileBar.classList.add('visible');
+    mobileUpfront.textContent = fmt(Math.round(snap.upfrontTotal));
+    const mCfSign = snap.monthlyCashflow >= 0 ? '+' : '';
+    mobileCashflow.textContent = mCfSign + fmt(Math.round(snap.monthlyCashflow)) + '/mo';
+    mobileCashflow.className = cashflowClass;
+
+    mobileDetails.innerHTML = breakdownHtml;
+  }
+
+  function scrollToSnapshotField(field) {
+    const idMap = { address: 'address', price: 'price', rent: 'monthlyRent' };
+    const el = document.getElementById(idMap[field]);
+    if (el) {
+      scrollToFieldBelowHeader(el);
+      el.focus();
+    }
+  }
+
+  mobileToggle.addEventListener('click', () => {
+    mobileExpanded = !mobileExpanded;
+    mobileDetails.classList.toggle('expanded', mobileExpanded);
+    mobileToggle.textContent = mobileExpanded ? 'Hide' : 'Details';
+    mobileToggle.setAttribute('aria-expanded', mobileExpanded);
+  });
+
+  const inputIds = ['price', 'monthlyRent', 'solicitorFees', 'voidAllowance', 'maintenancePct', 'maintenanceFixed', 'lettingAgentFee', 'depositAmount', 'interestRate', 'mortgageTerm', 'address'];
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderSnapshot);
+  });
+
+  document.getElementById('lettingAgentVat').addEventListener('change', renderSnapshot);
+  document.getElementById('showStressTest')?.addEventListener('change', renderSnapshot);
+
+  document.querySelectorAll('.buyer-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(renderSnapshot, 0));
+  });
+  document.querySelectorAll('.purchase-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(renderSnapshot, 0));
+  });
+  document.querySelectorAll('.mortgage-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(renderSnapshot, 0));
+  });
+  document.querySelectorAll('.maint-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(renderSnapshot, 0));
+  });
+  document.querySelectorAll('.deposit-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTimeout(renderSnapshot, 0));
+  });
+
+  const costContainers = ['costItemsList', 'simpleCostItemsList', 'runningCostItemsList', 'simpleRunningCostItemsList'];
+  costContainers.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', renderSnapshot);
+      el.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-remove-item')) setTimeout(renderSnapshot, 0);
+      });
+    }
+  });
+
+  ['addCostItem', 'addSimpleRunningCostItem', 'addRunningCostItem'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => setTimeout(renderSnapshot, 50));
+  });
+
+  window.updateSnapshot = renderSnapshot;
+  renderSnapshot();
 })();
 

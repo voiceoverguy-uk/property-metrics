@@ -364,10 +364,22 @@
       </section>
 
       <section class="results-panel" id="resultsPanel">
-        <div class="results-placeholder">
+        <div id="dealSnapshot" class="deal-snapshot"></div>
+        <div class="results-placeholder" id="resultsPlaceholder">
           <p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p>
         </div>
       </section>
+    </div>
+
+    <div id="snapshotMobileBar" class="snapshot-mobile-bar">
+      <div class="snapshot-mobile-summary" id="snapshotMobileSummary">
+        <div class="snapshot-mobile-cols">
+          <span class="snapshot-mobile-item"><span class="snapshot-mobile-label">Upfront</span> <span id="snapshotMobileUpfront">&pound;0</span></span>
+          <span class="snapshot-mobile-item"><span class="snapshot-mobile-label">Cashflow</span> <span id="snapshotMobileCashflow">&pound;0/mo</span></span>
+        </div>
+        <button type="button" class="snapshot-mobile-toggle" id="snapshotMobileToggle" aria-expanded="false">Details</button>
+      </div>
+      <div class="snapshot-mobile-details" id="snapshotMobileDetails"></div>
     </div>
 
     <section class="map-section" id="mapSection" style="display:none;">
