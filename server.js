@@ -15,20 +15,20 @@ const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x6
 
 const routeMeta = {
   '/': {
-    pageTitle: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
-    metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
+    pageTitle: 'RentalMetrics | Free UK Property Deal Analyser & Yield Calculator',
+    metaDesc: 'Free UK buy-to-let toolkit: analyse deals, calculate rental yield, estimate SDLT and stress test mortgage scenarios. Everything you need for smarter property investment.',
     canonical: 'https://rentalmetrics.co.uk/',
-    ogTitle: 'Buy-to-Let Deal Analyser UK',
-    ogDesc: 'Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool.',
+    ogTitle: 'RentalMetrics | Free UK Property Deal Analyser',
+    ogDesc: 'Free UK buy-to-let toolkit: analyse deals, calculate rental yield, estimate SDLT and stress test mortgage scenarios.',
     ogUrl: 'https://rentalmetrics.co.uk/',
   },
   '/deal-analyser': {
-    pageTitle: 'Buy-to-Let Deal Analyser UK | Stress Test Deals',
-    metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
-    canonical: 'https://rentalmetrics.co.uk/',
-    ogTitle: 'Buy-to-Let Deal Analyser UK',
+    pageTitle: 'Buy-to-Let Deal Analyser UK | Stress Test Deals | RentalMetrics',
+    metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return, mortgage modelling and full acquisition cost breakdown. Free online tool.',
+    canonical: 'https://rentalmetrics.co.uk/deal-analyser',
+    ogTitle: 'Buy-to-Let Deal Analyser UK | RentalMetrics',
     ogDesc: 'Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool.',
-    ogUrl: 'https://rentalmetrics.co.uk/',
+    ogUrl: 'https://rentalmetrics.co.uk/deal-analyser',
   },
   '/simple-analyser': {
     pageTitle: 'Rental Yield Calculator UK | Free BTL Tool',

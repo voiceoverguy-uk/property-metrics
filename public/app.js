@@ -331,7 +331,7 @@ window.addEventListener('popstate', (e) => {
 function updateMeta(mode) {
   const meta = modeMeta[mode];
   if (!meta) return;
-  const url = 'https://rentalmetrics.co.uk' + modeToRoute[mode];
+  const url = 'https://rentalmetrics.co.uk' + window.location.pathname;
   document.title = meta.title;
   const descTag = document.querySelector('meta[name="description"]');
   if (descTag) descTag.setAttribute('content', meta.description);
