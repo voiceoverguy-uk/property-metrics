@@ -739,11 +739,16 @@ function computeSnapshot() {
   const netAnnualRent = (effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly) * 12;
   const netYield = price > 0 ? (netAnnualRent / price) * 100 : 0;
 
+  const annualCashflowAfterMortgage = monthlyCashflow * 12;
+  const cashInvested = isMortgage ? (deposit + sdlt + solicitorFees + additionalCosts) : upfrontTotal;
+  const cashOnCash = cashInvested > 0 ? (annualCashflowAfterMortgage / cashInvested) * 100 : 0;
+
   return {
     missing,
     upfrontTotal,
     monthlyCashflow,
     netYield: Math.round(netYield * 100) / 100,
+    cashOnCash: Math.round(cashOnCash * 100) / 100,
     breakdown: {
       price,
       deposit,
@@ -756,7 +761,8 @@ function computeSnapshot() {
       mortgagePayment,
       mortgageAmount,
       effectiveMonthlyRent,
-      isMortgage
+      isMortgage,
+      cashInvested
     }
   };
 }
@@ -1665,7 +1671,7 @@ function renderYieldGauge(netYield, targetYield) {
         ${fillPath ? `<path d="${fillPath}" fill="none" stroke="${fillColor}" stroke-width="14" stroke-linecap="round"/>` : ''}
         <line x1="${tickInner.x}" y1="${tickInner.y}" x2="${tickOuter.x}" y2="${tickOuter.y}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
         <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="28" font-weight="800" fill="${fillColor}">${fmtPct(netYield)}</text>
-        <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="11" fill="#777">Net Yield</text>
+        <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="11" fill="#777">Net Yield (Asset)</text>
       </svg>
     </div>
   `;
@@ -2004,7 +2010,7 @@ function renderScenario(data, label, targetYield, mortgage) {
           <div class="yield-value ${isSimple ? '' : yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
         </div>
         <div class="yield-card">
-          <div class="yield-label">${mortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield'} <span class="tooltip" data-tip="Net annual rent ÷ total acquisition cost (purchase + SDLT + fees + costs).">?</span></div>
+          <div class="yield-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></div>
           <div class="yield-value ${isSimple ? '' : yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
         </div>
         ${mortgage ? `
@@ -2568,7 +2574,7 @@ function pdfHelper(pdf, margins) {
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(100, 100, 100);
-    pdf.text('Net Yield', cx, cy + 3, { align: 'center' });
+    pdf.text('Net Yield (Asset)', cx, cy + 3, { align: 'center' });
     y = cy + 10;
   }
 
@@ -2800,7 +2806,7 @@ function printReport() {
 
     const yieldCardData = [
       { label: 'Gross Yield', value: fmtPct(displayData.grossYield), color: '#333333' },
-      { label: selectedMortgage ? 'Net Yield (Cash-on-Cash)' : 'Net Yield', value: fmtPct(displayData.netYield), color: isSimplePdf ? '#333333' : (displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217') },
+      { label: 'Net Yield (Asset)', value: fmtPct(displayData.netYield), color: isSimplePdf ? '#333333' : (displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217') },
     ];
     if (selectedMortgage) {
       yieldCardData.push({ label: 'Cash-on-Cash Return', value: fmtPct(selectedMortgage.cashOnCashReturn), color: selectedMortgage.cashOnCashReturn >= 0 ? '#0a7a2e' : '#B11217' });
@@ -3929,8 +3935,20 @@ checkUrlParams();
   const mobileYield = document.getElementById('snapshotMobileYield');
   const mobileDetails = document.getElementById('snapshotMobileDetails');
   const mobileToggle = document.getElementById('snapshotMobileToggle');
+  const mobileReturnLabel = document.getElementById('snapshotMobileReturnLabel');
+  const mobileReturnItem = document.getElementById('snapshotMobileReturnItem');
   let mobileExpanded = false;
   let breakdownOpen = false;
+  let lastReturnValue = '';
+  let lastPurchaseType = selectedPurchaseType;
+  let pulseTimeout = null;
+
+  function triggerPulse() {
+    if (!mobileReturnItem) return;
+    mobileReturnItem.classList.remove('snapshot-pulse');
+    void mobileReturnItem.offsetWidth;
+    mobileReturnItem.classList.add('snapshot-pulse');
+  }
 
   const fieldLabels = { address: 'Address / Postcode', price: 'Asking Price', rent: 'Expected Monthly Rent' };
 
@@ -4000,6 +4018,27 @@ checkUrlParams();
     if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
+    breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
+    breakdownHtml += `<div class="snapshot-breakdown-row"><span>Net Yield (Asset)</span><span>${snap.netYield.toFixed(2)}%</span></div>`;
+    if (b.isMortgage) {
+      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${snap.cashOnCash.toFixed(2)}%</span></div>`;
+    }
+
+    let desktopYieldMetrics = `
+      <div class="snapshot-total-item">
+        <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
+        <span class="snapshot-total-value ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
+      </div>`;
+
+    if (b.isMortgage) {
+      const cocClass = snap.cashOnCash >= 0 ? 'snapshot-positive' : 'snapshot-negative';
+      desktopYieldMetrics += `
+      <div class="snapshot-total-item">
+        <span class="snapshot-total-label">Cash-on-Cash <span class="tooltip" data-tip="Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.">?</span></span>
+        <span class="snapshot-total-value ${cocClass}">${snap.cashOnCash.toFixed(1)}%</span>
+      </div>`;
+    }
+
     snapshotEl.innerHTML = `<div class="snapshot-card">
       <h2 class="snapshot-title">Deal Snapshot</h2>
       <div class="snapshot-totals">
@@ -4011,10 +4050,7 @@ checkUrlParams();
           <span class="snapshot-total-label">Monthly Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs (agent, running costs, maintenance, voids) and mortgage payment.">?</span></span>
           <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
         </div>
-        <div class="snapshot-total-item">
-          <span class="snapshot-total-label">Net Yield <span class="tooltip" data-tip="Annual rent minus operating costs (agent, running costs, maintenance, voids) divided by purchase price. Excludes mortgage.">?</span></span>
-          <span class="snapshot-total-value ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
-        </div>
+        ${desktopYieldMetrics}
       </div>
       <details class="snapshot-details"${breakdownOpen ? ' open' : ''}>
         <summary>Breakdown</summary>
@@ -4036,23 +4072,46 @@ checkUrlParams();
     const isSimple = currentMode === 'simple';
     const targetYieldVal = isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
     const yieldThreshold = isSimple ? 6.0 : targetYieldVal;
-    mobileYield.textContent = snap.netYield.toFixed(1) + '%';
-    if (snap.netYield >= yieldThreshold) {
+
+    const isMortgageSnap = snap.breakdown.isMortgage;
+    if (isMortgageSnap) {
+      mobileReturnLabel.textContent = 'Cash-on-Cash';
+      const cocVal = snap.cashOnCash.toFixed(1) + '%';
+      mobileYield.textContent = cocVal;
       mobileYield.style.color = '';
-      mobileYield.className = 'snapshot-yield-good';
-    } else if (snap.netYield >= yieldThreshold * 0.5) {
-      const ratio = (snap.netYield - yieldThreshold * 0.5) / (yieldThreshold * 0.5);
-      const r = Math.round(192 + (26 - 192) * ratio);
-      const g = Math.round(57 + (140 - 57) * ratio);
-      const bv = Math.round(43 + (58 - 43) * ratio);
-      mobileYield.className = '';
-      mobileYield.style.color = `rgb(${r},${g},${bv})`;
+      mobileYield.className = snap.cashOnCash >= 0 ? 'snapshot-positive' : 'snapshot-negative';
     } else {
-      mobileYield.style.color = '';
-      mobileYield.className = 'snapshot-yield-bad';
+      mobileReturnLabel.textContent = 'Net Yield';
+      mobileYield.textContent = snap.netYield.toFixed(1) + '%';
+      if (snap.netYield >= yieldThreshold) {
+        mobileYield.style.color = '';
+        mobileYield.className = 'snapshot-yield-good';
+      } else if (snap.netYield >= yieldThreshold * 0.5) {
+        const ratio = (snap.netYield - yieldThreshold * 0.5) / (yieldThreshold * 0.5);
+        const r = Math.round(192 + (26 - 192) * ratio);
+        const g = Math.round(57 + (140 - 57) * ratio);
+        const bv = Math.round(43 + (58 - 43) * ratio);
+        mobileYield.className = '';
+        mobileYield.style.color = `rgb(${r},${g},${bv})`;
+      } else {
+        mobileYield.style.color = '';
+        mobileYield.className = 'snapshot-yield-bad';
+      }
     }
 
     mobileDetails.innerHTML = breakdownHtml;
+
+    const currentReturnValue = isMortgageSnap ? snap.cashOnCash.toFixed(1) : snap.netYield.toFixed(1);
+    const currentPurchaseType = selectedPurchaseType;
+
+    if (currentPurchaseType !== lastPurchaseType) {
+      triggerPulse();
+      lastPurchaseType = currentPurchaseType;
+    } else if (currentReturnValue !== lastReturnValue && lastReturnValue !== '') {
+      clearTimeout(pulseTimeout);
+      pulseTimeout = setTimeout(triggerPulse, 300);
+    }
+    lastReturnValue = currentReturnValue;
     } catch (renderErr) {
       console.error('Snapshot render error:', renderErr);
     }

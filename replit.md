@@ -55,7 +55,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
 - **Currency Formatting**: Automatic formatting with £ and commas.
 - **"Start Again" Reset Button**.
-- **Deal Snapshot (Live Running Totals)**: Real-time Upfront Total and Monthly Cashflow display in the results panel (desktop) and a sticky bottom bar (mobile). Uses client-side SDLT calculation (`calcSDLTClient`) and shared helpers (`computeSnapshot`). Updates live as user types — no need to click Analyse. Shows progressive validation warnings with click-to-scroll. Breakdown details collapsed by default. Hidden in SDLT-only mode.
+- **Deal Snapshot (Live Running Totals)**: Real-time Upfront Total, Monthly Cashflow, Net Yield (Asset), and Cash-on-Cash (when mortgage) display in the results panel (desktop) and a sticky top bar (mobile). Uses client-side SDLT calculation (`calcSDLTClient`) and shared helpers (`computeSnapshot`). Desktop shows 3 metrics (cash) or 4 metrics (mortgage adds Cash-on-Cash). Mobile shows 3 metrics with the 3rd switching between Net Yield (cash) and Cash-on-Cash (mortgage) with pulse animation on toggle. Snapshot yields show 1dp; details breakdown shows 2dp. Standardised labels: "Net Yield (Asset)", "Cash-on-Cash", "Gross Yield". Updates live as user types. Breakdown details collapsed by default. Hidden in SDLT-only mode.
 
 ## External Dependencies
 - **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`.

@@ -4077,3 +4077,13 @@ body.dark .snapshot-mobile-toggle:hover {
   background: #444;
 }
 
+@keyframes snapshot-pulse {
+  0% { background-color: rgba(212, 32, 39, 0.12); }
+  100% { background-color: transparent; }
+}
+
+.snapshot-mobile-item.snapshot-pulse {
+  animation: snapshot-pulse 600ms ease-out;
+  border-radius: 6px;
+}
+
