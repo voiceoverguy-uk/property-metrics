@@ -578,7 +578,7 @@ function getCurrencyFieldValue(id) {
 }
 
 let selectedPurchaseType = 'cash';
-let depositInputMode = 'pounds';
+let depositInputMode = 'pct';
 let mortgageType = 'interest-only';
 
 function getSelectedPurchaseType() {
