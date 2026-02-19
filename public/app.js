@@ -1710,22 +1710,6 @@ function renderSDLTComparison(investorSDLT, ftbSDLT, mainSDLT) {
   `;
 }
 
-function adjustYieldsForMortgage(data, mortgage) {
-  if (!mortgage) return data;
-  const totalCashInvested = mortgage.totalCashInvested;
-  if (totalCashInvested <= 0) return data;
-  const annualMortgageCost = mortgage.monthlyPayment * 12;
-  const netAnnualRent = data.netAnnualRent - annualMortgageCost;
-  const netYield = (netAnnualRent / totalCashInvested) * 100;
-  return {
-    ...data,
-    netYield: Math.round(netYield * 100) / 100,
-    netAnnualRent: Math.round(netAnnualRent * 100) / 100,
-    cashInvested: totalCashInvested,
-    annualMortgageCost: Math.round(annualMortgageCost * 100) / 100,
-    mortgageAdjusted: true,
-  };
-}
 
 function renderRefinanceScenario(price, mortgage) {
   if (!mortgage) return '';
@@ -1950,7 +1934,7 @@ window.recalcRefinance = function() {
 };
 
 function renderScenario(data, label, targetYield, mortgage) {
-  const displayData = adjustYieldsForMortgage(data, mortgage);
+  const displayData = data;
   const offer = data.targetOffer;
   const isSimple = currentMode === 'simple';
 
@@ -1976,9 +1960,7 @@ function renderScenario(data, label, targetYield, mortgage) {
     mortgageHtml = renderMortgageSection(mortgage);
   }
 
-  const yieldNote = mortgage
-    ? `<div class="yield-basis-note">Net yield based on ${fmt(mortgage.totalCashInvested)} cash invested (after mortgage costs)</div>`
-    : '';
+  const yieldNote = '';
 
   const voidPct = isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0);
 
@@ -2026,9 +2008,10 @@ function renderScenario(data, label, targetYield, mortgage) {
       </div>
       <div class="result-row"><span class="label">Annual Rent</span><span class="value">${fmt(data.annualRent)}</span></div>
       ${voidPct > 0 ? `<div class="result-row"><span class="label">Effective Annual Rent (after ${voidPct}% void)</span><span class="value">${fmt(data.effectiveAnnualRent || data.annualRent)}</span></div>` : ''}
-      ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(displayData.annualMortgageCost)}</span></div>` : ''}
-      <div class="result-row"><span class="label">Net Annual Rent${mortgage ? ' (after mortgage)' : ''}</span><span class="value">${fmt(displayData.netAnnualRent)}</span></div>
-      ${mortgage ? `<div class="result-row"><span class="label">Cash Invested</span><span class="value">${fmt(displayData.cashInvested)}</span></div>` : ''}
+      <div class="result-row"><span class="label">Net Annual Income (before finance)</span><span class="value">${fmt(data.netAnnualRent)}</span></div>
+      ${mortgage ? `<div class="result-row"><span class="label">Annual Mortgage Cost</span><span class="value">${fmt(mortgage.monthlyPayment * 12)}</span></div>` : ''}
+      ${mortgage ? `<div class="result-row"><span class="label">Annual Cashflow (after finance)</span><span class="value">${fmt(mortgage.annualCashFlow)}</span></div>` : ''}
+      ${mortgage ? `<div class="result-row"><span class="label">Cash Invested</span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>` : ''}
       <div class="result-row"><span class="label">Total Acquisition Cost</span><span class="value">${fmt(data.totalCost)}</span></div>
     </div>
 
@@ -2692,7 +2675,7 @@ function printReport() {
       return;
     }
     const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
-    const displayData = adjustYieldsForMortgage(scenarioData, selectedMortgage);
+    const displayData = scenarioData;
     const rating = getDealRating(displayData.netYield, parseFloat(targetYield));
 
     const { jsPDF } = window.jspdf;
@@ -2796,7 +2779,7 @@ function printReport() {
 
     h.heading('Yield Analysis');
     if (selectedMortgage) {
-      h.textLine('Net yield based on ' + fmt(displayData.cashInvested) + ' cash invested (after mortgage costs)', { size: 9, align: 'center', color: '#555555' });
+      h.textLine('Net Yield (Asset) excludes mortgage. Cash-on-Cash includes mortgage and is based on cash invested.', { size: 9, align: 'center', color: '#555555' });
     }
     h.gap(2);
     if (!isSimplePdf) {
@@ -2821,13 +2804,13 @@ function printReport() {
     if (voidPct > 0) {
       yieldRows.push({ cells: ['Effective Annual Rent (after ' + voidPct + '% void)', fmt(scenarioData.effectiveAnnualRent || scenarioData.annualRent)] });
     }
+    yieldRows.push({ cells: ['Net Annual Income (before finance)', fmt(scenarioData.netAnnualRent)] });
     if (selectedMortgage) {
-      yieldRows.push({ cells: ['Annual Mortgage Cost', fmt(displayData.annualMortgageCost)] });
+      yieldRows.push({ cells: ['Annual Mortgage Cost', fmt(selectedMortgage.monthlyPayment * 12)] });
+      yieldRows.push({ cells: ['Annual Cashflow (after finance)', fmt(selectedMortgage.annualCashFlow)] });
+      yieldRows.push({ cells: ['Cash Invested', fmt(selectedMortgage.totalCashInvested)] });
     }
-    yieldRows.push({ cells: ['Net Annual Rent' + (selectedMortgage ? ' (after mortgage)' : ''), fmt(displayData.netAnnualRent)] });
-    if (selectedMortgage) {
-      yieldRows.push({ cells: ['Cash Invested', fmt(displayData.cashInvested)] });
-    }
+    yieldRows.push({ cells: ['Total Acquisition Cost', fmt(scenarioData.totalCost)] });
     h.table(yieldRows);
 
     if (selectedMortgage) {
