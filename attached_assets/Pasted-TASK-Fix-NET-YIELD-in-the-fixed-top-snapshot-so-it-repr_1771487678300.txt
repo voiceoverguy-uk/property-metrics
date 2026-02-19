@@ -1,0 +1,94 @@
+TASK: Fix “NET YIELD” in the fixed top snapshot so it represents the TRUE net yield of the deal (UK BTL), not rent-on-cash or leveraged return.
+
+CONTEXT:
+We currently show a fixed snapshot bar at the top: UPFRONT, CASHFLOW, NET YIELD.
+The “NET YIELD” shown is too high (e.g. 17.3%) because it is likely using the wrong denominator (cash invested) and/or not deducting all recurring costs and finance costs properly.
+
+GOAL:
+Update the snapshot “NET YIELD” calculation to show a true net yield based on the property price (purchase price) and annual net income AFTER all costs.
+
+IMPORTANT DEFINITIONS (UK BTL):
+1) Gross Yield (%) = (Annual Rent / Purchase Price) * 100
+2) Net Yield (%) = (Annual Rent - Annual Operating Costs) / Purchase Price * 100
+   - “Annual Operating Costs” includes: letting agent fees (incl VAT if toggled), recurring monthly costs, void allowance, maintenance allowance.
+   - Net Yield should NOT include mortgage payments/interest (that’s finance, not operating). This is the standard UK definition.
+3) Cash-on-Cash Return (%) = (Annual Cashflow After Finance) / Total Cash Invested * 100
+   - Total Cash Invested = deposit + SDLT + solicitor + additional costs + any other upfront costs
+
+WHAT TO IMPLEMENT:
+A) Change the snapshot label:
+   - Replace snapshot “NET YIELD” with “NET YIELD (true)” OR keep label but ensure it matches definition above.
+B) Use these exact calculations (and keep them shared with the main analyser values):
+
+INPUTS:
+- purchasePrice (Asking Price)
+- monthlyRent
+- lettingAgentFeePercent
+- lettingAgentVatEnabled (boolean)
+- recurringMonthlyCostsTotal (sum of recurring items)
+- voidAllowancePercent (optional; default 0 if blank)
+- maintenanceAllowancePercent OR maintenanceAllowancePerYear (depending on toggle)
+- mortgageType, rate, loan etc already exist but should not affect NET YIELD calculation (only affects CASHFLOW)
+- targetYield is only a benchmark and must not affect calculations.
+
+CALCULATIONS:
+1) annualRent = monthlyRent * 12
+
+2) lettingAgentMonthly =
+   monthlyRent * (lettingAgentFeePercent / 100) * (lettingAgentVatEnabled ? 1.2 : 1)
+
+3) annualLettingAgent = lettingAgentMonthly * 12
+4) annualRecurring = recurringMonthlyCostsTotal * 12
+
+5) annualMaintenance:
+   - if maintenance mode is “% of rent”:
+       annualMaintenance = annualRent * (maintenancePercent / 100)
+   - else if maintenance mode is “£ per year”:
+       annualMaintenance = maintenancePerYear
+
+6) annualVoidLoss:
+   annualVoidLoss = annualRent * (voidAllowancePercent / 100)
+
+7) annualOperatingCosts = annualLettingAgent + annualRecurring + annualMaintenance + annualVoidLoss
+
+8) annualNetIncomeBeforeFinance = annualRent - annualOperatingCosts
+
+9) TRUE Net Yield (%) = (annualNetIncomeBeforeFinance / purchasePrice) * 100
+   - Guardrails:
+     - If purchasePrice <= 0 => netYield = 0
+     - Clamp negative yields to show negative (don’t hide it)
+     - Display with 1 decimal place.
+
+C) Ensure CASHFLOW in snapshot remains:
+monthlyCashflowAfterFinance = monthlyRent
+  - lettingAgentMonthly
+  - recurringMonthlyCostsTotal
+  - monthlyMaintenanceProvision (annualMaintenance/12)
+  - monthlyVoidProvision (annualVoidLoss/12)
+  - mortgageMonthlyPayment (interest-only or repayment)
+This ensures snapshot cashflow is also “true”.
+
+D) Ensure UPFRONT remains your existing “total cash invested” number (deposit + SDLT + solicitor + additional costs etc).
+
+UI/TESTING REQUIREMENTS:
+- Update snapshot values live as user types (debounced to avoid jitter).
+- Add a tooltip next to Net Yield explaining:
+  “Net yield = annual rent minus operating costs (agent, recurring, maintenance, voids) divided by purchase price. Excludes mortgage.”
+- Add a tooltip next to Cashflow:
+  “Cashflow = monthly rent minus operating costs and mortgage.”
+
+VALIDATION / EXAMPLE CHECK:
+Using:
+purchasePrice=200000, rent=1200,
+agent=7.5% with VAT, recurring=25/mo,
+deposit=50000, rate=4.5% interest-only loan=150000,
+maintenance/void left blank (0):
+- gross yield ≈ 7.2%
+- net yield should be around 6–7% (not 17%).
+Confirm snapshot net yield drops accordingly.
+
+Please implement in the codebase:
+- Find where snapshot values are computed (likely a shared calculation function / hook).
+- Refactor to a single source of truth (e.g., calculateDealMetrics()) used by both snapshot and “Analyse Deal” output so they cannot diverge.
+- Add unit tests for the calculation function if tests exist.
+Return the file(s) changed and the final formulas in code.
