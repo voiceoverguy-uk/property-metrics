@@ -32,8 +32,8 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Route-Specific Underfold Content**: Each route has its own below-the-fold landing content (intro, info cards, FAQs) controlled via CSS body classes. Deal Analyser has 3-column card grid on desktop. All sections support mobile toggle (collapsible) pattern.
 - **Calculations**: Comprehensive deal calculations for costs, yields, and target offer price. SDLT calculations adhere to GOV.UK guidance for England & Northern Ireland, including standard residential (0%/2%/5%/10%/12%), first-time buyer relief (0% to £300k, 5% to £500k, fallback >£500k), and additional property / higher rates (5%/7%/10%/15%/17%). Form layout: Address → Deal Reference → red divider → Buyer Type → financial fields.
 - **Mortgage Calculator**: Collapsible section with deposit percentage, interest rate, and term inputs. Displays monthly payment, cash flow, and cash-on-cash return. Includes stress test functionality.
-- **Yield Analysis**: Leveraged yield calculations when a mortgage is active, deducting mortgage payments from net annual rent.
-- **Deal Rating**: A+ to F grades based on net yield vs. target yield difference.
+- **Yield Analysis**: Net Yield (Asset) = (Annual Rent - Operating Costs) / Purchase Price — never changes with mortgage. Cash-on-Cash = Annual Cashflow After Mortgage / Cash Invested — shown separately when mortgage selected. `adjustYieldsForMortgage()` removed; displayData uses server's raw data.
+- **Deal Rating**: A+ to F grades based on Net Yield (Asset) vs. target yield difference.
 - **Itemised Costs**: Replaced single inputs for additional costs and monthly running costs with itemised label + amount pairs.
 - **Capital Growth & Tax Impact**: Collapsible sections for projecting capital growth and estimating Section 24 tax impact.
 - **Refinance Scenario**: Interactive section to model refinance scenarios.
@@ -47,9 +47,10 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Yield Calculation**: Gross, Net, Cash-on-Cash Return, and Payback Period.
 - **Target Offer Price Solver**.
 - **Itemised Costs Management**: Additional costs and monthly running costs.
-- **Capital Growth Projection**: 5yr/10yr projection and estimated equity.
-- **Section 24 Tax Impact Analysis**: Estimated tax, mortgage interest credit, and after-tax cash flow.
-- **Mortgage Stress Testing**: Calculates impact of higher interest rates.
+- **Capital Growth Projection**: 5yr/10yr projection with "Projected Equity" label.
+- **Section 24 Tax Impact Analysis**: Estimated tax, mortgage interest credit, and after-tax cash flow. Shows "Estimate only — not tax advice" disclaimer. `isLimitedCompany` boolean (false) prepared for future limited company option — hides section with note when true.
+- **Target Offer Price**: Based on Net Yield (Asset), excluding mortgage. Tooltip confirms this.
+- **Mortgage Stress Testing**: Calculates impact of higher interest rates. Single badge only (stress-rate based).
 - **Void Allowance**: Percentage-based void allowance impacting effective annual rent.
 - **Deal Reference**: Input field to identify deals.
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
