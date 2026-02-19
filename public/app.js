@@ -737,8 +737,7 @@ function computeSnapshot() {
   const monthlyCashflow = effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly - mortgagePayment;
 
   const netAnnualRent = (effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly) * 12;
-  const totalCashInvested = upfrontTotal > 0 ? upfrontTotal : 0;
-  const netYield = totalCashInvested > 0 ? (netAnnualRent / totalCashInvested) * 100 : 0;
+  const netYield = price > 0 ? (netAnnualRent / price) * 100 : 0;
 
   return {
     missing,
@@ -4007,11 +4006,11 @@ checkUrlParams();
           <span class="snapshot-total-value">${fmt(Math.round(snap.upfrontTotal))}</span>
         </div>
         <div class="snapshot-total-item">
-          <span class="snapshot-total-label">Monthly Cashflow</span>
+          <span class="snapshot-total-label">Monthly Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs (agent, running costs, maintenance, voids) and mortgage payment.">?</span></span>
           <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
         </div>
         <div class="snapshot-total-item">
-          <span class="snapshot-total-label">Net Yield</span>
+          <span class="snapshot-total-label">Net Yield <span class="tooltip" data-tip="Annual rent minus operating costs (agent, running costs, maintenance, voids) divided by purchase price. Excludes mortgage.">?</span></span>
           <span class="snapshot-total-value ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
         </div>
       </div>
