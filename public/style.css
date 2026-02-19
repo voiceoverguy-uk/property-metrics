@@ -3883,7 +3883,7 @@ body.dark .mortgage-type-label {
   right: 0;
   width: 100%;
   background: #fff;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #d42027;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   z-index: 1001;
   padding: 10px 16px;
@@ -4013,7 +4013,7 @@ body.dark .snapshot-details summary {
 
 body.dark .snapshot-mobile-bar {
   background: #1e1e1e;
-  border-bottom-color: #444;
+  border-bottom-color: #d42027;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
