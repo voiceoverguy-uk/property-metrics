@@ -16,11 +16,11 @@ function calculateDeal(params) {
   const totalCost = price + sdlt + solicitorFees + refurbCosts + otherCosts;
   const annualRent = monthlyRent * 12;
   const effectiveAnnualRent = annualRent * (1 - voidPct / 100);
-  const grossYield = price > 0 ? (effectiveAnnualRent / price) * 100 : 0;
+  const grossYield = price > 0 ? (annualRent / price) * 100 : 0;
 
   const netAnnualRent =
     effectiveAnnualRent - runningCosts * 12;
-  const netYield = totalCost > 0 ? (netAnnualRent / totalCost) * 100 : 0;
+  const netYield = price > 0 ? (netAnnualRent / price) * 100 : 0;
 
   return {
     sdlt,
