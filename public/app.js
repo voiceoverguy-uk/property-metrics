@@ -3932,7 +3932,7 @@ checkUrlParams();
     if (currentMode === 'sdlt') {
       snapshotEl.style.display = 'none';
       mobileBar.classList.remove('visible');
-      if (typeof updateBarPosition === 'function') updateBarPosition();
+      if (typeof syncBarPadding === 'function') syncBarPadding();
       return;
     }
 
@@ -3946,7 +3946,7 @@ checkUrlParams();
         <div class="snapshot-warning">Enter ${warningItems} to see live totals</div>
       </div>`;
       mobileBar.classList.remove('visible');
-      if (typeof updateBarPosition === 'function') updateBarPosition();
+      if (typeof syncBarPadding === 'function') syncBarPadding();
       snapshotEl.querySelectorAll('.snapshot-missing-field').forEach(el => {
         el.addEventListener('click', () => scrollToSnapshotField(el.dataset.field));
       });
@@ -3998,7 +3998,7 @@ checkUrlParams();
     });
 
     mobileBar.classList.add('visible');
-    if (typeof updateBarPosition === 'function') updateBarPosition();
+    if (typeof syncBarPadding === 'function') syncBarPadding();
     mobileUpfront.textContent = fmt(Math.round(snap.upfrontTotal));
     const mCfSign = snap.monthlyCashflow >= 0 ? '+' : '';
     mobileCashflow.textContent = mCfSign + fmt(Math.round(snap.monthlyCashflow)) + '/mo';
@@ -4064,28 +4064,21 @@ checkUrlParams();
     if (el) el.addEventListener('click', () => setTimeout(renderSnapshot, 50));
   });
 
-  const header = document.querySelector('header');
   const isMobileWidth = () => window.innerWidth < 992;
-  const pageHeading = document.querySelector('.page-heading');
 
-  function updateBarPosition() {
+  function syncBarPadding() {
     if (!isMobileWidth() || !mobileBar.classList.contains('visible')) {
-      if (pageHeading) pageHeading.style.paddingTop = '';
+      document.body.style.paddingTop = '';
       return;
     }
-    const headerRect = header ? header.getBoundingClientRect() : { bottom: 0 };
-    const headerBottom = Math.max(0, headerRect.bottom);
-    mobileBar.style.top = headerBottom + 'px';
     const barH = mobileBar.offsetHeight || 0;
-    if (pageHeading) pageHeading.style.paddingTop = barH + 'px';
+    document.body.style.paddingTop = barH + 'px';
   }
 
-  updateBarPosition();
-  window.addEventListener('scroll', updateBarPosition, { passive: true });
-  window.addEventListener('resize', updateBarPosition);
+  syncBarPadding();
+  window.addEventListener('resize', syncBarPadding);
   if (window.ResizeObserver) {
-    if (header) new ResizeObserver(updateBarPosition).observe(header);
-    new ResizeObserver(updateBarPosition).observe(mobileBar);
+    new ResizeObserver(syncBarPadding).observe(mobileBar);
   }
 
   let scrollTimer = null;
@@ -4097,9 +4090,10 @@ checkUrlParams();
       const targetEl = e.target;
       scrollTimer = setTimeout(() => {
         if (document.activeElement !== targetEl) return;
-        const barH = mobileBar.offsetHeight || 0;
-        const headerBottom = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
-        const topOffset = headerBottom + barH + 12;
+        const barH = mobileBar.classList.contains('visible') ? (mobileBar.offsetHeight || 0) : 0;
+        const hdr = document.querySelector('header');
+        const hdrBottom = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 0;
+        const topOffset = Math.max(barH, hdrBottom + barH) + 12;
         const rect = targetEl.getBoundingClientRect();
         if (rect.top < topOffset) {
           window.scrollBy({ top: rect.top - topOffset, behavior: 'smooth' });

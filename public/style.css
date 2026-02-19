@@ -3881,13 +3881,14 @@ body.dark .mortgage-type-label {
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
   background: #fff;
   border-bottom: 1px solid #ddd;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  z-index: 999;
+  z-index: 1001;
   padding: 10px 16px;
   display: none;
-  transition: top 0.15s ease;
+  box-sizing: border-box;
 }
 
 .snapshot-mobile-bar.visible {
