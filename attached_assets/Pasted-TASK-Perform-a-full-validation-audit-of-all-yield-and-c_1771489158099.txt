@@ -1,0 +1,102 @@
+TASK: Perform a full validation audit of all yield and cashflow calculations.
+
+Do NOT assume they are correct.
+Recalculate everything step-by-step and confirm logic matches standard UK BTL definitions.
+
+Specifically verify:
+
+1) VAT Toggle on Letting Agent Fee
+   - When VAT is ON, lettingAgentMonthly = rent * (fee% / 100) * 1.2
+   - When VAT is OFF, lettingAgentMonthly = rent * (fee% / 100)
+   - Confirm VAT is applied ONLY once (not double-counted).
+   - Confirm VAT affects both:
+        a) Net Yield calculation (annual operating costs)
+        b) Monthly Cashflow calculation
+
+2) Void Allowance (%)
+   - annualVoidLoss = annualRent * (void% / 100)
+   - Confirm void loss:
+        a) Reduces Net Yield
+        b) Reduces Cashflow (via monthly provision = annualVoidLoss / 12)
+   - Confirm it does NOT affect Gross Yield.
+   - Confirm 0% or blank = zero void loss.
+
+3) Maintenance Allowance
+   - If % mode:
+        annualMaintenance = annualRent * (maintenance% / 100)
+   - If £ per year mode:
+        annualMaintenance = maintenancePerYear
+   - Confirm:
+        a) Only one mode applies at a time
+        b) It affects Net Yield
+        c) It affects Cashflow (annualMaintenance / 12)
+        d) It is not double-counted
+
+4) Net Yield Formula
+   Confirm EXACTLY:
+   Net Yield (%) =
+   (Annual Rent - Annual Operating Costs) / Purchase Price * 100
+
+   Where Annual Operating Costs =
+       annualLettingAgent
+     + annualRecurringCosts
+     + annualMaintenance
+     + annualVoidLoss
+
+   Confirm:
+   - Mortgage is NOT included in Net Yield.
+   - Purchase Price is the denominator (not cash invested).
+   - If purchasePrice <= 0 → yield = 0.
+   - Negative yield displays as negative.
+
+5) Cashflow Formula
+   Confirm:
+   Monthly Cashflow =
+       monthlyRent
+     - lettingAgentMonthly
+     - recurringMonthlyCosts
+     - (annualMaintenance / 12)
+     - (annualVoidLoss / 12)
+     - mortgageMonthlyPayment
+
+   Confirm no duplication between annual and monthly layers.
+
+6) Run a Controlled Test Scenario
+
+Using:
+- Price: 200000
+- Rent: 1200
+- Agent fee: 7.5%
+- VAT ON
+- Recurring: 25/month
+- Void: 5%
+- Maintenance: 8% of rent
+- Deposit: 50000
+- Mortgage: 150000 at 4.5% interest-only
+
+Print the following calculated outputs clearly:
+- Gross Yield
+- Net Yield
+- Monthly Cashflow
+- Annual Operating Costs
+- Annual Net Income Before Finance
+
+Show full step-by-step numbers.
+
+7) Confirm there is ONE single calculation source
+Ensure both:
+- Snapshot bar
+- Full Deal Analysis results
+use the SAME shared calculation function (e.g. calculateDealMetrics()).
+
+If there are duplicate formulas in different places, refactor to one shared function.
+
+OUTPUT:
+Return:
+- Confirmation of pass/fail
+- The exact formulas currently in code
+- The test scenario results
+- Any issues found
+- Files modified (if any)
+
+Be strict. Do not assume correctness.
