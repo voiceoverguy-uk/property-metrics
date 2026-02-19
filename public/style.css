@@ -3834,6 +3834,14 @@ body.dark .mortgage-type-label {
   color: #c0392b;
 }
 
+.snapshot-yield-good {
+  color: #1a8c3a;
+}
+
+.snapshot-yield-bad {
+  color: #c0392b;
+}
+
 .snapshot-details summary {
   font-size: 0.78rem;
   color: #999;
@@ -3941,6 +3949,14 @@ body.dark .mortgage-type-label {
   color: #c0392b;
 }
 
+.snapshot-mobile-item > span.snapshot-yield-good {
+  color: #1a8c3a;
+}
+
+.snapshot-mobile-item > span.snapshot-yield-bad {
+  color: #c0392b;
+}
+
 .snapshot-mobile-toggle {
   background: #f0f0f0;
   border: 1px solid #ddd;
@@ -4005,6 +4021,14 @@ body.dark .snapshot-total-value {
   color: #eee;
 }
 
+body.dark .snapshot-yield-good {
+  color: #2ecc71;
+}
+
+body.dark .snapshot-yield-bad {
+  color: #e74c3c;
+}
+
 body.dark .snapshot-breakdown-row {
   color: #aaa;
 }
@@ -4032,6 +4056,14 @@ body.dark .snapshot-mobile-item > span.snapshot-positive {
 }
 
 body.dark .snapshot-mobile-item > span.snapshot-negative {
+  color: #e74c3c;
+}
+
+body.dark .snapshot-mobile-item > span.snapshot-yield-good {
+  color: #2ecc71;
+}
+
+body.dark .snapshot-mobile-item > span.snapshot-yield-bad {
   color: #e74c3c;
 }
 

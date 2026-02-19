@@ -736,10 +736,15 @@ function computeSnapshot() {
 
   const monthlyCashflow = effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly - mortgagePayment;
 
+  const netAnnualRent = (effectiveMonthlyRent - lettingAgentFee - baseRunningCosts - maintenanceMonthly) * 12;
+  const totalCashInvested = upfrontTotal > 0 ? upfrontTotal : 0;
+  const netYield = totalCashInvested > 0 ? (netAnnualRent / totalCashInvested) * 100 : 0;
+
   return {
     missing,
     upfrontTotal,
     monthlyCashflow,
+    netYield: Math.round(netYield * 100) / 100,
     breakdown: {
       price,
       deposit,
@@ -3921,6 +3926,7 @@ checkUrlParams();
   const mobileBar = document.getElementById('snapshotMobileBar');
   const mobileUpfront = document.getElementById('snapshotMobileUpfront');
   const mobileCashflow = document.getElementById('snapshotMobileCashflow');
+  const mobileYield = document.getElementById('snapshotMobileYield');
   const mobileDetails = document.getElementById('snapshotMobileDetails');
   const mobileToggle = document.getElementById('snapshotMobileToggle');
   let mobileExpanded = false;
@@ -3957,6 +3963,24 @@ checkUrlParams();
     const cashflowClass = snap.monthlyCashflow >= 0 ? 'snapshot-positive' : 'snapshot-negative';
     const cashflowSign = snap.monthlyCashflow >= 0 ? '+' : '';
 
+    const isSimpleSnap = currentMode === 'simple';
+    const targetYieldSnap = isSimpleSnap ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
+    const yieldThresholdSnap = isSimpleSnap ? 6.0 : targetYieldSnap;
+    let yieldColorClass;
+    let yieldInlineColor = '';
+    if (snap.netYield >= yieldThresholdSnap) {
+      yieldColorClass = 'snapshot-yield-good';
+    } else if (snap.netYield >= yieldThresholdSnap * 0.5) {
+      const ratio = (snap.netYield - yieldThresholdSnap * 0.5) / (yieldThresholdSnap * 0.5);
+      const r = Math.round(192 + (26 - 192) * ratio);
+      const g = Math.round(57 + (140 - 57) * ratio);
+      const bv = Math.round(43 + (58 - 43) * ratio);
+      yieldColorClass = '';
+      yieldInlineColor = `color:rgb(${r},${g},${bv})`;
+    } else {
+      yieldColorClass = 'snapshot-yield-bad';
+    }
+
     let breakdownHtml = '';
     if (b.isMortgage) {
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Deposit</span><span>${fmt(b.deposit)}</span></div>`;
@@ -3986,6 +4010,10 @@ checkUrlParams();
           <span class="snapshot-total-label">Monthly Cashflow</span>
           <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
         </div>
+        <div class="snapshot-total-item">
+          <span class="snapshot-total-label">Net Yield</span>
+          <span class="snapshot-total-value ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
+        </div>
       </div>
       <details class="snapshot-details"${breakdownOpen ? ' open' : ''}>
         <summary>Breakdown</summary>
@@ -4003,6 +4031,25 @@ checkUrlParams();
     const mCfSign = snap.monthlyCashflow >= 0 ? '+' : '';
     mobileCashflow.textContent = mCfSign + fmt(Math.round(snap.monthlyCashflow)) + '/mo';
     mobileCashflow.className = cashflowClass;
+
+    const isSimple = currentMode === 'simple';
+    const targetYieldVal = isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
+    const yieldThreshold = isSimple ? 6.0 : targetYieldVal;
+    mobileYield.textContent = snap.netYield.toFixed(1) + '%';
+    if (snap.netYield >= yieldThreshold) {
+      mobileYield.style.color = '';
+      mobileYield.className = 'snapshot-yield-good';
+    } else if (snap.netYield >= yieldThreshold * 0.5) {
+      const ratio = (snap.netYield - yieldThreshold * 0.5) / (yieldThreshold * 0.5);
+      const r = Math.round(192 + (26 - 192) * ratio);
+      const g = Math.round(57 + (140 - 57) * ratio);
+      const bv = Math.round(43 + (58 - 43) * ratio);
+      mobileYield.className = '';
+      mobileYield.style.color = `rgb(${r},${g},${bv})`;
+    } else {
+      mobileYield.style.color = '';
+      mobileYield.className = 'snapshot-yield-bad';
+    }
 
     mobileDetails.innerHTML = breakdownHtml;
   }
