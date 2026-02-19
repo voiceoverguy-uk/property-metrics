@@ -3921,6 +3921,7 @@ checkUrlParams();
 })();
 
 (function initDealSnapshot() {
+  try {
   const snapshotEl = document.getElementById('dealSnapshot');
   const mobileBar = document.getElementById('snapshotMobileBar');
   const mobileUpfront = document.getElementById('snapshotMobileUpfront');
@@ -3934,6 +3935,7 @@ checkUrlParams();
   const fieldLabels = { address: 'Address / Postcode', price: 'Asking Price', rent: 'Expected Monthly Rent' };
 
   function renderSnapshot() {
+    try {
     if (currentMode === 'sdlt') {
       snapshotEl.style.display = 'none';
       mobileBar.classList.remove('visible');
@@ -4051,6 +4053,9 @@ checkUrlParams();
     }
 
     mobileDetails.innerHTML = breakdownHtml;
+    } catch (renderErr) {
+      console.error('Snapshot render error:', renderErr);
+    }
   }
 
   function scrollToSnapshotField(field) {
@@ -4153,5 +4158,8 @@ checkUrlParams();
 
   window.updateSnapshot = renderSnapshot;
   renderSnapshot();
+  } catch (err) {
+    console.error('Deal Snapshot init error:', err);
+  }
 })();
 

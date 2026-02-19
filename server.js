@@ -6,6 +6,7 @@ const { getSDLTBreakdown } = require('./src/sdlt');
 
 const app = express();
 const PORT = 5000;
+const CACHE_BUST = Date.now().toString(36);
 
 app.use(express.json());
 
@@ -59,7 +60,9 @@ function serveHtml(req, res) {
     .replace(/%%OG_URL%%/g, meta.ogUrl)
     .replace(/%%OG_IMAGE%%/g, OG_IMAGE);
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.send(html);
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.send(html.replace(/\?v=\d+/g, '?v=' + CACHE_BUST));
 }
 
 app.get(['/', '/deal-analyser', '/simple-analyser', '/sdlt-calculator'], serveHtml);
@@ -74,8 +77,12 @@ app.get('/sitemap.xml', (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public'), {
   index: false,
+  etag: false,
+  lastModified: false,
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
   }
 }));
 
