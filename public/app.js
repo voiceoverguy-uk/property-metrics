@@ -1622,7 +1622,6 @@ function renderMortgageSection(mortgage) {
       <div class="result-row"><span class="label">Monthly Cash Flow <span class="tooltip" data-tip="Monthly rent minus monthly costs (and mortgage if used).">?</span></span><span class="value ${cfClass}">${fmt(mortgage.monthlyCashFlow)}</span></div>
       <div class="result-row"><span class="label">Cash-on-Cash Return</span><span class="value">${fmtPct(mortgage.cashOnCashReturn)}</span></div>
       <div class="result-row"><span class="label">Cash Invested <span class="tooltip" data-tip="Deposit + buying costs + any refurb/extra costs.">?</span></span><span class="value">${fmt(mortgage.totalCashInvested)}</span></div>
-      <div class="cash-flow-indicator ${cfClass}">${cfLabel}</div>
       <div class="stress-test-section">
         <h4>Stress Test (${mortgage.stressRate}%)</h4>
         <div class="result-row"><span class="label">Monthly Payment at ${mortgage.stressRate}%</span><span class="value">${fmt(mortgage.stressMonthlyPayment)}</span></div>
@@ -1748,8 +1747,17 @@ function renderRefinanceScenario(price, mortgage) {
   `;
 }
 
+const isLimitedCompany = false;
+
 function renderSection24(mortgage, data) {
   if (!mortgage) return '';
+  if (isLimitedCompany) {
+    return `
+    <div class="result-section collapsible-section">
+      <h3 class="collapsible-header">Section 24 Tax Estimate</h3>
+      <p class="section-note">Section 24 applies to individual landlords, not limited companies.</p>
+    </div>`;
+  }
   return `
     <div class="result-section collapsible-section">
       <h3 class="collapsible-header" onclick="toggleSection24()">
@@ -1757,6 +1765,7 @@ function renderSection24(mortgage, data) {
         <span class="tooltip" data-tip="Simplified estimate. Does not replace professional tax advice.">?</span>
         <span class="collapsible-arrow" id="s24Arrow">&#9660;</span>
       </h3>
+      <p class="section-note">Estimate only — not tax advice.</p>
       <div id="section24Content" style="display:none;">
         <div class="s24-inputs">
           <div class="form-group">
@@ -1882,12 +1891,12 @@ window.recalcCapitalGrowth = function() {
       <div class="cg-projection-card">
         <div class="cg-projection-period">5 Years</div>
         <div class="cg-projection-value">${fmt(Math.round(val5))}</div>
-        <div class="cg-projection-equity">Equity: ${fmt(Math.round(eq5))}</div>
+        <div class="cg-projection-equity">Projected Equity: ${fmt(Math.round(eq5))}</div>
       </div>
       <div class="cg-projection-card">
         <div class="cg-projection-period">10 Years</div>
         <div class="cg-projection-value">${fmt(Math.round(val10))}</div>
-        <div class="cg-projection-equity">Equity: ${fmt(Math.round(eq10))}</div>
+        <div class="cg-projection-equity">Projected Equity: ${fmt(Math.round(eq10))}</div>
       </div>
     </div>
     ${mortgageRows}
@@ -2049,7 +2058,7 @@ function renderScenario(data, label, targetYield, mortgage) {
 
     ${!isSimple ? `
     <div class="result-section">
-      <h3>Target Offer Price</h3>
+      <h3>Target Offer Price <span class="tooltip" data-tip="Based on Net Yield (Asset), excluding mortgage.">?</span></h3>
       ${offerHtml}
     </div>` : ''}
   `;
@@ -2833,9 +2842,7 @@ function printReport() {
           { cells: ['Monthly Payment at Stress Rate', fmt(selectedMortgage.stressMonthlyPayment)] },
           { cells: ['Monthly Cash Flow at Stress Rate', fmt(selectedMortgage.stressMonthlyCashFlow)] },
         ]);
-        const cfLabel = selectedMortgage.cashFlowPositive ? 'Cash Flow Positive' : 'Cash Flow Negative';
         const stressCfLabel = selectedMortgage.stressCashFlowPositive ? 'Cash Flow Positive at Stress Rate' : 'Cash Flow Negative at Stress Rate';
-        h.textLine(cfLabel, { bold: true, color: selectedMortgage.cashFlowPositive ? '#0a7a2e' : '#B11217' });
         h.textLine(stressCfLabel, { bold: true, color: selectedMortgage.stressCashFlowPositive ? '#0a7a2e' : '#B11217' });
       }
       h.gap(3);
@@ -2844,16 +2851,21 @@ function printReport() {
     if (!isSimplePdf) {
       const offer = scenarioData.targetOffer;
       if (offer && offer.achievable) {
-        h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' yield): ' + fmt(offer.offerPrice), { bold: true });
+        h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): ' + fmt(offer.offerPrice), { bold: true });
       } else {
-        h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' yield): Not achievable with current inputs', { bold: true });
+        h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): Not achievable with current inputs', { bold: true });
       }
+      h.textLine('Based on Net Yield (Asset), excluding mortgage.', { size: 8, color: '#666666' });
 
       h.gap(4);
       h.textLine('Capital growth projection available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
       if (selectedMortgage) {
         h.textLine('Refinance scenario available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
-        h.textLine('Section 24 tax estimate available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
+        if (!isLimitedCompany) {
+          h.textLine('Section 24 tax estimate available in the interactive tool. Estimate only — not tax advice.', { italic: true, size: 8, color: '#666666' });
+        } else {
+          h.textLine('Section 24 applies to individual landlords, not limited companies.', { italic: true, size: 8, color: '#666666' });
+        }
       }
     }
 

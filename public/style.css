@@ -1382,6 +1382,13 @@ header .subtitle {
   transition: transform 0.2s;
 }
 
+.section-note {
+  font-size: 0.78rem;
+  color: #777;
+  margin: 4px 0 8px 0;
+  font-style: italic;
+}
+
 .s24-inputs,
 .cg-inputs {
   padding: 12px 0;
@@ -3256,6 +3263,7 @@ body.dark .refinance-section { background: #2a2a2a; border-color: #444; }
 body.dark .refinance-inputs input { background: #333; border-color: #555; color: #e0e0e0; }
 body.dark .refinance-inputs label { color: #bbb; }
 body.dark .collapsible-section { background: #2a2a2a; border-color: #444; }
+body.dark .section-note { color: #999; }
 body.dark .s24-inputs select,
 body.dark .cg-inputs input { background: #333; border-color: #555; color: #e0e0e0; }
 body.dark .s24-inputs label,
