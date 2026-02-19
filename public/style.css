@@ -66,6 +66,12 @@ header {
   transition: background 0.3s, box-shadow 0.3s;
 }
 
+@media (max-width: 991px) {
+  header.snapshot-active {
+    position: static;
+  }
+}
+
 header.scrolled {
   background: rgba(245,246,247,0.92);
   backdrop-filter: blur(8px);

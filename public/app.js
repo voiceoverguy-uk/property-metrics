@@ -4067,12 +4067,15 @@ checkUrlParams();
   const isMobileWidth = () => window.innerWidth < 992;
 
   function syncBarPadding() {
+    const siteHeader = document.getElementById('siteHeader');
     if (!isMobileWidth() || !mobileBar.classList.contains('visible')) {
       document.body.style.paddingTop = '';
+      if (siteHeader) siteHeader.classList.remove('snapshot-active');
       return;
     }
     const barH = mobileBar.offsetHeight || 0;
     document.body.style.paddingTop = barH + 'px';
+    if (siteHeader) siteHeader.classList.add('snapshot-active');
   }
 
   syncBarPadding();
