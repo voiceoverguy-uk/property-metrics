@@ -3850,6 +3850,11 @@ body.dark .mortgage-type-label {
   margin-bottom: 16px;
 }
 
+.snapshot-hidden {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .snapshot-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
   border: 1px solid #e0e0e0;

@@ -1,4 +1,4 @@
-const APP_VERSION = '2.4';
+const APP_VERSION = '2.5';
 const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3254,7 +3254,7 @@ function renderHistory() {
 
     let detailLine = fmtShort(entry.price) + ' \u00b7 Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '% \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
-      detailLine += ' \u00b7 <span class="history-coc">COC ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
+      detailLine += ' \u00b7 <span class="history-coc">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
     }
     detailLine += ' ' + purchaseIcon;
 
@@ -3281,17 +3281,33 @@ window.loadHistoryItem = function(id) {
 
 renderHistory();
 
+function hideSnapshotForCompare() {
+  var snap = document.querySelector('.deal-snapshot');
+  var bar = document.getElementById('snapshotMobileBar');
+  if (snap) snap.classList.add('snapshot-hidden');
+  if (bar) bar.classList.add('snapshot-hidden');
+}
+
+function restoreSnapshotAfterCompare() {
+  var snap = document.querySelector('.deal-snapshot');
+  var bar = document.getElementById('snapshotMobileBar');
+  if (snap) snap.classList.remove('snapshot-hidden');
+  if (bar) bar.classList.remove('snapshot-hidden');
+}
+
 function openCompare() {
   const history = getHistory();
   if (history.length < 2) return;
   document.getElementById('compareOverlay').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  hideSnapshotForCompare();
   renderCompareTable();
 }
 
 function closeCompare() {
   document.getElementById('compareOverlay').style.display = 'none';
   document.body.style.overflow = '';
+  restoreSnapshotAfterCompare();
 }
 
 function openCompareForDeal(dealId) {
@@ -3299,6 +3315,7 @@ function openCompareForDeal(dealId) {
   if (history.length < 1) return;
   document.getElementById('compareOverlay').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  hideSnapshotForCompare();
   renderCompareTable(dealId);
 }
 window.openCompareForDeal = openCompareForDeal;
@@ -3582,9 +3599,9 @@ function downloadComparePdf() {
     pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
     h.gap(6);
 
-    const headers = ['Rank', 'Grade', 'Property', 'Price', 'Rent/mo', 'Net', 'CF/mo', 'COC', 'SDLT', 'Type'];
-    const fixedW = 13 + 14 + 24 + 22 + 16 + 22 + 18 + 22 + 16;
-    const colW = [13, 14, h.contentW - fixedW, 24, 22, 16, 22, 18, 22, 16];
+    const headers = ['Rank', 'Grade', 'Property', 'Price', 'Rent/mo', 'Net', 'CF/mo', 'Cash-on-Cash', 'SDLT', 'Type'];
+    const fixedW = 13 + 14 + 24 + 22 + 16 + 22 + 24 + 22 + 16;
+    const colW = [13, 14, h.contentW - fixedW, 24, 22, 16, 22, 24, 22, 16];
     const rowH = 9;
 
     h.checkPage(rowH + 4);
