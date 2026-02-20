@@ -1825,8 +1825,8 @@ body.dark .dark-mode-toggle-mobile:hover {
   margin-top: 2px;
 }
 
-.history-cf-positive { color: #0a7a2e; }
-.history-cf-negative { color: #B11217; }
+.history-cf-positive { color: #0a7a2e; font-weight: 600; font-size: 0.84rem; }
+.history-cf-negative { color: #B11217; font-weight: 600; font-size: 0.84rem; }
 .history-coc { color: #555; }
 .history-purchase-type { font-size: 0.75rem; margin-left: 2px; }
 
@@ -2298,10 +2298,18 @@ body.dark .dark-mode-toggle-mobile:hover {
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 2px 6px;
   border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.compare-card-rating-note {
+  font-size: 0.65rem;
+  color: #999;
+  font-weight: 400;
+  margin-top: 1px;
 }
 
 .best-deal-helper {
@@ -2490,6 +2498,10 @@ body.dark .best-deal-helper {
   color: #777;
 }
 
+body.dark .compare-card-rating-note {
+  color: #666;
+}
+
 body.dark .compare-metric-label {
   color: #777;
 }
@@ -2536,6 +2548,11 @@ body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow
   
   .compare-sort select {
     font-size: 16px;
+  }
+
+  .best-deal-badge {
+    font-size: 0.6rem;
+    padding: 1px 5px;
   }
 }
 
@@ -3899,6 +3916,15 @@ body.dark .mortgage-type-label {
   font-size: 1.25rem;
   font-weight: 700;
   color: #1a1a1a;
+}
+
+.snapshot-yield-primary {
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.snapshot-upfront-value {
+  font-weight: 600;
 }
 
 .snapshot-positive {

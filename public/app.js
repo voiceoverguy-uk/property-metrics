@@ -1,4 +1,4 @@
-const APP_VERSION = '2.3';
+const APP_VERSION = '2.4';
 const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1206,6 +1206,8 @@ function getDealDisplayName(entry) {
   if (entry.dealReference && entry.address) return escHtml(entry.address) + ' <span class="history-card-ref">\u2014 ' + escHtml(entry.dealReference) + '</span>';
   if (entry.dealReference) return escHtml(entry.dealReference);
   if (entry.address) return escHtml(entry.address);
+  var priceLabel = fmtShort(entry.price);
+  if (priceLabel !== '\u2014') return priceLabel + ' Deal';
   return 'Untitled Deal';
 }
 
@@ -2541,7 +2543,10 @@ function pdfHelper(pdf, margins) {
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(100, 100, 100);
     pdf.text(detail, margins.left + 26, y + 10);
-    y += 20;
+    pdf.setFontSize(7);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text('Rating based on Net Yield (Asset) only.', margins.left + 26, y + 14);
+    y += 24;
   }
 
   function yieldGauge(netYield, targetYield) {
@@ -3407,6 +3412,7 @@ function renderCompareTable(highlightDealId) {
           <div class="compare-card-title">
             <div class="compare-card-address">${displayName}</div>
             <div class="compare-card-label">${entry.rating.label} ${bestBadge} ${stressBadge}</div>
+            <div class="compare-card-rating-note">Rating based on Net Yield (Asset) only.</div>
           </div>
         </div>
         <div class="compare-section-label">Key Metrics</div>
@@ -3600,7 +3606,8 @@ function downloadComparePdf() {
 
     entries.forEach((e, idx) => {
       const rank = '#' + (idx + 1);
-      const prop = e.address || e.dealReference || 'Untitled Deal';
+      const propShort = fmtShort(e.price);
+      const prop = e.address || e.dealReference || (propShort !== '\u2014' ? propShort + ' Deal' : 'Untitled Deal');
       const cfSign = e.monthlyCashFlow >= 0 ? '+' : '';
       const cashColor = e.monthlyCashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
       const isBestPdf = bestNetYieldEntry && e.id === bestNetYieldEntry.id;
@@ -4196,7 +4203,7 @@ checkUrlParams();
     let desktopYieldMetrics = `
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
-        <span class="snapshot-total-value ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
+        <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
       </div>`;
 
     if (b.isMortgage) {
@@ -4213,7 +4220,7 @@ checkUrlParams();
       <div class="snapshot-totals">
         <div class="snapshot-total-item">
           <span class="snapshot-total-label">Upfront Total</span>
-          <span class="snapshot-total-value">${fmt(Math.round(snap.upfrontTotal))}</span>
+          <span class="snapshot-total-value snapshot-upfront-value">${fmt(Math.round(snap.upfrontTotal))}</span>
         </div>
         <div class="snapshot-total-item">
           <span class="snapshot-total-label">Monthly Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs (agent, running costs, maintenance, voids) and mortgage payment.">?</span></span>
