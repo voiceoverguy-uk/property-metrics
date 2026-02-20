@@ -1,3 +1,11 @@
+const APP_VERSION = '2.2';
+const APP_VERSION_DATE = '20 February 2026';
+
+document.addEventListener('DOMContentLoaded', function() {
+  const vf = document.getElementById('appVersionFooter');
+  if (vf) vf.textContent = 'Version ' + APP_VERSION + ' \u2014 ' + APP_VERSION_DATE;
+});
+
 const form = document.getElementById('dealForm');
 const resultsPanel = document.getElementById('resultsPanel');
 const costItemsList = document.getElementById('costItemsList');
@@ -1179,9 +1187,22 @@ function fmt(n) {
   return '\u00a3' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function fmtShort(n) {
+  if (n == null || isNaN(n)) return '\u00a30';
+  if (n >= 1000000) return '\u00a3' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+  return '\u00a3' + Math.round(n / 1000) + 'k';
+}
+
 function fmtPct(n) {
   if (n == null || isNaN(n)) return '0.00%';
   return n.toFixed(2) + '%';
+}
+
+function getDealDisplayName(entry) {
+  if (entry.dealReference && entry.address) return escHtml(entry.address) + ' <span class="history-card-ref">\u2014 ' + escHtml(entry.dealReference) + '</span>';
+  if (entry.dealReference) return escHtml(entry.dealReference);
+  if (entry.address) return escHtml(entry.address);
+  return 'Untitled Deal';
 }
 
 function yieldClass(yieldVal, targetYield) {
@@ -1191,15 +1212,13 @@ function yieldClass(yieldVal, targetYield) {
   return 'yield-below';
 }
 
-function getDealRating(netYield, targetYield) {
-  const diff = parseFloat(netYield) - parseFloat(targetYield);
-  if (diff >= 3) return { grade: 'A+', label: 'Excellent Deal', color: '#0a7a2e' };
-  if (diff >= 1.5) return { grade: 'A', label: 'Great Deal', color: '#1a9a4a' };
-  if (diff >= 0.5) return { grade: 'B', label: 'Good Deal', color: '#0d7377' };
-  if (diff >= 0) return { grade: 'B-', label: 'On Target', color: '#2e8b57' };
-  if (diff >= -1) return { grade: 'C', label: 'Below Target', color: '#b8860b' };
-  if (diff >= -2) return { grade: 'D', label: 'Poor Deal', color: '#cc5500' };
-  return { grade: 'F', label: 'Avoid', color: '#B11217' };
+function getDealRating(netYield) {
+  const y = parseFloat(netYield);
+  if (y >= 8) return { grade: 'A', label: 'Excellent', color: '#0a7a2e' };
+  if (y >= 7) return { grade: 'B', label: 'Strong', color: '#1a9a4a' };
+  if (y >= 6) return { grade: 'C', label: 'Fair', color: '#b8860b' };
+  if (y >= 5) return { grade: 'D', label: 'Weak', color: '#cc5500' };
+  return { grade: 'F', label: 'Poor', color: '#B11217' };
 }
 
 function calculateMortgage(price, data) {
@@ -1596,7 +1615,7 @@ function renderRunningCostsBreakdown() {
 }
 
 function renderDealRating(netYield, targetYield) {
-  const rating = getDealRating(netYield, targetYield);
+  const rating = getDealRating(netYield);
   return `
     <div class="deal-rating">
       <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
@@ -2685,7 +2704,7 @@ function printReport() {
     }
     const selectedMortgage = lastMortgageData ? lastMortgageData[buyerType] : null;
     const displayData = scenarioData;
-    const rating = getDealRating(displayData.netYield, parseFloat(targetYield));
+    const rating = getDealRating(displayData.netYield);
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -2869,6 +2888,8 @@ function printReport() {
       }
     }
 
+    h.textLine('RentalMetrics v' + APP_VERSION + ' \u2013 ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
+    h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
 
     safePdfDownload(pdf, filename);
@@ -2974,7 +2995,7 @@ function addToHistory(result) {
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
   const isSimple = currentMode === 'simple';
   const targetYield = isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
-  const investorRating = getDealRating(result.investor.netYield, targetYield);
+  const investorRating = getDealRating(result.investor.netYield);
   const now = new Date();
 
   const dealReference = document.getElementById('dealReference').value || '';
@@ -3011,12 +3032,34 @@ function addToHistory(result) {
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     buyerType: getSelectedBuyerType(),
     purchaseType: selectedPurchaseType,
+    mortgageMonthlyPayment: 0,
+    mortgageCashOnCash: 0,
+    mortgageTotalCashInvested: 0,
+    mortgageStressMonthlyCashFlow: 0,
+    mortgageStressCashFlowPositive: true,
+    mortgageStressRate: 7.0,
+    mortgageInterestRate: 4.5,
     maintenanceMode: isSimple ? 'pct' : maintenanceMode,
     maintenancePct: isSimple ? 0 : (parseFloat(document.getElementById('maintenancePct').value) || 0),
     maintenanceFixed: isSimple ? 0 : (parseFloat(document.getElementById('maintenanceFixed').value) || 0),
     mode: currentMode,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
+
+  if (entry.hasMortgage && lastMortgageData) {
+    const bt = entry.buyerType || 'investor';
+    const m = lastMortgageData[bt === 'ftb' ? 'ftb' : bt === 'main' ? 'main' : 'investor'];
+    if (m) {
+      entry.mortgageMonthlyPayment = m.monthlyPayment || 0;
+      entry.mortgageCashOnCash = m.cashOnCashReturn || 0;
+      entry.mortgageTotalCashInvested = m.totalCashInvested || 0;
+      entry.mortgageMonthlyCashFlow = m.monthlyCashFlow || 0;
+      entry.mortgageStressMonthlyCashFlow = m.stressMonthlyCashFlow || 0;
+      entry.mortgageStressCashFlowPositive = m.stressCashFlowPositive !== false;
+      entry.mortgageStressRate = m.stressRate || 7.0;
+      entry.mortgageInterestRate = m.interestRate || 4.5;
+    }
+  }
 
   let history = getHistory();
   history.unshift(entry);
@@ -3169,15 +3212,49 @@ function renderHistory() {
 
   let html = '';
   history.forEach(entry => {
-    const rating = getDealRating(entry.investorNetYield, entry.targetYield);
-    const displayAddress = escHtml(entry.address || 'No address');
-    const displayRef = entry.dealReference ? escHtml(entry.dealReference) : '';
+    const bt = entry.buyerType || 'investor';
+    const netYield = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
+      : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
+      : entry.investorNetYield;
+    const rating = getDealRating(netYield);
+    const displayName = getDealDisplayName(entry);
+    const isMortgage = entry.hasMortgage || entry.purchaseType === 'mortgage';
+    const purchaseIcon = isMortgage ? '<span class="history-purchase-type" title="Mortgage">\u{1F3E6}</span>' : '<span class="history-purchase-type" title="Cash">\u{1F4B7}</span>';
+
+    const annualRent = entry.monthlyRent * 12;
+    const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
+    const lettingPct = entry.lettingAgentPct || 0;
+    let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
+    if (entry.lettingAgentVat) lettingMonthly *= 1.2;
+    const maintenanceAnnual = entry.maintenanceMode === 'fixed'
+      ? (entry.maintenanceFixed || 0)
+      : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
+    const netAnnualIncome = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+
+    let monthlyCf;
+    if (isMortgage && entry.mortgageMonthlyCashFlow !== undefined) {
+      monthlyCf = entry.mortgageMonthlyCashFlow;
+    } else if (isMortgage && entry.mortgageMonthlyPayment) {
+      monthlyCf = (netAnnualIncome / 12) - entry.mortgageMonthlyPayment;
+    } else {
+      monthlyCf = netAnnualIncome / 12;
+    }
+    monthlyCf = Math.round(monthlyCf);
+    const cfSign = monthlyCf >= 0 ? '+' : '';
+    const cfClass = monthlyCf >= 0 ? 'history-cf-positive' : 'history-cf-negative';
+
+    let detailLine = fmtShort(entry.price) + ' \u00b7 Net ' + (parseFloat(netYield) || 0).toFixed(1) + '% \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
+    if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
+      detailLine += ' \u00b7 <span class="history-coc">COC ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
+    }
+    detailLine += ' ' + purchaseIcon;
+
     html += `
       <div class="history-card" onclick="loadHistoryItem(${entry.id})">
-        <div class="history-card-grade" style="background:${rating.color};">${rating.grade}</div>
+        <div class="history-card-grade" style="background:${rating.color};" onclick="event.stopPropagation(); openCompareForDeal(${entry.id});" title="Tap to compare">${rating.grade}</div>
         <div class="history-card-info">
-          <div class="history-card-address">${displayAddress}${displayRef ? ` <span class="history-card-ref">— ${displayRef}</span>` : ''}</div>
-          <div class="history-card-details">${fmt(entry.price)} &middot; Net ${fmtPct(entry.investorNetYield)} &middot; ${entry.date}</div>
+          <div class="history-card-address">${displayName}</div>
+          <div class="history-card-details">${detailLine}</div>
         </div>
         <button type="button" class="history-card-delete" onclick="event.stopPropagation(); deleteHistoryItem(${entry.id});">&times;</button>
       </div>
@@ -3208,12 +3285,21 @@ function closeCompare() {
   document.body.style.overflow = '';
 }
 
-function renderCompareTable() {
+function openCompareForDeal(dealId) {
+  const history = getHistory();
+  if (history.length < 1) return;
+  document.getElementById('compareOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderCompareTable(dealId);
+}
+window.openCompareForDeal = openCompareForDeal;
+
+function renderCompareTable(highlightDealId) {
   const history = getHistory();
   if (history.length === 0) return;
   
   const sortBy = document.getElementById('compareSortBy').value;
-  const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
+  const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4 };
   
   const entries = history.map(entry => {
     const bt = entry.buyerType || 'investor';
@@ -3223,15 +3309,15 @@ function renderCompareTable() {
     const sdlt = bt === 'ftb' ? (entry.ftbSDLT || entry.investorSDLT)
       : bt === 'main' ? (entry.mainSDLT || entry.investorSDLT)
       : entry.investorSDLT;
-    const rating = getDealRating(netYield, entry.targetYield);
+    const rating = getDealRating(netYield);
 
     const annualRent = entry.monthlyRent * 12;
     const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
     const grossYield = bt === 'ftb'
-      ? (entry.ftbGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
+      ? (entry.ftbGrossYield || (entry.price > 0 ? (annualRent / entry.price) * 100 : 0))
       : bt === 'main'
-      ? (entry.mainGrossYield || entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0))
-      : (entry.investorGrossYield || (entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0));
+      ? (entry.mainGrossYield || entry.investorGrossYield || (entry.price > 0 ? (annualRent / entry.price) * 100 : 0))
+      : (entry.investorGrossYield || (entry.price > 0 ? (annualRent / entry.price) * 100 : 0));
 
     const lettingPct = entry.lettingAgentPct || 0;
     let lettingMonthly = entry.monthlyRent * (lettingPct / 100);
@@ -3239,7 +3325,21 @@ function renderCompareTable() {
     const maintenanceAnnual = entry.maintenanceMode === 'fixed'
       ? (entry.maintenanceFixed || 0)
       : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
-    const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+    const netAnnualIncome = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+
+    const isMortgage = entry.hasMortgage || entry.purchaseType === 'mortgage';
+    let monthlyCf;
+    if (isMortgage && entry.mortgageMonthlyCashFlow !== undefined) {
+      monthlyCf = entry.mortgageMonthlyCashFlow;
+    } else if (isMortgage && entry.mortgageMonthlyPayment) {
+      monthlyCf = (netAnnualIncome / 12) - entry.mortgageMonthlyPayment;
+    } else {
+      monthlyCf = netAnnualIncome / 12;
+    }
+    monthlyCf = Math.round(monthlyCf);
+
+    const coc = isMortgage ? (entry.mortgageCashOnCash || 0) : null;
+    const cashInvested = isMortgage ? (entry.mortgageTotalCashInvested || 0) : null;
 
     return {
       ...entry,
@@ -3247,15 +3347,26 @@ function renderCompareTable() {
       displaySdlt: sdlt,
       rating,
       grossYieldCalc: Math.round(grossYield * 100) / 100,
-      cashFlow: Math.round(annualCashFlow),
-      ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6
+      monthlyCashFlow: monthlyCf,
+      cashOnCash: coc,
+      cashInvested: cashInvested,
+      isMortgage: isMortgage,
+      ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 5
     };
   });
+
+  const bestNetYieldEntry = entries.reduce((best, e) => (!best || e.displayNetYield > best.displayNetYield) ? e : best, null);
   
   entries.sort((a, b) => {
     switch (sortBy) {
       case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
       case 'netYield': return b.displayNetYield - a.displayNetYield;
+      case 'cashOnCash': {
+        const aCoc = a.cashOnCash !== null ? a.cashOnCash : -Infinity;
+        const bCoc = b.cashOnCash !== null ? b.cashOnCash : -Infinity;
+        return bCoc - aCoc;
+      }
+      case 'cashflow': return b.monthlyCashFlow - a.monthlyCashFlow;
       case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
       case 'price': return a.price - b.price;
       case 'rent': return b.monthlyRent - a.monthlyRent;
@@ -3268,20 +3379,53 @@ function renderCompareTable() {
   entries.forEach((entry, idx) => {
     const rank = idx + 1;
     const rankClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
-    const bestBadge = rank === 1 ? '<span class="best-deal-badge">Best Deal</span>' : '';
-    const cashFlowClass = entry.cashFlow >= 0 ? 'compare-positive' : 'compare-negative';
-    
+    const isBest = bestNetYieldEntry && entry.id === bestNetYieldEntry.id;
+    const bestBadge = isBest ? '<span class="best-deal-badge">Best Deal</span>' : '';
+    const cfClass = entry.monthlyCashFlow >= 0 ? 'compare-positive' : 'compare-negative';
+    const cfSign = entry.monthlyCashFlow >= 0 ? '+' : '';
+    const highlightClass = highlightDealId && entry.id === highlightDealId ? 'compare-card-highlight' : '';
+    const displayName = getDealDisplayName(entry);
+    const purchaseLabel = entry.isMortgage ? '\u{1F3E6} Mortgage' : '\u{1F4B7} Cash';
+
+    let stressBadge = '';
+    if (entry.isMortgage && entry.mortgageStressRate) {
+      const stressPositive = entry.mortgageStressCashFlowPositive !== false;
+      stressBadge = stressPositive
+        ? '<span class="compare-stress-badge compare-stress-positive">Stress: Positive</span>'
+        : '<span class="compare-stress-badge compare-stress-negative">Stress: Negative</span>';
+    }
+
     html += `
-      <div class="compare-card ${rank === 1 ? 'compare-card-best' : ''}">
+      <div class="compare-card ${isBest ? 'compare-card-best' : ''} ${highlightClass}">
         <div class="compare-rank ${rankClass}">#${rank}</div>
         <div class="compare-card-header">
           <div class="compare-card-grade" style="background:${entry.rating.color};">${entry.rating.grade}</div>
           <div class="compare-card-title">
-            <div class="compare-card-address">${escHtml(entry.address || 'No address')}${entry.dealReference ? ` <span class="compare-card-ref">— ${escHtml(entry.dealReference)}</span>` : ''}</div>
-            <div class="compare-card-label">${entry.rating.label} ${bestBadge}</div>
+            <div class="compare-card-address">${displayName}</div>
+            <div class="compare-card-label">${entry.rating.label} ${bestBadge} ${stressBadge}</div>
           </div>
         </div>
-        <div class="compare-card-metrics">
+        <div class="compare-section-label">Key Metrics</div>
+        <div class="compare-card-metrics compare-primary">
+          <div class="compare-metric">
+            <span class="compare-metric-label">Net Yield (Asset)</span>
+            <span class="compare-metric-value compare-highlight">${fmtPct(entry.displayNetYield)}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Monthly Cashflow</span>
+            <span class="compare-metric-value ${cfClass}">${cfSign}${fmt(Math.abs(entry.monthlyCashFlow))}/mo</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Cash-on-Cash</span>
+            <span class="compare-metric-value">${entry.cashOnCash !== null ? fmtPct(entry.cashOnCash) : '\u2014'}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Cash Invested</span>
+            <span class="compare-metric-value">${entry.cashInvested !== null ? fmt(entry.cashInvested) : '\u2014'}</span>
+          </div>
+        </div>
+        <div class="compare-section-label">Details</div>
+        <div class="compare-card-metrics compare-secondary">
           <div class="compare-metric">
             <span class="compare-metric-label">Price</span>
             <span class="compare-metric-value">${fmt(entry.price)}</span>
@@ -3295,20 +3439,19 @@ function renderCompareTable() {
             <span class="compare-metric-value">${fmtPct(entry.grossYieldCalc)}</span>
           </div>
           <div class="compare-metric">
-            <span class="compare-metric-label">Net Yield</span>
-            <span class="compare-metric-value compare-highlight">${fmtPct(entry.displayNetYield)}</span>
-          </div>
-          <div class="compare-metric">
-            <span class="compare-metric-label">Cash Flow / yr</span>
-            <span class="compare-metric-value ${cashFlowClass}">${fmt(entry.cashFlow)}</span>
-          </div>
-          <div class="compare-metric">
             <span class="compare-metric-label">SDLT</span>
             <span class="compare-metric-value">${fmt(entry.displaySdlt)}</span>
           </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Purchase</span>
+            <span class="compare-metric-value">${purchaseLabel}</span>
+          </div>
+          <div class="compare-metric">
+            <span class="compare-metric-label">Buyer</span>
+            <span class="compare-metric-value">${getBuyerTypeLabel(entry.buyerType || 'investor')}</span>
+          </div>
         </div>
         <div class="compare-card-footer">
-          <span class="compare-card-buyer">${getBuyerTypeLabel(entry.buyerType || 'investor')}</span>
           <span class="compare-card-date">${entry.date}</span>
         </div>
       </div>
@@ -3317,6 +3460,11 @@ function renderCompareTable() {
   
   html += '</div>';
   document.getElementById('compareBody').innerHTML = html;
+
+  if (highlightDealId) {
+    const el = document.querySelector('.compare-card-highlight');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 document.getElementById('compareOverlay').addEventListener('click', function(e) {
@@ -3344,7 +3492,7 @@ function downloadComparePdf() {
     }
 
     const sortBy = document.getElementById('compareSortBy').value;
-    const ratingOrder = { 'A+': 0, 'A': 1, 'B': 2, 'B-': 2.5, 'C': 3, 'D': 4, 'F': 5 };
+    const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4 };
 
     const entries = history.map(entry => {
       const bt = entry.buyerType || 'investor';
@@ -3354,10 +3502,10 @@ function downloadComparePdf() {
       const sdlt = bt === 'ftb' ? (entry.ftbSDLT || entry.investorSDLT)
         : bt === 'main' ? (entry.mainSDLT || entry.investorSDLT)
         : entry.investorSDLT;
-      const rating = getDealRating(netYield, entry.targetYield);
+      const rating = getDealRating(netYield);
       const annualRent = entry.monthlyRent * 12;
       const effectiveAnnualRent = annualRent * (1 - (entry.voidPct || 0) / 100);
-      const defaultGross = entry.price > 0 ? (effectiveAnnualRent / entry.price) * 100 : 0;
+      const defaultGross = entry.price > 0 ? (annualRent / entry.price) * 100 : 0;
       const grossYield = bt === 'ftb'
         ? (entry.ftbGrossYield || defaultGross)
         : bt === 'main'
@@ -3369,14 +3517,34 @@ function downloadComparePdf() {
       const maintenanceAnnual = entry.maintenanceMode === 'fixed'
         ? (entry.maintenanceFixed || 0)
         : effectiveAnnualRent * ((entry.maintenancePct || 0) / 100);
-      const annualCashFlow = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
-      return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, cashFlow: Math.round(annualCashFlow), ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6 };
+      const netAnnualIncome = effectiveAnnualRent - (entry.runningCosts || 0) * 12 - lettingMonthly * 12 - maintenanceAnnual;
+
+      const isMortgage = entry.hasMortgage || entry.purchaseType === 'mortgage';
+      let monthlyCf;
+      if (isMortgage && entry.mortgageMonthlyCashFlow !== undefined) {
+        monthlyCf = entry.mortgageMonthlyCashFlow;
+      } else if (isMortgage && entry.mortgageMonthlyPayment) {
+        monthlyCf = (netAnnualIncome / 12) - entry.mortgageMonthlyPayment;
+      } else {
+        monthlyCf = netAnnualIncome / 12;
+      }
+      monthlyCf = Math.round(monthlyCf);
+
+      const coc = isMortgage ? (entry.mortgageCashOnCash || 0) : null;
+
+      return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, monthlyCashFlow: monthlyCf, cashOnCash: coc, isMortgage: isMortgage, ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 5 };
     });
 
     entries.sort((a, b) => {
       switch (sortBy) {
         case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
         case 'netYield': return b.displayNetYield - a.displayNetYield;
+        case 'cashOnCash': {
+          const aCoc = a.cashOnCash !== null ? a.cashOnCash : -Infinity;
+          const bCoc = b.cashOnCash !== null ? b.cashOnCash : -Infinity;
+          return bCoc - aCoc;
+        }
+        case 'cashflow': return b.monthlyCashFlow - a.monthlyCashFlow;
         case 'grossYield': return b.grossYieldCalc - a.grossYieldCalc;
         case 'price': return a.price - b.price;
         case 'rent': return b.monthlyRent - a.monthlyRent;
@@ -3387,7 +3555,7 @@ function downloadComparePdf() {
     const now = new Date();
     const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    const sortLabel = sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield' : sortBy === 'grossYield' ? 'Gross Yield' : sortBy === 'price' ? 'Price' : 'Rent';
+    const sortLabel = sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield (Asset)' : sortBy === 'cashOnCash' ? 'Cash-on-Cash' : sortBy === 'cashflow' ? 'Monthly Cashflow' : sortBy === 'price' ? 'Price' : 'Rent';
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('l', 'mm', 'a4');
@@ -3402,9 +3570,9 @@ function downloadComparePdf() {
     pdf.line(h.margins.left, h.getY(), h.margins.left + h.contentW, h.getY());
     h.gap(6);
 
-    const headers = ['Rank', 'Grade', 'Property', 'Ref', 'Price', 'Rent/mo', 'Gross', 'Net', 'Cash Flow/yr', 'SDLT', 'Type'];
-    const fixedW = 13 + 14 + 30 + 24 + 22 + 16 + 16 + 26 + 22 + 16;
-    const colW = [13, 14, h.contentW - fixedW, 30, 24, 22, 16, 16, 26, 22, 16];
+    const headers = ['Rank', 'Grade', 'Property', 'Price', 'Rent/mo', 'Net', 'CF/mo', 'COC', 'SDLT', 'Type'];
+    const fixedW = 13 + 14 + 24 + 22 + 16 + 22 + 18 + 22 + 16;
+    const colW = [13, 14, h.contentW - fixedW, 24, 22, 16, 22, 18, 22, 16];
     const rowH = 9;
 
     h.checkPage(rowH + 4);
@@ -3426,16 +3594,13 @@ function downloadComparePdf() {
 
     entries.forEach((e, idx) => {
       const rank = '#' + (idx + 1);
-      const prop = e.address || 'No address';
-      const ref = e.dealReference || '';
-      const cashColor = e.cashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
+      const prop = e.address || e.dealReference || 'Untitled Deal';
+      const cfSign = e.monthlyCashFlow >= 0 ? '+' : '';
+      const cashColor = e.monthlyCashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
 
       pdf.setFontSize(8);
       const propLines = pdf.splitTextToSize(prop, colW[2] - 2);
-      pdf.setFontSize(7);
-      const refLines = ref ? pdf.splitTextToSize(ref, colW[3] - 2) : [];
-      const maxTextLines = Math.max(propLines.length, refLines.length);
-      const dynRowH = Math.max(rowH, maxTextLines * 4 + 4);
+      const dynRowH = Math.max(rowH, propLines.length * 4 + 4);
       h.checkPage(dynRowH + 2);
 
       const textY = h.getY();
@@ -3467,38 +3632,31 @@ function downloadComparePdf() {
       });
       cx += colW[2];
 
-      pdf.setFontSize(7);
+      pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(100, 100, 100);
-      refLines.forEach((line, li) => {
-        pdf.text(line, cx, textY + li * 3.5);
-      });
       pdf.setTextColor(0, 0, 0);
+      pdf.text(fmt(e.price), cx, textY);
       cx += colW[3];
 
-      pdf.setFontSize(8);
-      pdf.text(fmt(e.price), cx, textY);
-      cx += colW[4];
-
       pdf.text(fmt(e.monthlyRent), cx, textY);
-      cx += colW[5];
-
-      pdf.text(fmtPct(e.grossYieldCalc), cx, textY);
-      cx += colW[6];
+      cx += colW[4];
 
       pdf.setFont('helvetica', 'bold');
       pdf.text(fmtPct(e.displayNetYield), cx, textY);
-      cx += colW[7];
+      cx += colW[5];
 
       pdf.setTextColor(...cashColor);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(fmt(e.cashFlow), cx, textY);
-      cx += colW[8];
+      pdf.text(cfSign + fmt(Math.abs(e.monthlyCashFlow)), cx, textY);
+      cx += colW[6];
 
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
+      pdf.text(e.cashOnCash !== null ? fmtPct(e.cashOnCash) : '\u2014', cx, textY);
+      cx += colW[7];
+
       pdf.text(fmt(e.displaySdlt), cx, textY);
-      cx += colW[9];
+      cx += colW[8];
 
       pdf.text(e.buyerType === 'ftb' ? 'FTB' : e.buyerType === 'main' ? 'Main Res.' : 'Investor', cx, textY);
 
@@ -3510,6 +3668,8 @@ function downloadComparePdf() {
     });
 
     h.gap(6);
+    h.textLine('RentalMetrics v' + APP_VERSION + ' \u2013 ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
+    h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
 
     const compTimeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');

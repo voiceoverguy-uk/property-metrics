@@ -33,11 +33,12 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Calculations**: Comprehensive deal calculations for costs, yields, and target offer price. SDLT calculations adhere to GOV.UK guidance for England & Northern Ireland, including standard residential (0%/2%/5%/10%/12%), first-time buyer relief (0% to £300k, 5% to £500k, fallback >£500k), and additional property / higher rates (5%/7%/10%/15%/17%). Form layout: Address → Deal Reference → red divider → Buyer Type → financial fields.
 - **Mortgage Calculator**: Collapsible section with deposit percentage, interest rate, and term inputs. Displays monthly payment, cash flow, and cash-on-cash return. Includes stress test functionality.
 - **Yield Analysis**: Net Yield (Asset) = (Annual Rent - Operating Costs) / Purchase Price — never changes with mortgage. Cash-on-Cash = Annual Cashflow After Mortgage / Cash Invested — shown separately when mortgage selected. `adjustYieldsForMortgage()` removed; displayData uses server's raw data.
-- **Deal Rating**: A+ to F grades based on Net Yield (Asset) vs. target yield difference.
+- **Deal Rating**: A–F grades based on fixed Net Yield (Asset) thresholds: A≥8%, B 7–7.99%, C 6–6.99%, D 5–5.99%, F<5%. Colours: A/B green, C amber, D orange, F red. Independent of target yield.
 - **Itemised Costs**: Replaced single inputs for additional costs and monthly running costs with itemised label + amount pairs.
 - **Capital Growth & Tax Impact**: Collapsible sections for projecting capital growth and estimating Section 24 tax impact.
 - **Refinance Scenario**: Interactive section to model refinance scenarios.
-- **History**: Stores up to 20 deal entries in `localStorage`, enabling reloading, deletion, and comparison.
+- **History**: Stores up to 20 deal entries in `localStorage`, including mortgage metrics (cashOnCash, totalCashInvested, monthlyCashFlow, stress data). Two-line row layout: deal name + price shorthand · Net Yield 1dp · ±cashflow/mo · COC (mortgage only) · 🏦/💷 icon. Grade badge tappable to open compare modal filtered to that deal. "No address" → "Untitled Deal" fallback.
+- **Comparison Feature**: "Compare Deals" overlay with primary metrics (Net Yield 2dp, Monthly Cashflow, Cash-on-Cash, Cash Invested) and secondary details (Price, Rent, Gross Yield, SDLT, Purchase type, Buyer). Stress test badge per deal. BEST DEAL = highest Net Yield (Asset). Sort by: Rating, Net Yield, Cash-on-Cash, Monthly Cashflow, Price, Rent. Deal highlight on tap from history.
 - **URL Sharing**: Deals can be shared via URL query parameters, which auto-populate the form.
 - **Structured Data**: Implemented various JSON-LD schemas (@graph, Organization, WebSite, SoftwareApplication+WebApplication, FAQPage) for SEO.
 - **Security**: XSS protection implemented via `escHtml()` for user-provided strings.
@@ -54,7 +55,8 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Void Allowance**: Percentage-based void allowance impacting effective annual rent.
 - **Deal Reference**: Input field to identify deals.
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
-- **Currency Formatting**: Automatic formatting with £ and commas.
+- **Currency Formatting**: Automatic formatting with £ and commas. `fmtShort()` for price shorthand (£143k, £1.2m).
+- **Version System**: `APP_VERSION` and `APP_VERSION_DATE` manual string constants. Displayed in footer and both PDFs (deal + comparison).
 - **"Start Again" Reset Button**.
 - **Deal Snapshot (Live Running Totals)**: Real-time Upfront Total, Monthly Cashflow, Net Yield (Asset), and Cash-on-Cash (when mortgage) display in the results panel (desktop) and a sticky top bar (mobile). Uses client-side SDLT calculation (`calcSDLTClient`) and shared helpers (`computeSnapshot`). Desktop shows 3 metrics (cash) or 4 metrics (mortgage adds Cash-on-Cash). Mobile shows 3 metrics with the 3rd switching between Net Yield (cash) and Cash-on-Cash (mortgage) with pulse animation on toggle. Snapshot yields show 1dp; details breakdown shows 2dp. Standardised labels: "Net Yield (Asset)", "Cash-on-Cash", "Gross Yield". Updates live as user types. Breakdown details collapsed by default. Hidden in SDLT-only mode.
 

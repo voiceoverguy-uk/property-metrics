@@ -1825,6 +1825,11 @@ body.dark .dark-mode-toggle-mobile:hover {
   margin-top: 2px;
 }
 
+.history-cf-positive { color: #0a7a2e; }
+.history-cf-negative { color: #B11217; }
+.history-coc { color: #555; }
+.history-purchase-type { font-size: 0.75rem; margin-left: 2px; }
+
 .history-card-delete {
   width: 28px;
   height: 28px;
@@ -2305,6 +2310,46 @@ body.dark .dark-mode-toggle-mobile:hover {
   gap: 12px;
 }
 
+.compare-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  margin: 12px 0 6px 0;
+  font-weight: 600;
+}
+
+.compare-primary {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.compare-secondary {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.compare-stress-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 4px;
+}
+
+.compare-stress-positive {
+  background: rgba(10,122,46,0.12);
+  color: #0a7a2e;
+}
+
+.compare-stress-negative {
+  background: rgba(177,18,23,0.12);
+  color: #B11217;
+}
+
+.compare-card-highlight {
+  border-color: #d42027 !important;
+  box-shadow: 0 0 0 2px rgba(212,32,39,0.15);
+}
+
 .compare-metric {
   display: flex;
   flex-direction: column;
@@ -2453,6 +2498,12 @@ body.dark .compare-card-buyer {
   color: #777;
 }
 
+body.dark .history-cf-positive { color: #2ecc71; }
+body.dark .history-cf-negative { color: #e74c3c; }
+body.dark .history-coc { color: #aaa; }
+body.dark .compare-section-label { color: #666; }
+body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow: 0 0 0 2px rgba(212,32,39,0.2); }
+
 /* Mobile responsive for compare */
 @media (max-width: 600px) {
   .compare-overlay {
@@ -2464,6 +2515,10 @@ body.dark .compare-card-buyer {
   }
   
   .compare-card-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .compare-primary {
     grid-template-columns: repeat(2, 1fr);
   }
   
