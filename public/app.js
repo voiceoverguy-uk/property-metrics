@@ -1,4 +1,4 @@
-const APP_VERSION = '2.5.1';
+const APP_VERSION = '2.5.2';
 const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3234,8 +3234,17 @@ function renderHistory() {
     if (h2) h2.innerHTML = 'Comparison History ' + (history.length >= 2 ? '<button type="button" class="btn-compare-deals" onclick="openCompare()">Compare Deals</button> ' : '') + '<button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
   }
 
+  const sorted = history.map((entry, idx) => {
+    const bt = entry.buyerType || 'investor';
+    const ny = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
+      : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
+      : entry.investorNetYield;
+    const parsed = parseFloat(ny);
+    return { entry, sortYield: Number.isFinite(parsed) ? parsed : -Infinity, idx };
+  }).sort((a, b) => b.sortYield - a.sortYield || a.idx - b.idx);
+
   let html = '';
-  history.forEach(entry => {
+  sorted.forEach(({ entry, sortYield }) => {
     const bt = entry.buyerType || 'investor';
     const netYield = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
       : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
@@ -3267,11 +3276,12 @@ function renderHistory() {
     const cfSign = monthlyCf >= 0 ? '+' : '';
     const cfClass = monthlyCf >= 0 ? 'history-cf-positive' : 'history-cf-negative';
 
-    let detailLine = fmtShort(entry.price) + ' \u00b7 Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '%';
+    let detailLine = '<span class="history-chunk">' + fmtShort(entry.price) + '</span>';
+    detailLine += ' \u00b7 <span class="history-chunk">Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '%</span>';
     if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
-      detailLine += ' \u00b7 <span class="history-coc-nowrap">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
+      detailLine += ' \u00b7 <span class="history-chunk-nowrap">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
     }
-    detailLine += ' \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
+    detailLine += ' \u00b7 <span class="history-chunk-nowrap ' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     detailLine += ' ' + purchaseIcon;
 
     html += `
@@ -3310,6 +3320,33 @@ function restoreSnapshotAfterCompare() {
   if (snap) snap.classList.remove('snapshot-hidden');
   if (bar) bar.classList.remove('snapshot-hidden');
 }
+
+function captureSnapshot() {
+  var card = document.querySelector('.snapshot-card');
+  if (!card || !window.html2canvas) return;
+  var btn = card.querySelector('.btn-capture-snapshot');
+  if (btn) { btn.textContent = 'Capturing...'; btn.disabled = true; }
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: document.body.classList.contains('dark') ? '#1a1a1a' : '#ffffff',
+    useCORS: true,
+    logging: false
+  }).then(function(canvas) {
+    var link = document.createElement('a');
+    var now = new Date();
+    var ds = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    var ts = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+    link.download = 'RentalMetrics-Deal-Snapshot-' + ds + '-' + ts + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(function(err) {
+    console.error('Snapshot capture failed:', err);
+    alert('Could not capture snapshot. Please try again.');
+  }).finally(function() {
+    if (btn) { btn.textContent = 'Capture Snapshot'; btn.disabled = false; }
+  });
+}
+window.captureSnapshot = captureSnapshot;
 
 function openCompare() {
   const history = getHistory();
@@ -4175,8 +4212,14 @@ checkUrlParams();
 
     if (snap.missing.length > 0 && snap.missing.includes('price') && snap.missing.includes('rent')) {
       const warningItems = snap.missing.map(k => `<span class="snapshot-missing-field" data-field="${k}">${fieldLabels[k]}</span>`).join(', ');
-      snapshotEl.innerHTML = `<div class="snapshot-card snapshot-card-warning">
-        <h2 class="snapshot-title">Deal Snapshot</h2>
+      const warnDealRef = document.getElementById('dealReference') ? document.getElementById('dealReference').value.trim() : '';
+    snapshotEl.innerHTML = `<div class="snapshot-card snapshot-card-warning">
+        <div class="snapshot-header-row">
+          <div>
+            <h2 class="snapshot-title">Deal Snapshot</h2>
+            ${warnDealRef ? '<div class="snapshot-deal-ref">' + escHtml(warnDealRef) + '</div>' : ''}
+          </div>
+        </div>
         <div class="snapshot-warning">Enter ${warningItems} to see live totals</div>
       </div>`;
       mobileBar.classList.remove('visible');
@@ -4248,8 +4291,15 @@ checkUrlParams();
       </div>`;
     }
 
+    const snapDealRef = document.getElementById('dealReference') ? document.getElementById('dealReference').value.trim() : '';
     snapshotEl.innerHTML = `<div class="snapshot-card">
-      <h2 class="snapshot-title">Deal Snapshot</h2>
+      <div class="snapshot-header-row">
+        <div>
+          <h2 class="snapshot-title">Deal Snapshot</h2>
+          ${snapDealRef ? '<div class="snapshot-deal-ref">' + escHtml(snapDealRef) + '</div>' : ''}
+        </div>
+        <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot as image">Capture Snapshot</button>
+      </div>
       <div class="snapshot-totals">
         <div class="snapshot-total-item">
           <span class="snapshot-total-label">Upfront Total</span>
