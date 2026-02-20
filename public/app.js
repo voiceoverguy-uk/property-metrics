@@ -1,4 +1,4 @@
-const APP_VERSION = '2.5.2';
+const APP_VERSION = '2.6';
 const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -2343,6 +2343,36 @@ document.getElementById('showStressTest').addEventListener('change', function() 
 
 function safeStr(v) { return v == null ? '' : String(v); }
 
+var _pdfLogoCache = null;
+function loadPdfLogo() {
+  if (_pdfLogoCache) return Promise.resolve(_pdfLogoCache);
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      _pdfLogoCache = c.toDataURL('image/png');
+      resolve(_pdfLogoCache);
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = '/rental-metrics-logo-primary-1200x120.png';
+  });
+}
+
+function addPdfLogo(pdf, logoData, margins) {
+  if (!logoData) return;
+  var pageW = pdf.internal.pageSize.getWidth();
+  var logoDisplayW = 40;
+  var logoDisplayH = 4;
+  var x = pageW - margins.right - logoDisplayW;
+  var yPos = margins.top - 2;
+  pdf.addImage(logoData, 'PNG', x, yPos, logoDisplayW, logoDisplayH);
+}
+
 function sanitizePdfText(val) {
   if (!val) return '';
   return String(val)
@@ -2726,10 +2756,13 @@ function printReport() {
     const displayData = scenarioData;
     const rating = getDealRating(displayData.netYield);
 
+    const pdfMargins = { top: 15, bottom: 15, left: 15, right: 15 };
+    loadPdfLogo().then(function(logoData) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 15, right: 15 });
+    const h = pdfHelper(pdf, pdfMargins);
 
+    addPdfLogo(pdf, logoData, pdfMargins);
     h.title('RentalMetrics - Property Deal Report');
     h.subtitle('Generated: ' + timestamp);
     h.gap(2);
@@ -2913,10 +2946,15 @@ function printReport() {
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
 
     safePdfDownload(pdf, filename);
+    }).catch(function(err) {
+      console.error('PDF generation failed:', err, err.stack);
+      alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
+    }).finally(function() {
+      if (btn) { btn.textContent = origText; btn.disabled = false; }
+    });
   } catch (err) {
     console.error('PDF generation failed:', err, err.stack);
     alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
-  } finally {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
 }
@@ -3243,8 +3281,9 @@ function renderHistory() {
     return { entry, sortYield: Number.isFinite(parsed) ? parsed : -Infinity, idx };
   }).sort((a, b) => b.sortYield - a.sortYield || a.idx - b.idx);
 
+  const showRanks = document.getElementById('showRanksToggle') && document.getElementById('showRanksToggle').checked;
   let html = '';
-  sorted.forEach(({ entry, sortYield }) => {
+  sorted.forEach(({ entry, sortYield }, rank) => {
     const bt = entry.buyerType || 'investor';
     const netYield = bt === 'ftb' ? (entry.ftbNetYield || entry.investorNetYield)
       : bt === 'main' ? (entry.mainNetYield || entry.investorNetYield)
@@ -3288,7 +3327,7 @@ function renderHistory() {
       <div class="history-card" onclick="loadHistoryItem(${entry.id})">
         <div class="history-card-grade" style="background:${rating.color};" onclick="event.stopPropagation(); openCompareForDeal(${entry.id});" title="Tap to compare">${rating.grade}</div>
         <div class="history-card-info">
-          <div class="history-card-address">${displayName}</div>
+          <div class="history-card-address">${showRanks ? '<span class="rank-badge">#' + (rank + 1) + '</span>' : ''}${displayName}</div>
           <div class="history-card-details">${detailLine}</div>
         </div>
         <button type="button" class="history-card-delete" onclick="event.stopPropagation(); deleteHistoryItem(${entry.id});">&times;</button>
@@ -3328,9 +3367,28 @@ function captureSnapshot() {
   if (btn) { btn.textContent = 'Capturing...'; btn.disabled = true; }
   html2canvas(card, {
     scale: 2,
-    backgroundColor: document.body.classList.contains('dark') ? '#1a1a1a' : '#ffffff',
+    backgroundColor: '#ffffff',
     useCORS: true,
     logging: false
+  }).then(function(canvas) {
+    var logo = new Image();
+    logo.crossOrigin = 'anonymous';
+    logo.src = '/rental-metrics-logo-primary-2400x240.png';
+    return new Promise(function(resolve) {
+      logo.onload = function() {
+        var ctx = canvas.getContext('2d');
+        var maxW = 180 * 2;
+        var ratio = logo.naturalHeight / logo.naturalWidth;
+        var drawW = Math.min(maxW, logo.naturalWidth);
+        var drawH = drawW * ratio;
+        var pad = 24 * 2;
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(logo, canvas.width - drawW - pad, canvas.height - drawH - pad, drawW, drawH);
+        ctx.globalAlpha = 1.0;
+        resolve(canvas);
+      };
+      logo.onerror = function() { resolve(canvas); };
+    });
   }).then(function(canvas) {
     var link = document.createElement('a');
     var now = new Date();
@@ -3347,6 +3405,33 @@ function captureSnapshot() {
   });
 }
 window.captureSnapshot = captureSnapshot;
+
+function toggleBenchmarkInput() {
+  var row = document.getElementById('benchmarkInputRow');
+  if (row) row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+}
+window.toggleBenchmarkInput = toggleBenchmarkInput;
+
+function saveBenchmark() {
+  var input = document.getElementById('benchmarkYieldInput');
+  if (!input) return;
+  var val = parseFloat(input.value);
+  if (!Number.isFinite(val) || val < 0 || val > 30) {
+    alert('Please enter a valid benchmark yield (0-30%).');
+    return;
+  }
+  localStorage.setItem('rm_benchmark_yield', val);
+  document.getElementById('benchmarkInputRow').style.display = 'none';
+  if (typeof updateSnapshot === 'function') updateSnapshot();
+}
+window.saveBenchmark = saveBenchmark;
+
+function clearBenchmark() {
+  localStorage.removeItem('rm_benchmark_yield');
+  document.getElementById('benchmarkInputRow').style.display = 'none';
+  if (typeof updateSnapshot === 'function') updateSnapshot();
+}
+window.clearBenchmark = clearBenchmark;
 
 function openCompare() {
   const history = getHistory();
@@ -3639,10 +3724,13 @@ function downloadComparePdf() {
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     const sortLabel = sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield (Asset)' : sortBy === 'cashOnCash' ? 'Cash-on-Cash' : sortBy === 'cashflow' ? 'Monthly Cashflow' : sortBy === 'price' ? 'Price' : 'Rent';
 
+    const cmpMargins = { top: 15, bottom: 15, left: 10, right: 10 };
+    loadPdfLogo().then(function(logoData) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('l', 'mm', 'a4');
-    const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 10, right: 10 });
+    const h = pdfHelper(pdf, cmpMargins);
 
+    addPdfLogo(pdf, logoData, cmpMargins);
     h.title('RentalMetrics - Deal Comparison');
     h.subtitle('Generated: ' + timestamp);
     h.textLine(entries.length + ' deals compared \u00b7 Sorted by ' + sortLabel, { size: 9, align: 'center', color: '#333333' });
@@ -3766,14 +3854,26 @@ function downloadComparePdf() {
     const compTimeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
     const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '-' + compTimeStr + '.pdf';
     safePdfDownload(pdf, filename);
+    }).catch(function(err) {
+      console.error('Compare PDF generation failed:', err, err.stack);
+      alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
+    }).finally(function() {
+      if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+    });
   } catch (err) {
     console.error('Compare PDF generation failed:', err, err.stack);
     alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
-  } finally {
     if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
   }
 }
 
+function toggleRanks() {
+  renderHistory();
+  if (document.getElementById('compareOverlay').style.display === 'flex') {
+    renderCompareTable();
+  }
+}
+window.toggleRanks = toggleRanks;
 window.openCompare = openCompare;
 window.closeCompare = closeCompare;
 window.renderCompareTable = renderCompareTable;
@@ -4276,10 +4376,22 @@ checkUrlParams();
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${snap.cashOnCash.toFixed(2)}%</span></div>`;
     }
 
+    const benchmarkVal = parseFloat(localStorage.getItem('rm_benchmark_yield'));
+    let benchmarkHtml = '';
+    if (Number.isFinite(benchmarkVal)) {
+      const delta = snap.netYield - benchmarkVal;
+      const deltaClass = delta >= 0 ? 'benchmark-positive' : 'benchmark-negative';
+      const deltaSign = delta >= 0 ? '+' : '';
+      benchmarkHtml = '<div class="benchmark-line"><span class="benchmark-label">Benchmark: ' + benchmarkVal.toFixed(1) + '%</span> <span class="benchmark-delta ' + deltaClass + '">(' + String.fromCharCode(916) + ' ' + deltaSign + delta.toFixed(1) + '%)</span></div>';
+    }
+    benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a></div>';
+    benchmarkHtml += '<div class="benchmark-input-row" id="benchmarkInputRow" style="display:none;"><input type="number" step="0.1" min="0" max="30" id="benchmarkYieldInput" placeholder="e.g. 7.0" value="' + (Number.isFinite(benchmarkVal) ? benchmarkVal : '') + '"><button type="button" onclick="saveBenchmark()">Save</button><button type="button" onclick="clearBenchmark()">Clear</button></div>';
+
     let desktopYieldMetrics = `
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
         <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
+        ${benchmarkHtml}
       </div>`;
 
     if (b.isMortgage) {

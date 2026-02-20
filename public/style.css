@@ -1837,10 +1837,52 @@ body.dark .dark-mode-toggle-mobile:hover {
   color: #999;
   font-weight: 400;
   margin: 8px 0 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rank-toggle-label {
+  font-size: 0.78rem;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+.rank-toggle-label input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.rank-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: #e8e8e8;
+  color: #666;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-right: 4px;
+  vertical-align: middle;
+  line-height: 1.4;
 }
 
 body.dark .history-meta {
   color: #666;
+}
+
+body.dark .rank-toggle-label {
+  color: #777;
+}
+
+body.dark .rank-badge {
+  background: #333;
+  color: #aaa;
 }
 
 .history-card-delete {
@@ -3988,6 +4030,73 @@ body.dark .mortgage-type-label {
   font-weight: 800;
 }
 
+.benchmark-line {
+  font-size: 0.78rem;
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.benchmark-label {
+  color: #888;
+}
+
+.benchmark-delta {
+  font-weight: 600;
+}
+
+.benchmark-positive {
+  color: #27ae60;
+}
+
+.benchmark-negative {
+  color: #e74c3c;
+}
+
+.benchmark-link-row {
+  margin-top: 2px;
+}
+
+.benchmark-set-link {
+  font-size: 0.72rem;
+  color: #999;
+  text-decoration: none;
+  border-bottom: 1px dashed #ccc;
+}
+
+.benchmark-set-link:hover {
+  color: #B11217;
+  border-bottom-color: #B11217;
+}
+
+.benchmark-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.benchmark-input-row input {
+  width: 60px;
+  font-size: 0.78rem;
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.benchmark-input-row button {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f5f5f5;
+  cursor: pointer;
+  color: #555;
+}
+
+.benchmark-input-row button:hover {
+  background: #eee;
+}
+
 .snapshot-upfront-value {
   font-weight: 600;
 }
@@ -4188,6 +4297,36 @@ body.dark .btn-capture-snapshot:hover {
 
 body.dark .snapshot-hint {
   color: #777;
+}
+
+body.dark .benchmark-label {
+  color: #777;
+}
+
+body.dark .benchmark-set-link {
+  color: #777;
+  border-bottom-color: #555;
+}
+
+body.dark .benchmark-set-link:hover {
+  color: #d42027;
+  border-bottom-color: #d42027;
+}
+
+body.dark .benchmark-input-row input {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #ccc;
+}
+
+body.dark .benchmark-input-row button {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #aaa;
+}
+
+body.dark .benchmark-input-row button:hover {
+  background: #333;
 }
 
 body.dark .snapshot-breakdown-highlight {
