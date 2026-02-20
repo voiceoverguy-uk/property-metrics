@@ -3832,18 +3832,19 @@ function downloadComparePdf() {
     h.gap(6);
 
     const gradeGuideRows = [
-      { grade: 'A', meaning: 'Excellent \u2013 strong yield (\u22658%)', color: '#0a7a2e' },
-      { grade: 'B', meaning: 'Strong \u2013 solid performance (7\u20137.99%)', color: '#1a9a4a' },
-      { grade: 'C', meaning: 'Fair \u2013 acceptable return (6\u20136.99%)', color: '#b8860b' },
-      { grade: 'D', meaning: 'Weak \u2013 below target yield (5\u20135.99%)', color: '#cc5500' },
-      { grade: 'F', meaning: 'Poor \u2013 low return (<5%)', color: '#B11217' }
+      { grade: 'A', meaning: 'Excellent - very strong yield', band: '8% or higher', color: '#0a7a2e' },
+      { grade: 'B', meaning: 'Strong - solid performance', band: '7% - 7.99%', color: '#1a9a4a' },
+      { grade: 'C', meaning: 'Fair - acceptable return', band: '6% - 6.99%', color: '#b8860b' },
+      { grade: 'D', meaning: 'Weak - below target yield', band: '5% - 5.99%', color: '#cc5500' },
+      { grade: 'E', meaning: 'Very weak - high caution', band: '4% - 4.99%', color: '#B11217' },
+      { grade: 'F', meaning: 'Poor - low return', band: 'Below 4%', color: '#B11217' }
     ];
     const ggTotalH = 10 + 6 + (gradeGuideRows.length + 1) * 7 + 6;
     h.checkPage(ggTotalH);
 
     const ggW = h.contentW * 0.85;
     const ggX = h.margins.left + (h.contentW - ggW) / 2;
-    const ggColW = [ggW * 0.12, ggW * 0.58, ggW * 0.30];
+    const ggColW = [ggW * 0.10, ggW * 0.38, ggW * 0.22, ggW * 0.30];
     const ggRowH = 7;
 
     pdf.setFontSize(9);
@@ -3867,7 +3868,8 @@ function downloadComparePdf() {
     pdf.setTextColor(80, 80, 80);
     pdf.text('Grade', ggX + 3, h.getY());
     pdf.text('Meaning', ggX + ggColW[0] + 3, h.getY());
-    pdf.text('Based On', ggX + ggColW[0] + ggColW[1] + 3, h.getY());
+    pdf.text('Yield Band', ggX + ggColW[0] + ggColW[1] + 3, h.getY());
+    pdf.text('Based On', ggX + ggColW[0] + ggColW[1] + ggColW[2] + 3, h.getY());
     h.setY(h.getY() + ggRowH - 4);
 
     gradeGuideRows.forEach(row => {
@@ -3888,15 +3890,17 @@ function downloadComparePdf() {
       pdf.setFontSize(7);
       pdf.setTextColor(60, 60, 60);
       pdf.text(row.meaning, ggX + ggColW[0] + 3, h.getY());
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(row.band, ggX + ggColW[0] + ggColW[1] + 3, h.getY());
       pdf.setTextColor(130, 130, 130);
-      pdf.text('Net Yield (Asset)', ggX + ggColW[0] + ggColW[1] + 3, h.getY());
+      pdf.text('Net Yield (Asset)', ggX + ggColW[0] + ggColW[1] + ggColW[2] + 3, h.getY());
       h.setY(h.getY() + ggRowH - 4);
     });
 
     h.gap(6);
     h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
-    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
+    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions. Results are based solely on the information entered and do not account for void periods, maintenance shocks, taxation changes or market risk.');
 
     const compTimeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
     const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '-' + compTimeStr + '.pdf';
