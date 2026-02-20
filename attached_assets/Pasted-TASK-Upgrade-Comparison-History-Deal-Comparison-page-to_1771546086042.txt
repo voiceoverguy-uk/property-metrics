@@ -1,0 +1,127 @@
+TASK: Upgrade Comparison History + Deal Comparison page to feel like an investor “scoreboard”, plus add a proper version/date system.
+
+GOALS
+- History list (bottom of analyser) becomes a quick, high-signal scoreboard.
+- Compare Deals modal/page becomes a decision-making view (includes the right metrics, supports sorting).
+- Desktop shows more detail; mobile stays clean and readable.
+- Add a centralised app version + auto date, displayed in footer and PDF.
+
+------------------------------------------------------------
+1) COMPARISON HISTORY (BOTTOM OF ANALYSER)
+CURRENT:
+Shows address/name + £price · Net X% · date + letter badge.
+
+CHANGE TO:
+A) Make the list rows more informative WITHOUT clutter.
+B) Show:
+   - Net Yield (Asset) (always)
+   - Monthly Cashflow (always)
+   - Cash-on-Cash (ONLY if mortgage deal)
+   - Purchase type indicator (mortgage vs cash) with a tiny icon or label
+
+DESKTOP ROW LAYOUT (suggested):
+Line 1 (bold): Deal name/address (truncate gracefully)
+Line 2 (small): £{priceShort} · Net {netYield1dp}% · {cashflowSign}£{cashflowMonthly}/mo · {COC if mortgage}
+
+Examples:
+- Mortgage deal: "£200k · Net 4.7% · +£159/mo · COC 2.9% 🏦"
+- Cash deal:     "£200k · Net 6.0% · +£650/mo · Cash 💷"
+
+MOBILE ROW LAYOUT (tight):
+Line 1: Deal name/address (truncate)
+Line 2: "£{priceShort} · Net {netYield1dp}% · {cashflowSign}£{cashflowMonthly}/mo"
+(If mortgage, add “· COC {coc1dp}%” only if there is space; otherwise omit on mobile history list.)
+
+DATA RULES:
+- Net Yield shown is Net Yield (Asset), 1 decimal place.
+- Monthly Cashflow should match the main analyser monthly cashflow figure.
+- Cash-on-Cash shown when purchaseType==mortgage, 1 decimal place.
+- Add small “🏦” for mortgage and “💷” for cash (or a tiny label if icons not desired).
+
+------------------------------------------------------------
+2) DEAL RATING THRESHOLDS (STANDARDISE)
+Standardise the letter grade based on Net Yield (Asset):
+
+A: >= 8.0%
+B: 7.0% – 7.99%
+C: 6.0% – 6.99%
+D: 5.0% – 5.99%
+F: < 5.0%
+
+Ensure:
+- The badge letter shown in history + compare uses this same rating function.
+- Colour styling matches grade (subtle): A/B green-ish, C amber, D/F red-ish.
+- If user changes Target Yield, do NOT change grading thresholds (grading stays consistent).
+  (Target Yield can still drive “Below Target / On Target” messaging separately.)
+
+------------------------------------------------------------
+3) COMPARE DEALS PAGE/MODAL (FULL COMPARISON VIEW)
+CURRENT:
+Shows Price, Monthly Rent, Gross Yield, Net Yield, Cash Flow/Yr, SDLT.
+This is good, but missing key investor metrics.
+
+UPGRADE:
+For each deal card show these core metrics:
+
+PRIMARY (always visible):
+- Net Yield (Asset) (2dp on compare page is fine)
+- Monthly Cashflow (after finance if mortgage, otherwise after operating costs)
+- Cash-on-Cash (ONLY if mortgage; show “—” if cash purchase)
+- Cash Invested (ONLY if mortgage; show “—” if cash purchase)
+
+SECONDARY:
+- Price
+- Monthly Rent
+- Gross Yield
+- SDLT
+- Buyer type (Investor / Additional etc)
+- Date saved
+
+STRESS TEST BADGE (if enabled for deal):
+- Show a small badge:
+  “Stress: Positive” or “Stress: Negative” based on stressMonthlyCashflow >= 0
+  (Do not show both; do not show anything if stress not enabled)
+
+BEST DEAL TAG:
+- Keep “BEST DEAL” but define it clearly:
+  By default: highest Net Yield (Asset)
+  If sorting changes, BEST DEAL can either stay tied to Net Yield (recommended) OR follow the current sort (choose one; I recommend it stays Net Yield-based for consistency).
+
+SORT OPTIONS:
+Add/confirm dropdown options:
+- Deal Rating
+- Net Yield (Asset) (desc)
+- Cash-on-Cash (desc) (only meaningful for mortgage deals; handle cash deals as bottom)
+- Monthly Cashflow (desc)
+- Price (asc/desc)
+
+------------------------------------------------------------
+4) DEDUPE / CLEAN UP “NO ADDRESS” ITEMS
+If a saved deal has no address/deal reference:
+- Display as “Untitled Deal” instead of “No address”.
+- If address exists but deal reference empty, show the address.
+- If both missing, show “Untitled Deal”.
+
+------------------------------------------------------------
+5) VERSION + DATE SYSTEM (FOOTER + PDF)
+Create a single source of truth for app version and release date:
+
+- Add constants (in a config file or top of main JS):
+  APP_VERSION = "2.2"
+  APP_VERSION_DATE = today’s date in en-GB long format (e.g. 19 February 2026)
+
+- Footer should display:
+  “Version 2.2 – 19 February 2026”
+
+- PDF should include at the bottom (small text):
+  “RentalMetrics v2.2 – 19 February 2026”
+
+- Remove any other hardcoded version strings.
+
+------------------------------------------------------------
+DELIVERABLES
+- Implement UI changes for history list + compare page.
+- Ensure consistent rating logic everywhere.
+- Ensure mobile layout remains clean (no wrapping mess).
+- Summary of files changed and where the rating/version logic lives.
+- Quick test: one mortgage deal + one cash deal to show conditional COC and icons working.
