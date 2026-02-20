@@ -1837,11 +1837,27 @@ body.dark .dark-mode-toggle-mobile:hover {
   color: #999;
   font-weight: 400;
   margin: 8px 0 12px 0;
+}
+
+.history-meta-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.history-meta-helper {
+  font-size: 0.72rem;
+  color: #bbb;
+  margin-top: 2px;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .history-meta-helper {
+    display: block;
+  }
 }
 
 .rank-toggle-label {
@@ -1874,6 +1890,10 @@ body.dark .dark-mode-toggle-mobile:hover {
 
 body.dark .history-meta {
   color: #666;
+}
+
+body.dark .history-meta-helper {
+  color: #555;
 }
 
 body.dark .rank-toggle-label {
@@ -3932,6 +3952,28 @@ body.dark .mortgage-type-label {
   gap: 8px;
 }
 
+.snapshot-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.snapshot-header-logo {
+  height: 30px;
+  width: auto;
+  opacity: 0.18;
+  filter: grayscale(100%);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .snapshot-header-logo {
+    height: 22px;
+  }
+}
+
 .snapshot-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -4054,6 +4096,16 @@ body.dark .mortgage-type-label {
 
 .benchmark-link-row {
   margin-top: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.benchmark-browser-hint {
+  font-size: 0.65rem;
+  color: #bbb;
+  font-weight: 400;
 }
 
 .benchmark-set-link {
@@ -4264,6 +4316,15 @@ body.sdlt-mode .snapshot-mobile-bar {
 
 body.sdlt-mode .deal-snapshot {
   display: none !important;
+}
+
+body.dark .snapshot-header-logo {
+  opacity: 0.25;
+  filter: grayscale(100%) invert(1);
+}
+
+body.dark .benchmark-browser-hint {
+  color: #555;
 }
 
 body.dark .snapshot-card {

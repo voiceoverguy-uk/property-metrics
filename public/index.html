@@ -392,8 +392,11 @@
     <section class="history-section analyser-only" id="historySection">
       <h2>Comparison History</h2>
       <div class="history-meta" id="historyMeta" style="display:none;">
-        <span>Sorted by: Net Yield (Asset) &middot; Highest first</span>
-        <label class="rank-toggle-label"><input type="checkbox" id="showRanksToggle" onchange="toggleRanks()"> Show ranks</label>
+        <div class="history-meta-top">
+          <span>Sorted by: Net Yield (Asset) &middot; Highest first</span>
+          <label class="rank-toggle-label"><input type="checkbox" id="showRanksToggle" onchange="toggleRanks()"> Show rank badges</label>
+        </div>
+        <div class="history-meta-helper">Badges reflect the current sort order.</div>
       </div>
       <div id="historyList"></div>
     </section>

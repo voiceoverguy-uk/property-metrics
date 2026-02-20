@@ -3365,30 +3365,18 @@ function captureSnapshot() {
   if (!card || !window.html2canvas) return;
   var btn = card.querySelector('.btn-capture-snapshot');
   if (btn) { btn.textContent = 'Capturing...'; btn.disabled = true; }
+  var headerLogo = card.querySelector('.snapshot-header-logo');
+  var savedLogoStyles = null;
+  if (headerLogo && document.body.classList.contains('dark')) {
+    savedLogoStyles = { opacity: headerLogo.style.opacity, filter: headerLogo.style.filter };
+    headerLogo.style.opacity = '0.18';
+    headerLogo.style.filter = 'grayscale(100%)';
+  }
   html2canvas(card, {
     scale: 2,
     backgroundColor: '#ffffff',
     useCORS: true,
     logging: false
-  }).then(function(canvas) {
-    var logo = new Image();
-    logo.crossOrigin = 'anonymous';
-    logo.src = '/rental-metrics-logo-primary-2400x240.png';
-    return new Promise(function(resolve) {
-      logo.onload = function() {
-        var ctx = canvas.getContext('2d');
-        var maxW = 180 * 2;
-        var ratio = logo.naturalHeight / logo.naturalWidth;
-        var drawW = Math.min(maxW, logo.naturalWidth);
-        var drawH = drawW * ratio;
-        var pad = 24 * 2;
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(logo, canvas.width - drawW - pad, canvas.height - drawH - pad, drawW, drawH);
-        ctx.globalAlpha = 1.0;
-        resolve(canvas);
-      };
-      logo.onerror = function() { resolve(canvas); };
-    });
   }).then(function(canvas) {
     var link = document.createElement('a');
     var now = new Date();
@@ -3402,6 +3390,10 @@ function captureSnapshot() {
     alert('Could not capture snapshot. Please try again.');
   }).finally(function() {
     if (btn) { btn.textContent = 'Capture Snapshot'; btn.disabled = false; }
+    if (headerLogo && savedLogoStyles) {
+      headerLogo.style.opacity = savedLogoStyles.opacity;
+      headerLogo.style.filter = savedLogoStyles.filter;
+    }
   });
 }
 window.captureSnapshot = captureSnapshot;
@@ -4384,7 +4376,7 @@ checkUrlParams();
       const deltaSign = delta >= 0 ? '+' : '';
       benchmarkHtml = '<div class="benchmark-line"><span class="benchmark-label">Benchmark: ' + benchmarkVal.toFixed(1) + '%</span> <span class="benchmark-delta ' + deltaClass + '">(' + String.fromCharCode(916) + ' ' + deltaSign + delta.toFixed(1) + '%)</span></div>';
     }
-    benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a></div>';
+    benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a> <span class="benchmark-browser-hint">Stored in this browser only</span></div>';
     benchmarkHtml += '<div class="benchmark-input-row" id="benchmarkInputRow" style="display:none;"><input type="number" step="0.1" min="0" max="30" id="benchmarkYieldInput" placeholder="e.g. 7.0" value="' + (Number.isFinite(benchmarkVal) ? benchmarkVal : '') + '"><button type="button" onclick="saveBenchmark()">Save</button><button type="button" onclick="clearBenchmark()">Clear</button></div>';
 
     let desktopYieldMetrics = `
@@ -4410,7 +4402,10 @@ checkUrlParams();
           <h2 class="snapshot-title">Deal Snapshot</h2>
           ${snapDealRef ? '<div class="snapshot-deal-ref">' + escHtml(snapDealRef) + '</div>' : ''}
         </div>
-        <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot as image">Capture Snapshot</button>
+        <div class="snapshot-header-actions">
+          <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot (PNG)">Capture Snapshot</button>
+          <img src="/rental-metrics-logo-primary-600x60.png" alt="" class="snapshot-header-logo" />
+        </div>
       </div>
       <div class="snapshot-totals">
         <div class="snapshot-total-item">

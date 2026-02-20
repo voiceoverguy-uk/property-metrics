@@ -63,7 +63,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **ROI Rank Toggle**: Toggle switch near history heading. When ON, shows rank badges (#1, #2, #3...) on history rows based on Net Yield descending sort. Compare modal always shows ranks with gold/silver/bronze badges.
 - **Benchmark Yield**: User-defined benchmark yield saved to localStorage (`rm_benchmark_yield`). "Set benchmark" link under Net Yield in snapshot. When set, shows delta (green positive, red negative) under Net Yield.
 - **PDF Logo**: 1200x120 logo (`rental-metrics-logo-primary-1200x120.png`) added to top-right of first page header in both deal and comparison PDFs via `loadPdfLogo()` + `addPdfLogo()`.
-- **Snapshot Logo**: 2400x240 logo drawn onto exported PNG bottom-right at 180px max width, 0.9 opacity, white background only.
+- **Snapshot Logo**: 600x60 logo in DOM header (`.snapshot-header-logo`), far-right aligned with Capture button, ~0.18 opacity grayscale, 30px height (22px mobile). Dark mode: inverted + 0.25 opacity. Captured by html2canvas naturally; dark mode capture temporarily resets to light-mode styles.
 - **"Start Again" Reset Button**.
 
 ## External Dependencies
