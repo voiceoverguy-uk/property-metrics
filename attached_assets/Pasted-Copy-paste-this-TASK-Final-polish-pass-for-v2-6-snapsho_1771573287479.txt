@@ -1,0 +1,98 @@
+Copy/paste this:
+
+TASK: Final polish pass for v2.6 snapshot + comparison UX (logo in snapshot UI, clearer rank toggle, benchmark helper text). No calculation changes.
+
+GOALS
+- Snapshot capture should INCLUDE branding (logo visible inside the snapshot card header).
+- Keep PDF logo as-is (already looks good) unless any sizing bug found.
+- Make the rank toggle wording match what it really does (shows/hides badges).
+- Benchmark UI should clearly state: “Stored in this browser only”.
+- Keep everything clean on mobile + dark mode safe.
+
+------------------------------------------------------------
+A) SNAPSHOT: ADD SUBTLE LOGO INSIDE THE SNAPSHOT HEADER (DOM)
+CURRENT:
+- Capture Snapshot exports a PNG; a logo is added AFTER capture in code, so it won’t appear in the UI or in the captured image.
+
+CHANGE TO:
+1) Add a small inline logo element inside the Deal Snapshot card header area (the empty space to the right of the title — the “red box” area in my screenshot).
+2) This logo must be:
+   - visible in the UI (so html2canvas captures it)
+   - subtle: low opacity (e.g. 0.15–0.25), grayscale or muted
+   - max height ~28–34px (desktop) and ~22–26px (mobile if shown)
+   - should not push layout around
+3) Use an existing file from /public, preferably:
+   - rental-metrics-logo-primary-600x60.png (ideal for header)
+   OR rentalmetrics-logo.png if that’s what the header uses already
+4) Add CSS that works in light + dark mode:
+   - in dark mode, increase opacity slightly if needed (still subtle)
+   - ensure it doesn’t become high-contrast or distracting
+
+IMPORTANT:
+- Once the logo is in the DOM header, REMOVE the “draw logo onto canvas after capture” step (otherwise we risk double-branding).
+- The exported PNG should still be crisp: use html2canvas scale 2 (or devicePixelRatio) as currently.
+
+Acceptance:
+- Clicking “Capture Snapshot” produces an image that includes the logo in the header.
+- No duplicate logos on the exported PNG.
+
+------------------------------------------------------------
+B) CAPTURE BUTTON MICRO-COPY (OPTIONAL, NICE)
+- Tooltip currently says “Download snapshot as image”
+- Change tooltip to: “Download snapshot (PNG)”
+(Keep short.)
+
+------------------------------------------------------------
+C) COMPARISON HISTORY: RANK TOGGLE RENAME + CLARITY
+CURRENT:
+- Toggle says “Show ranks”
+- List is already sorted by Net Yield (Asset) so user expects order anyway.
+
+CHANGE TO:
+1) Rename toggle label to: “Show rank badges”
+2) Add tiny helper text under the “Sorted by …” line (desktop only, very subtle):
+   - “Badges reflect the current sort order.”
+3) Keep default OFF (unchecked) on load.
+
+Acceptance:
+- Toggle only controls badge visibility (#1, #2, #3…)
+- Order stays as-is (no sort changes).
+- Looks good in dark mode.
+
+------------------------------------------------------------
+D) BENCHMARK: ADD “STORED IN THIS BROWSER ONLY”
+CURRENT:
+- “Set benchmark” appears under Net Yield (Asset) in snapshot.
+
+CHANGE TO:
+1) Next to (or under) the benchmark link/input, add helper text:
+   - “Stored in this browser only”
+   Style: very small, muted grey, not underlined, not clickable.
+2) If benchmark is set and showing a delta:
+   - also show the helper text (still visible, still subtle)
+3) Keep benchmark saved in localStorage as currently (no server calls).
+
+Acceptance:
+- Helper text is visible whenever benchmark UI is visible.
+- Dark mode contrast is readable but subtle.
+
+------------------------------------------------------------
+E) QUICK QA CHECKS (DO NOT SKIP)
+- Verify Comparison History is truly sorted by Net Yield (Asset) DESC, with missing yields at bottom.
+- Verify nowrap chunks in history rows (cashflow and C-o-C) still never split mid-number.
+- Verify snapshot header layout doesn’t shift when logo loads.
+- Verify no layout overflow on mobile.
+
+------------------------------------------------------------
+VERSION
+- Keep v2.6 unless you have already bumped further — if changes require a bump, set to v2.6.1 — February 2026.
+- Ensure footer + PDFs match the version displayed in-app.
+
+DELIVERABLE
+- Implement changes + confirm which files were modified.
+- Provide before/after screenshots for:
+  1) Deal Snapshot (with logo visible)
+  2) Captured PNG output
+  3) Comparison History toggle area
+  4) Benchmark helper text
+  5) Dark mode snapshot + history
