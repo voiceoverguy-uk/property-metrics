@@ -1,0 +1,108 @@
+TASK: Fix Deal Snapshot header jitter + improve snapshot capture branding (v2.6 polish)
+
+CONTEXT
+- Deal Snapshot card now includes a subtle RentalMetrics logo in the header so html2canvas captures it.
+- Two issues:
+  1) In dark mode, exported PNG shows the logo too dark/muddy.
+  2) The logo repositions/jitters on every keystroke (likely due to header DOM being rebuilt on each render/update).
+- Also consider a cleaner header layout: logo on top-right, capture button beneath it.
+
+GOALS
+- Snapshot header must be visually stable (no shifting) while typing in any input.
+- Exported PNG must look clean in BOTH light and dark mode:
+  - White background export
+  - Subtle logo watermark (not too dark)
+- Improve header layout so it looks intentional and reduces horizontal squeeze.
+- No calculation changes.
+
+FILES (expected)
+- public/app.js
+- public/style.css
+- public/index.html (only if needed for html2canvas script include)
+- replit.md (optional note)
+
+-------------------------------------------------------------------
+1) STOP THE LOGO MOVING (DOM STABILITY)
+PROBLEM
+- Header/logo likely gets re-rendered or re-inserted on every input update.
+
+FIX
+- Ensure the snapshot header elements are created ONCE (static DOM), not rebuilt each render.
+- If current code uses innerHTML to rebuild the entire snapshot card, refactor so:
+  - Header stays untouched after initial mount
+  - Only metric text values update (e.g. update spans for numbers)
+- Give the logo a fixed container size so layout cannot “breathe”:
+  - width: clamp(160px, 18vw, 260px) OR a fixed width on desktop like 240px
+  - height locked (e.g. 40px)
+  - object-fit: contain
+- Add CSS to prevent flex reflow:
+  - header uses grid or flex with fixed columns
+  - logo container has flex: 0 0 auto
+
+ACCEPTANCE
+- Typing in ANY input does not shift the logo or header alignment at all.
+
+-------------------------------------------------------------------
+2) IMPROVE HEADER LAYOUT (MORE DELIBERATE)
+CHANGE
+- Update snapshot header layout to:
+
+Row 1:
+  Left:  “Deal Snapshot” (title)
+  Right: subtle RentalMetrics logo (watermark style)
+
+Row 2:
+  Right aligned: “Capture Snapshot” button
+
+DETAILS
+- Use CSS grid for the header:
+  - grid-template-columns: 1fr auto;
+  - grid-template-rows: auto auto;
+- Place title in row 1 col 1.
+- Place logo in row 1 col 2.
+- Place capture button in row 2 col 2 (right aligned).
+- Keep everything vertically aligned and consistent across breakpoints.
+
+ACCEPTANCE
+- Button no longer competes horizontally with the logo.
+- Header looks tidy on desktop AND mobile.
+
+-------------------------------------------------------------------
+3) DARK MODE EXPORT: MAKE LOGO LOOK RIGHT IN PNG
+PROBLEM
+- In dark mode export, logo appears too dark.
+
+FIX (CAPTURE-ONLY STYLING)
+- During capture only, temporarily apply a “capture-safe” class to the snapshot card (or specifically the logo):
+  Example: add class `.is-capturing` to snapshot root while html2canvas runs.
+- In CSS for `.is-capturing`:
+  - Force white background on the snapshot capture area (if not already).
+  - Force the logo to a predictable style:
+      filter: grayscale(1) !important;
+      opacity: 0.12–0.18 !important;
+      (IMPORTANT) disable invert() or any dark-mode-only filter during capture.
+- After capture completes (success or failure), remove `.is-capturing`.
+
+ACCEPTANCE
+- Exported PNG looks clean in dark mode:
+  - Logo is subtle, not heavy/dark
+  - No weird invert artefacts
+  - PNG is consistent with light mode exports
+
+-------------------------------------------------------------------
+4) TOOLTIP TEXT (SMALL POLISH)
+- Keep tooltip as: “Download snapshot (PNG)”
+- Ensure tooltip still works after header refactor.
+
+-------------------------------------------------------------------
+5) QA CHECKLIST
+- Verify:
+  - No layout shift during typing (logo/button stable)
+  - Capture works on desktop + mobile
+  - Light mode export looks good
+  - Dark mode export looks good (logo subtle)
+  - No double-branding (no post-canvas drawing code)
+  - No logic/calculation changes
+
+OUTPUT
+- Commit changes and briefly list files modified.
