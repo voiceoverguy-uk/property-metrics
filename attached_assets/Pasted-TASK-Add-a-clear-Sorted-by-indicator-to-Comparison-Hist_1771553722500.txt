@@ -1,0 +1,99 @@
+TASK: Add a clear “Sorted by…” indicator to Comparison History + lock the history row metric wrapping on mobile. Also add (desktop-only) Deal Reference under Deal Snapshot, and a “Capture Deal Snapshot” button to export the snapshot card cleanly.
+
+CONTEXT
+- App currently has a Comparison History list at the bottom of the Deal Analyser.
+- Users can assume it’s sorted by recency, but right now the order is not obvious.
+- On mobile, the history row metrics sometimes wrap awkwardly (e.g., “+” on one line and “£574/mo” on the next).
+- Desktop Deal Snapshot would benefit from showing the Deal Reference underneath the heading.
+- Users want a one-click way to export/share just the Deal Snapshot card (no surrounding UI).
+
+------------------------------------------------------------
+1) COMPARISON HISTORY: SHOW SORT EXPLANATION
+GOAL:
+Make the order self-explanatory with one calm line under the “Comparison History” heading.
+
+CHANGE:
+- Under “Comparison History” title (and above the first history row), add:
+  “Sorted by: Net Yield (Asset) · Highest first”
+- Styling:
+  - small, subtle grey (same tone you use for helper text elsewhere)
+  - margin-top: ~8px
+  - margin-bottom: ~12px
+
+DATA/LOGIC:
+- Ensure the history list is actually rendered in this order:
+  Sort by Net Yield (Asset) descending (highest first)
+  - Deals with missing Net Yield go to bottom
+  - Stable sort for ties (keep original order if same yield)
+
+------------------------------------------------------------
+2) COMPARISON HISTORY: MOBILE WRAP / READABILITY FIX
+GOAL:
+Stop awkward line breaks in the metric line.
+
+CHANGE:
+- In the history row “metrics line” (the small text line with £price · Yield · cashflow · C-o-C):
+  - Wrap each “chunk” in spans:
+    a) price chunk (e.g., “£200k”)
+    b) yield chunk (e.g., “Yield 7.3%”)
+    c) cashflow chunk (e.g., “+£574/mo”)
+    d) C-o-C chunk (only if mortgage deal) (e.g., “C-o-C 10.4%”)
+    e) purchase icon/label chunk (cash/mortgage)
+
+CSS RULES:
+- Apply `white-space: nowrap;` to the cashflow chunk span so “+£574/mo” never splits.
+- Apply `white-space: nowrap;` to the C-o-C chunk span so “C-o-C 10.4%” never splits.
+- Allow wrapping BETWEEN chunks only (so the bullets/dots can wrap cleanly, not mid-number).
+- Keep the bullets/dots with spacing consistent on desktop and mobile.
+
+------------------------------------------------------------
+3) DEAL SNAPSHOT (DESKTOP): SHOW DEAL REFERENCE
+GOAL:
+Make the Deal Snapshot self-explanatory when shared.
+
+CHANGE:
+- On desktop only (e.g., min-width 992px), under the “Deal Snapshot” heading, add a small line:
+  “Deal reference: {dealReference}”
+- If dealReference is blank, hide the line entirely.
+- Styling: subtle grey, smaller than heading, similar to “helper” typography.
+
+------------------------------------------------------------
+4) “CAPTURE DEAL SNAPSHOT” EXPORT BUTTON
+GOAL:
+User can export JUST the Deal Snapshot card without a full-page screenshot.
+
+UI:
+- Add a small secondary button in the Deal Snapshot card header area:
+  Label: “Capture Snapshot”
+  (Desktop: right-aligned near the card title; Mobile: place below title or as an icon button)
+
+BEHAVIOUR:
+- When clicked:
+  - Capture only the Deal Snapshot card DOM element (not the whole page)
+  - Export as a PNG download (filename format: RentalMetrics-Deal-Snapshot-YYYY-MM-DD-HHmm.png)
+- Implementation options:
+  - Use html2canvas (preferred) or similar lightweight library
+  - Ensure the capture includes:
+    - Deal Snapshot title
+    - Deal reference line (desktop if shown)
+    - The metrics grid + breakdown section if expanded
+- Quality:
+  - Use scale >= 2 for crisp text
+  - White background, no transparency weirdness
+  - Don’t include the sticky mobile top bar or other page elements
+
+EDGE CASES:
+- If breakdown is collapsed, capture collapsed state (don’t auto-expand).
+- If the snapshot is hidden due to modal open state, disable button or do nothing.
+
+------------------------------------------------------------
+5) QA CHECKLIST
+- History shows “Sorted by: Net Yield (Asset) · Highest first”
+- History ordering matches that statement
+- No broken number formatting anywhere
+- Mobile metric line never splits “+£xxx/mo” or “C-o-C x.x%”
+- Deal Snapshot shows deal reference on desktop only (when present)
+- Capture Snapshot downloads a clean PNG of only the snapshot card
+
+VERSION
+- If you track versions, bump patch version by +0.0.1 and keep “February 2026”.
