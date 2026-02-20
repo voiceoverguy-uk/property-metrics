@@ -1828,7 +1828,19 @@ body.dark .dark-mode-toggle-mobile:hover {
 .history-cf-positive { color: #0a7a2e; font-weight: 600; font-size: 0.84rem; }
 .history-cf-negative { color: #B11217; font-weight: 600; font-size: 0.84rem; }
 .history-coc { color: #555; }
+.history-coc-nowrap { color: #555; white-space: nowrap; }
 .history-purchase-type { font-size: 0.75rem; margin-left: 2px; }
+
+.history-meta {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 400;
+  margin: 4px 0 10px 0;
+}
+
+body.dark .history-meta {
+  color: #666;
+}
 
 .history-card-delete {
   width: 28px;
@@ -2309,7 +2321,7 @@ body.dark .dark-mode-toggle-mobile:hover {
   font-size: 0.65rem;
   color: #999;
   font-weight: 400;
-  margin-top: 1px;
+  margin-top: 3px;
 }
 
 .best-deal-helper {
@@ -2317,7 +2329,7 @@ body.dark .dark-mode-toggle-mobile:hover {
   font-size: 0.65rem;
   color: #999;
   font-weight: 400;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .compare-card-metrics {
@@ -2525,6 +2537,7 @@ body.dark .compare-card-buyer {
 body.dark .history-cf-positive { color: #2ecc71; }
 body.dark .history-cf-negative { color: #e74c3c; }
 body.dark .history-coc { color: #aaa; }
+body.dark .history-coc-nowrap { color: #aaa; }
 body.dark .compare-section-label { color: #666; }
 body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow: 0 0 0 2px rgba(212,32,39,0.2); }
 

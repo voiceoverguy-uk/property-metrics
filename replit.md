@@ -58,6 +58,8 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
 - **Currency Formatting**: Automatic formatting with £ and commas. `fmtShort()` for price shorthand (£143k, £1.2m). Sanitises string inputs (strips £/commas, parseFloat), returns "—" for NaN/Infinity. Under £1k shows full amount (e.g. £950), £1k–£999k whole k, £1m+ 1dp m.
 - **Version System**: `APP_VERSION` and `APP_VERSION_DATE` manual string constants. Displayed in footer and both PDFs (deal + comparison).
+- **PDF Text Sanitisation**: `sanitizePdfText()` strips control chars, converts smart quotes/dashes to ASCII, removes non-printable characters (keeps £). Applied to user-provided text in PDF exports.
+- **History Sort Indicator**: Static "Sorted by: Net Yield (Asset) · Highest first" meta line under Comparison History heading, wrapped in `.history-meta` for future dynamic sort controls.
 - **"Start Again" Reset Button**.
 
 ## External Dependencies

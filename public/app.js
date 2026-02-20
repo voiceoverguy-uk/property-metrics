@@ -1,4 +1,4 @@
-const APP_VERSION = '2.5';
+const APP_VERSION = '2.5.1';
 const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -2343,6 +2343,17 @@ document.getElementById('showStressTest').addEventListener('change', function() 
 
 function safeStr(v) { return v == null ? '' : String(v); }
 
+function sanitizePdfText(val) {
+  if (!val) return '';
+  return String(val)
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[^\x20-\x7E\u00A3\u00A0-\u00FF]/g, '')
+    .trim();
+}
+
 function safePdfDownload(pdf, filename) {
   try {
     pdf.save(filename);
@@ -2719,11 +2730,11 @@ function printReport() {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 15, right: 15 });
 
-    h.title('RentalMetrics \u2013 Property Deal Report');
+    h.title('RentalMetrics - Property Deal Report');
     h.subtitle('Generated: ' + timestamp);
     h.gap(2);
-    h.textLine(address, { size: 11, bold: true, align: 'center' });
-    if (dealRef) h.textLine(dealRef, { size: 10, bold: true, align: 'center' });
+    h.textLine(sanitizePdfText(address), { size: 11, bold: true, align: 'center' });
+    if (dealRef) h.textLine(sanitizePdfText(dealRef), { size: 10, bold: true, align: 'center' });
     h.gap(2);
     pdf.setDrawColor(...h.hexToRgb('#B11217'));
     pdf.setLineWidth(0.8);
@@ -2793,7 +2804,7 @@ function printReport() {
     h.subheading('SDLT Breakdown');
     if (scenarioData.sdltBreakdown && scenarioData.sdltBreakdown.bands && scenarioData.sdltBreakdown.bands.length > 0) {
       const sdltRows = scenarioData.sdltBreakdown.bands.map(b => ({
-        cells: [fmt(b.from) + ' \u2013 ' + fmt(b.to), (b.rate * 100).toFixed(0) + '%', fmt(b.tax)]
+        cells: [fmt(b.from) + ' - ' + fmt(b.to), (b.rate * 100).toFixed(0) + '%', fmt(b.tax)]
       }));
       h.table(sdltRows, { headers: ['Band', 'Rate', 'Tax'], colWidths: [h.contentW * 0.5, h.contentW * 0.2, h.contentW * 0.3] });
     }
@@ -2897,7 +2908,7 @@ function printReport() {
       }
     }
 
-    h.textLine('RentalMetrics v' + APP_VERSION + ' \u2013 ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
+    h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
 
@@ -3205,14 +3216,18 @@ function renderHistory() {
   const history = getHistory();
   const section = document.getElementById('historySection');
 
+  const metaEl = document.getElementById('historyMeta');
   if (history.length === 0) {
     historyList.innerHTML = '<div class="history-empty">No saved analyses yet. Run a deal analysis to see it here.</div>';
     if (section) {
       const h2 = section.querySelector('h2');
       if (h2) h2.innerHTML = 'Comparison History';
     }
+    if (metaEl) metaEl.style.display = 'none';
     return;
   }
+
+  if (metaEl) metaEl.style.display = '';
 
   if (section) {
     const h2 = section.querySelector('h2');
@@ -3252,10 +3267,11 @@ function renderHistory() {
     const cfSign = monthlyCf >= 0 ? '+' : '';
     const cfClass = monthlyCf >= 0 ? 'history-cf-positive' : 'history-cf-negative';
 
-    let detailLine = fmtShort(entry.price) + ' \u00b7 Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '% \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
+    let detailLine = fmtShort(entry.price) + ' \u00b7 Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '%';
     if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
-      detailLine += ' \u00b7 <span class="history-coc">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
+      detailLine += ' \u00b7 <span class="history-coc-nowrap">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
     }
+    detailLine += ' \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     detailLine += ' ' + purchaseIcon;
 
     html += `
@@ -3590,7 +3606,7 @@ function downloadComparePdf() {
     const pdf = new jsPDF('l', 'mm', 'a4');
     const h = pdfHelper(pdf, { top: 15, bottom: 15, left: 10, right: 10 });
 
-    h.title('RentalMetrics \u2013 Deal Comparison');
+    h.title('RentalMetrics - Deal Comparison');
     h.subtitle('Generated: ' + timestamp);
     h.textLine(entries.length + ' deals compared \u00b7 Sorted by ' + sortLabel, { size: 9, align: 'center', color: '#333333' });
     h.gap(2);
@@ -3624,7 +3640,7 @@ function downloadComparePdf() {
     entries.forEach((e, idx) => {
       const rank = '#' + (idx + 1);
       const propShort = fmtShort(e.price);
-      const prop = e.address || e.dealReference || (propShort !== '\u2014' ? propShort + ' Deal' : 'Untitled Deal');
+      const prop = sanitizePdfText(e.address || e.dealReference || (propShort !== '\u2014' && propShort !== '-' ? propShort + ' Deal' : 'Untitled Deal'));
       const cfSign = e.monthlyCashFlow >= 0 ? '+' : '';
       const cashColor = e.monthlyCashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
       const isBestPdf = bestNetYieldEntry && e.id === bestNetYieldEntry.id;
@@ -3647,7 +3663,7 @@ function downloadComparePdf() {
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(8);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(rank + (isBestPdf ? ' \u2605' : ''), cx, textY);
+      pdf.text(rank + (isBestPdf ? ' *' : ''), cx, textY);
       cx += colW[0];
 
       const gradeRgb = h.hexToRgb(e.rating.color);
@@ -3688,7 +3704,7 @@ function downloadComparePdf() {
 
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
-      pdf.text(e.cashOnCash !== null ? fmtPct(e.cashOnCash) : '\u2014', cx, textY);
+      pdf.text(e.cashOnCash !== null ? fmtPct(e.cashOnCash) : '-', cx, textY);
       cx += colW[7];
 
       pdf.text(fmt(e.displaySdlt), cx, textY);
@@ -3704,9 +3720,9 @@ function downloadComparePdf() {
     });
 
     h.gap(4);
-    h.textLine('\u2605 Best Deal \u2014 Based on highest Net Yield (Asset)', { size: 7, align: 'left', color: '#666666' });
+    h.textLine('* Best Deal - Based on highest Net Yield (Asset)', { size: 7, align: 'left', color: '#666666' });
     h.gap(4);
-    h.textLine('RentalMetrics v' + APP_VERSION + ' \u2013 ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
+    h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');
 
