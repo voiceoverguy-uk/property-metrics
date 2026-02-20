@@ -3365,13 +3365,7 @@ function captureSnapshot() {
   if (!card || !window.html2canvas) return;
   var btn = card.querySelector('.btn-capture-snapshot');
   if (btn) { btn.textContent = 'Capturing...'; btn.disabled = true; }
-  var headerLogo = card.querySelector('.snapshot-header-logo');
-  var savedLogoStyles = null;
-  if (headerLogo && document.body.classList.contains('dark')) {
-    savedLogoStyles = { opacity: headerLogo.style.opacity, filter: headerLogo.style.filter };
-    headerLogo.style.opacity = '0.18';
-    headerLogo.style.filter = 'grayscale(100%)';
-  }
+  card.classList.add('is-capturing');
   html2canvas(card, {
     scale: 2,
     backgroundColor: '#ffffff',
@@ -3389,11 +3383,8 @@ function captureSnapshot() {
     console.error('Snapshot capture failed:', err);
     alert('Could not capture snapshot. Please try again.');
   }).finally(function() {
+    card.classList.remove('is-capturing');
     if (btn) { btn.textContent = 'Capture Snapshot'; btn.disabled = false; }
-    if (headerLogo && savedLogoStyles) {
-      headerLogo.style.opacity = savedLogoStyles.opacity;
-      headerLogo.style.filter = savedLogoStyles.filter;
-    }
   });
 }
 window.captureSnapshot = captureSnapshot;
@@ -4290,6 +4281,42 @@ checkUrlParams();
 
   const fieldLabels = { address: 'Address / Postcode', price: 'Asking Price', rent: 'Expected Monthly Rent' };
 
+  let snapshotMounted = false;
+  let snapshotRefs = {};
+
+  function mountSnapshotCard() {
+    snapshotEl.innerHTML = `<div class="snapshot-card">
+      <div class="snapshot-header-row">
+        <div class="snapshot-header-title-area">
+          <h2 class="snapshot-title">Deal Snapshot</h2>
+          <div class="snapshot-deal-ref" data-ref="dealRef"></div>
+        </div>
+        <div class="snapshot-header-logo-wrap">
+          <img src="/rental-metrics-logo-primary-600x60.png" alt="" class="snapshot-header-logo" />
+        </div>
+        <div class="snapshot-header-btn-area">
+          <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot (PNG)">Capture Snapshot</button>
+        </div>
+      </div>
+      <div class="snapshot-totals" data-ref="totals"></div>
+      <details class="snapshot-details">
+        <summary>Breakdown</summary>
+        <div class="snapshot-breakdown" data-ref="breakdown"></div>
+      </details>
+    </div>`;
+    snapshotRefs = {
+      card: snapshotEl.querySelector('.snapshot-card'),
+      dealRef: snapshotEl.querySelector('[data-ref="dealRef"]'),
+      totals: snapshotEl.querySelector('[data-ref="totals"]'),
+      breakdown: snapshotEl.querySelector('[data-ref="breakdown"]'),
+      details: snapshotEl.querySelector('.snapshot-details')
+    };
+    snapshotRefs.details.addEventListener('toggle', function() {
+      breakdownOpen = this.open;
+    });
+    snapshotMounted = true;
+  }
+
   function renderSnapshot() {
     try {
     if (currentMode === 'sdlt') {
@@ -4303,11 +4330,12 @@ checkUrlParams();
     snapshotEl.style.display = '';
 
     if (snap.missing.length > 0 && snap.missing.includes('price') && snap.missing.includes('rent')) {
+      snapshotMounted = false;
       const warningItems = snap.missing.map(k => `<span class="snapshot-missing-field" data-field="${k}">${fieldLabels[k]}</span>`).join(', ');
       const warnDealRef = document.getElementById('dealReference') ? document.getElementById('dealReference').value.trim() : '';
     snapshotEl.innerHTML = `<div class="snapshot-card snapshot-card-warning">
         <div class="snapshot-header-row">
-          <div>
+          <div class="snapshot-header-title-area">
             <h2 class="snapshot-title">Deal Snapshot</h2>
             ${warnDealRef ? '<div class="snapshot-deal-ref">' + escHtml(warnDealRef) + '</div>' : ''}
           </div>
@@ -4321,6 +4349,8 @@ checkUrlParams();
       });
       return;
     }
+
+    if (!snapshotMounted) mountSnapshotCard();
 
     const b = snap.breakdown;
     const cashflowClass = snap.monthlyCashflow >= 0 ? 'snapshot-positive' : 'snapshot-negative';
@@ -4342,6 +4372,15 @@ checkUrlParams();
       yieldInlineColor = `color:rgb(${r},${g},${bv})`;
     } else {
       yieldColorClass = 'snapshot-yield-bad';
+    }
+
+    const snapDealRef = document.getElementById('dealReference') ? document.getElementById('dealReference').value.trim() : '';
+    if (snapDealRef) {
+      snapshotRefs.dealRef.textContent = snapDealRef;
+      snapshotRefs.dealRef.style.display = '';
+    } else {
+      snapshotRefs.dealRef.textContent = '';
+      snapshotRefs.dealRef.style.display = 'none';
     }
 
     let breakdownHtml = '';
@@ -4368,6 +4407,10 @@ checkUrlParams();
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${snap.cashOnCash.toFixed(2)}%</span></div>`;
     }
 
+    snapshotRefs.breakdown.innerHTML = breakdownHtml;
+    if (!breakdownOpen) snapshotRefs.details.removeAttribute('open');
+    else snapshotRefs.details.setAttribute('open', '');
+
     const benchmarkVal = parseFloat(localStorage.getItem('rm_benchmark_yield'));
     let benchmarkHtml = '';
     if (Number.isFinite(benchmarkVal)) {
@@ -4379,7 +4422,15 @@ checkUrlParams();
     benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a> <span class="benchmark-browser-hint">Stored in this browser only</span></div>';
     benchmarkHtml += '<div class="benchmark-input-row" id="benchmarkInputRow" style="display:none;"><input type="number" step="0.1" min="0" max="30" id="benchmarkYieldInput" placeholder="e.g. 7.0" value="' + (Number.isFinite(benchmarkVal) ? benchmarkVal : '') + '"><button type="button" onclick="saveBenchmark()">Save</button><button type="button" onclick="clearBenchmark()">Clear</button></div>';
 
-    let desktopYieldMetrics = `
+    let totalsHtml = `
+      <div class="snapshot-total-item">
+        <span class="snapshot-total-label">Upfront Total</span>
+        <span class="snapshot-total-value snapshot-upfront-value">${fmt(Math.round(snap.upfrontTotal))}</span>
+      </div>
+      <div class="snapshot-total-item">
+        <span class="snapshot-total-label">Monthly Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs (agent, running costs, maintenance, voids) and mortgage payment.">?</span></span>
+        <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
+      </div>
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
         <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
@@ -4388,45 +4439,14 @@ checkUrlParams();
 
     if (b.isMortgage) {
       const cocClass = snap.cashOnCash >= 0 ? 'snapshot-positive' : 'snapshot-negative';
-      desktopYieldMetrics += `
+      totalsHtml += `
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Cash-on-Cash <span class="tooltip" data-tip="Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.">?</span></span>
         <span class="snapshot-total-value ${cocClass}">${snap.cashOnCash.toFixed(1)}%</span>
       </div>`;
     }
 
-    const snapDealRef = document.getElementById('dealReference') ? document.getElementById('dealReference').value.trim() : '';
-    snapshotEl.innerHTML = `<div class="snapshot-card">
-      <div class="snapshot-header-row">
-        <div>
-          <h2 class="snapshot-title">Deal Snapshot</h2>
-          ${snapDealRef ? '<div class="snapshot-deal-ref">' + escHtml(snapDealRef) + '</div>' : ''}
-        </div>
-        <div class="snapshot-header-actions">
-          <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot (PNG)">Capture Snapshot</button>
-          <img src="/rental-metrics-logo-primary-600x60.png" alt="" class="snapshot-header-logo" />
-        </div>
-      </div>
-      <div class="snapshot-totals">
-        <div class="snapshot-total-item">
-          <span class="snapshot-total-label">Upfront Total</span>
-          <span class="snapshot-total-value snapshot-upfront-value">${fmt(Math.round(snap.upfrontTotal))}</span>
-        </div>
-        <div class="snapshot-total-item">
-          <span class="snapshot-total-label">Monthly Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs (agent, running costs, maintenance, voids) and mortgage payment.">?</span></span>
-          <span class="snapshot-total-value ${cashflowClass}">${cashflowSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span>
-        </div>
-        ${desktopYieldMetrics}
-      </div>
-      <details class="snapshot-details"${breakdownOpen ? ' open' : ''}>
-        <summary>Breakdown</summary>
-        <div class="snapshot-breakdown">${breakdownHtml}</div>
-      </details>
-    </div>`;
-
-    snapshotEl.querySelector('.snapshot-details').addEventListener('toggle', function() {
-      breakdownOpen = this.open;
-    });
+    snapshotRefs.totals.innerHTML = totalsHtml;
 
     mobileBar.classList.add('visible');
     if (typeof syncBarPadding === 'function') syncBarPadding();

@@ -3945,32 +3945,57 @@ body.dark .mortgage-type-label {
 }
 
 .snapshot-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
   margin-bottom: 12px;
-  gap: 8px;
+  align-items: center;
 }
 
-.snapshot-header-actions {
+.snapshot-header-title-area {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.snapshot-header-logo-wrap {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-end;
+  width: 160px;
+  height: 30px;
   flex-shrink: 0;
 }
 
+.snapshot-header-btn-area {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .snapshot-header-logo {
-  height: 30px;
+  max-height: 30px;
+  max-width: 160px;
   width: auto;
+  height: auto;
   opacity: 0.18;
   filter: grayscale(100%);
   pointer-events: none;
   user-select: none;
+  object-fit: contain;
 }
 
 @media (max-width: 600px) {
-  .snapshot-header-logo {
+  .snapshot-header-logo-wrap {
+    width: 120px;
     height: 22px;
+  }
+  .snapshot-header-logo {
+    max-height: 22px;
+    max-width: 120px;
   }
 }
 
@@ -4325,6 +4350,75 @@ body.dark .snapshot-header-logo {
 
 body.dark .benchmark-browser-hint {
   color: #555;
+}
+
+.snapshot-card.is-capturing {
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
+  border-color: #e0e0e0 !important;
+}
+.snapshot-card.is-capturing .snapshot-title {
+  color: #1a1a1a !important;
+}
+.snapshot-card.is-capturing .snapshot-deal-ref {
+  color: #888 !important;
+}
+.snapshot-card.is-capturing .snapshot-header-logo {
+  opacity: 0.18 !important;
+  filter: grayscale(100%) !important;
+}
+.snapshot-card.is-capturing .btn-capture-snapshot {
+  background: #f5f5f5 !important;
+  border-color: #ddd !important;
+  color: #555 !important;
+}
+.snapshot-card.is-capturing .snapshot-total-value {
+  color: #1a1a1a !important;
+}
+.snapshot-card.is-capturing .snapshot-yield-good {
+  color: #1a8c3a !important;
+}
+.snapshot-card.is-capturing .snapshot-yield-bad {
+  color: #c0392b !important;
+}
+.snapshot-card.is-capturing .snapshot-positive {
+  color: #1a8c3a !important;
+}
+.snapshot-card.is-capturing .snapshot-negative {
+  color: #c0392b !important;
+}
+.snapshot-card.is-capturing .snapshot-breakdown-row {
+  color: #555 !important;
+}
+.snapshot-card.is-capturing .snapshot-breakdown-divider {
+  background: #eee !important;
+}
+.snapshot-card.is-capturing .snapshot-breakdown-highlight {
+  color: #1a8c3a !important;
+}
+.snapshot-card.is-capturing .snapshot-details summary {
+  color: #888 !important;
+}
+.snapshot-card.is-capturing .snapshot-hint {
+  color: #aaa !important;
+}
+.snapshot-card.is-capturing .benchmark-label {
+  color: #999 !important;
+}
+.snapshot-card.is-capturing .benchmark-set-link {
+  color: #999 !important;
+}
+.snapshot-card.is-capturing .benchmark-browser-hint {
+  color: #bbb !important;
+}
+.snapshot-card.is-capturing .benchmark-input-row input {
+  background: #fff !important;
+  border-color: #ddd !important;
+  color: #333 !important;
+}
+.snapshot-card.is-capturing .benchmark-input-row button {
+  background: #f5f5f5 !important;
+  border-color: #ddd !important;
+  color: #555 !important;
 }
 
 body.dark .snapshot-card {
