@@ -1,0 +1,121 @@
+TASK: Final polish round before release.
+Add branding (logo) to Snapshot PNG + Comparison PDF, add ROI Rank toggle and Benchmark feature.
+REMOVE any Share Snapshot link/copy functionality (not needed).
+
+NO calculation logic changes.
+
+VERSION:
+Bump to Version 2.6 — February 2026
+Update footer and PDF footer.
+
+------------------------------------------------------------
+A) SNAPSHOT PNG — ADD LOGO OVERLAY
+Goal:
+Include RentalMetrics branding inside exported snapshot image.
+
+Logo file to use:
+"/public/rental-metrics-logo-primary-2400x240.png"
+
+Implementation:
+After html2canvas creates the canvas:
+- Create new Image()
+- src = "/rental-metrics-logo-primary-2400x240.png"
+- When loaded:
+    draw logo onto canvas context
+    position: bottom-right
+    padding: 24px
+    max display width: 180px (scale proportionally)
+    opacity: 0.9
+
+Do NOT distort logo.
+Ensure export scale remains >= 2 for crisp text.
+White background only.
+
+Do not show this logo in normal UI — only inside exported PNG.
+
+------------------------------------------------------------
+B) PDF — ADD LOGO IN HEADER
+Logo file:
+"/public/rental-metrics-logo-primary-1200x120.png"
+
+Placement:
+Top-right of first page header.
+Small and clean (approx 35–45mm wide equivalent depending on PDF library scale).
+Keep spacing so it does not overlap title.
+
+Footer remains:
+RentalMetrics v2.6 - February 2026
+
+------------------------------------------------------------
+C) ROI RANK TOGGLE (Scoreboard Mode)
+Goal:
+Allow user to toggle ranking numbers.
+
+UI:
+Near “Comparison History” heading:
+Add small toggle switch:
+Label: "Show ranks"
+
+Default: OFF.
+
+Behaviour:
+When ON:
+- Each history row shows rank badge (#1, #2, #3…)
+- Ranking based on CURRENT history sort (Net Yield Asset descending)
+- Missing yield values rank last
+- Stable sort for equal values
+
+Badge styling:
+Small grey pill with "#1"
+Do not overpower grade circle.
+On mobile, display inline next to deal name.
+
+Also apply ranking in Compare modal:
+- If sorted by Deal Rating → rank by rating order
+- If sorted by Net Yield → rank by yield
+- If sorted by Cash-on-Cash → rank by C-o-C
+Use same consistent ranking logic.
+
+------------------------------------------------------------
+D) BENCHMARK VS YIELD FEATURE
+Goal:
+User can set their own benchmark yield and see delta.
+
+1) Add small link under Net Yield (Asset) in Deal Snapshot:
+"Set benchmark"
+
+When clicked:
+Show small inline input:
+Benchmark Yield (%) [ number input ]
+Save value to localStorage as "rm_benchmark_yield"
+
+2) If benchmark is set:
+Display under Net Yield (Asset):
+
+Benchmark: X.X%  (Δ +Y.Y%)
+
+Where:
+Δ = NetYieldAsset - Benchmark
+Green if positive
+Red if negative
+
+3) If no benchmark set:
+Do not display anything.
+
+Do NOT hardcode UK average yield.
+This is user-defined only.
+
+------------------------------------------------------------
+E) CLEANUP & VERIFY
+- History list actually sorted by Net Yield (Asset) descending.
+- Missing yield rows at bottom.
+- Mobile metric wrapping still clean.
+- Snapshot export works with logo.
+- PDF exports with logo.
+- Footer shows Version 2.6 — February 2026.
+
+NO share link.
+NO clipboard logic.
+NO backend storage.
+
+Deliver clean working implementation.
