@@ -1,0 +1,77 @@
+Copy/paste this:
+
+TASK: Add explicit ordering indicator to Comparison History to remove ambiguity and make it feel like a proper investor scoreboard.
+
+CONTEXT
+- Comparison History currently shows deals in a fixed order.
+- There is no visible explanation of how the list is ordered.
+- This can confuse users (is it recent? best? selected?).
+
+GOAL
+Add a subtle, non-intrusive line under the “Comparison History” heading:
+
+    Sorted by: Net Yield (Asset) · Highest first
+
+This should feel intentional, clean, and professional — not cluttered.
+
+------------------------------------------------------------
+1) UI ADDITION
+
+A) Under the "Comparison History" title (but above the first row),
+   add a small grey meta line:
+
+   Sorted by: Net Yield (Asset) · Highest first
+
+B) Style requirements:
+   - Smaller font than the heading (approx 0.85–0.9rem).
+   - Medium-light grey (consistent with other helper text).
+   - No heavy emphasis.
+   - On mobile, it should wrap naturally if needed.
+   - Spacing: small margin-top under heading, small margin-bottom before rows.
+
+C) Placement:
+   Layout should be:
+
+   Comparison History        [Compare Deals]   [Clear All]
+   Sorted by: Net Yield (Asset) · Highest first
+   ---------------------------------------------------------
+   [row 1]
+   [row 2]
+
+------------------------------------------------------------
+2) LOGIC RULE
+
+For now, this is STATIC text:
+
+- Always display:
+  "Sorted by: Net Yield (Asset) · Highest first"
+
+We are NOT adding sort controls yet.
+We are NOT changing ordering logic.
+This is a clarity/UX improvement only.
+
+------------------------------------------------------------
+3) FUTURE-PROOFING (Optional, but structure cleanly)
+
+Wrap the text in a container that could later be replaced with a dynamic sort control.
+Example:
+
+<div class="history-meta">
+  Sorted by: Net Yield (Asset) · Highest first
+</div>
+
+So in future we can convert this to:
+"Sort: Deal Rating ▼" etc.
+
+------------------------------------------------------------
+4) QUALITY CHECK
+
+After implementation, verify:
+- Desktop layout remains aligned.
+- Mobile does not look cramped.
+- Compare Deals button alignment remains unchanged.
+- No calculation logic modified.
+
+DELIVERABLE
+- Clean UI update only.
+- No version bump required (this is a minor clarity addition).

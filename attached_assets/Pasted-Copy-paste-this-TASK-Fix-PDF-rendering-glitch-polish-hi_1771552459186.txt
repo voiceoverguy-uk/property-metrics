@@ -1,0 +1,107 @@
+Copy/paste this:
+
+TASK: Fix PDF rendering glitch + polish history row micro-UX (C-o-C nowrap + spacing tidy). No calculation changes.
+
+CONTEXT
+- In exported Deal Comparison PDFs, a rogue encoding string appears before the grade (example: "#1 & A £128k Deal").
+- On mobile history rows, “C-o-C” can wrap awkwardly so the percentage drops to a new line.
+- Optional: tidy micro spacing under BEST DEAL / rating note, and (optional) reorder compact metrics for scanability.
+
+GOALS
+1) Remove the PDF encoding artefact (“&” or any weird control chars) in ALL PDF exports.
+2) Keep “C-o-C 10.4%” on ONE line in compact history rows (no wrapping).
+3) Minor layout polish: spacing so the rating note and BEST DEAL don’t feel cramped on small screens.
+4) Version bump to 2.5.1 — February 2026.
+5) Confirm no logic/calculation behaviour changes.
+
+------------------------------------------------------------
+1) FIX PDF RENDERING GLITCH (ENCODING ARTEFACT)
+PROBLEM:
+PDF line shows: "#1 & A £128k Deal" (rogue chars before grade).
+
+LIKELY CAUSE:
+A non-ASCII character is being injected into PDF text output (often from:
+- “★” star marker,
+- emoji icons,
+- or a special glyph from a badge/highlight label).
+
+FIX REQUIREMENTS:
+A) Ensure any “best deal marker” used in the PDF export is ASCII-safe.
+   - Replace “★” with plain text like: "BEST DEAL" or "[BEST]" or "Top".
+   - Do NOT use emoji or special symbols in PDF strings.
+
+B) Add a small sanitiser helper used ONLY for PDF text rendering:
+   - Strip non-printable control chars.
+   - Strip non-ASCII characters.
+   - Replace with "" (empty) or safe equivalents.
+
+IMPLEMENTATION DETAIL:
+- Find the PDF generation module/function (likely something like generateComparisonPDF / exportComparisonPDF).
+- Locate the string where the row header is assembled (the part that outputs rank + grade + deal name).
+- Ensure grade output is plain "A"/"B"/etc (no icon prefixes).
+- Apply `sanitizePdfText()` to any concatenated text fields being passed into the PDF renderer.
+
+Example helper (adjust to project style):
+- sanitizePdfText(value):
+   - if (!value) return ""
+   - convert to String
+   - remove control chars: /[\u0000-\u001F\u007F-\u009F]/g
+   - remove non-ascii: /[^\x20-\x7E£]/g  (allow £ symbol)
+   - return cleaned string
+
+IMPORTANT:
+- Keep “£” allowed.
+- Keep normal punctuation allowed.
+- No visual change required other than removing the junk characters.
+
+------------------------------------------------------------
+2) HISTORY ROW: FORCE “C-o-C 10.4%” TO NEVER WRAP
+PROBLEM:
+On mobile, “C-o-C” can appear on one line and “10.4%” on the next.
+
+FIX:
+Wrap C-o-C label + value inside a single span and apply:
+- white-space: nowrap;
+Optionally:
+- display: inline-flex; gap: 4px; align-items: baseline;
+
+REQUIREMENTS:
+- Only affect compact history summary rows (NOT the compare modal cards).
+- Do not change any calculation / displayed values.
+- If C-o-C is absent, nothing is rendered.
+
+------------------------------------------------------------
+3) OPTIONAL MICRO-POLISH (YES, LET’S DO IT)
+A) Spacing around “BEST DEAL” and “Rating based on Net Yield…” on small screens
+- Add a tiny top margin to the rating note (e.g., 2–4px).
+- Ensure the badge line doesn’t feel cramped.
+
+B) OPTIONAL: Reorder compact metrics for scanability (history rows only)
+Current example:
+£200k · Yield 7.3% · +£574/mo · C-o-C 10.4%
+Suggested:
+£200k · Yield 7.3% · C-o-C 10.4% · +£574/mo
+WHY:
+Yield and C-o-C are “quality/efficiency”, cashflow is “result”.
+Do this only if it’s easy and doesn’t cause wrapping regressions.
+
+If this optional reorder causes more wrapping, KEEP CURRENT ORDER and only apply nowrap fix.
+
+------------------------------------------------------------
+4) VERSION BUMP
+- Update app version constants:
+  APP_VERSION = "2.5.1"
+  APP_VERSION_DATE = "February 2026"
+- Ensure footer and PDF export show Version 2.5.1 — February 2026.
+
+------------------------------------------------------------
+5) QUALITY CHECKS (MUST DO)
+After changes, verify:
+- PDF exports contain NO weird symbols/artefacts near grades or deal names.
+- PDF still highlights BEST DEAL correctly (text-only marker is fine).
+- History row “C-o-C 10.4%” stays on one line at iPhone width.
+- No layout jump when opening/closing compare modal (sticky snapshot still hides cleanly).
+- No calculation logic changed (spot check a deal and confirm same outputs).
+
+DELIVERABLE
+- Commit changes, app running, confirm the above checks passed.
