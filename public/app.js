@@ -3829,7 +3829,71 @@ function downloadComparePdf() {
 
     h.gap(4);
     h.textLine('* Best Deal - Based on highest Net Yield (Asset)', { size: 7, align: 'left', color: '#666666' });
-    h.gap(4);
+    h.gap(6);
+
+    const gradeGuideRows = [
+      { grade: 'A', meaning: 'Excellent \u2013 strong yield (\u22658%)', color: '#0a7a2e' },
+      { grade: 'B', meaning: 'Strong \u2013 solid performance (7\u20137.99%)', color: '#1a9a4a' },
+      { grade: 'C', meaning: 'Fair \u2013 acceptable return (6\u20136.99%)', color: '#b8860b' },
+      { grade: 'D', meaning: 'Weak \u2013 below target yield (5\u20135.99%)', color: '#cc5500' },
+      { grade: 'F', meaning: 'Poor \u2013 low return (<5%)', color: '#B11217' }
+    ];
+    const ggTotalH = 10 + 6 + (gradeGuideRows.length + 1) * 7 + 6;
+    h.checkPage(ggTotalH);
+
+    const ggW = h.contentW * 0.85;
+    const ggX = h.margins.left + (h.contentW - ggW) / 2;
+    const ggColW = [ggW * 0.12, ggW * 0.58, ggW * 0.30];
+    const ggRowH = 7;
+
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(80, 80, 80);
+    pdf.text('Grade Guide', ggX, h.getY());
+    h.setY(h.getY() + 4);
+    pdf.setFontSize(6.5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(130, 130, 130);
+    pdf.text('Grades are calculated automatically using Net Yield (Asset) bands.', ggX, h.getY());
+    h.setY(h.getY() + 5);
+
+    pdf.setFillColor(243, 243, 243);
+    pdf.rect(ggX, h.getY() - 4, ggW, ggRowH, 'F');
+    pdf.setDrawColor(210, 210, 210);
+    pdf.setLineWidth(0.2);
+    pdf.rect(ggX, h.getY() - 4, ggW, ggRowH);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(80, 80, 80);
+    pdf.text('Grade', ggX + 3, h.getY());
+    pdf.text('Meaning', ggX + ggColW[0] + 3, h.getY());
+    pdf.text('Based On', ggX + ggColW[0] + ggColW[1] + 3, h.getY());
+    h.setY(h.getY() + ggRowH - 4);
+
+    gradeGuideRows.forEach(row => {
+      h.setY(h.getY() + 4);
+      pdf.setDrawColor(210, 210, 210);
+      pdf.setLineWidth(0.2);
+      pdf.rect(ggX, h.getY() - 4, ggW, ggRowH);
+
+      const gradeRgb = h.hexToRgb(row.color);
+      pdf.setFillColor(...gradeRgb);
+      pdf.circle(ggX + 6, h.getY() - 1, 2.5, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(6);
+      pdf.text(row.grade, ggX + 6, h.getY() - 0.2, { align: 'center' });
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text(row.meaning, ggX + ggColW[0] + 3, h.getY());
+      pdf.setTextColor(130, 130, 130);
+      pdf.text('Net Yield (Asset)', ggX + ggColW[0] + ggColW[1] + 3, h.getY());
+      h.setY(h.getY() + ggRowH - 4);
+    });
+
+    h.gap(6);
     h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');

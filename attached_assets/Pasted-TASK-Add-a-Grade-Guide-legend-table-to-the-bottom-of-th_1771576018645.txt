@@ -1,0 +1,63 @@
+TASK: Add a “Grade Guide” legend table to the bottom of the Deal Comparison PDF (and any other PDF exports where there is spare space), using clean, subtle styling.
+
+CONTEXT:
+The comparison PDF currently has large empty whitespace at the bottom. We want to use that space to add a simple grading legend that explains what A–F means, making the PDF feel more like an investor report and reducing confusion when shared.
+
+GOALS:
+- Add a compact “Grade Guide” table near the bottom of the PDF.
+- Keep it subtle: smaller font than main table, light borders, light header background.
+- Reinforce that grades are based on Net Yield (Asset) only (for clarity and legal safety).
+- Must not break pagination or push content off the page.
+- Must render correctly in light-mode PDF output (PDF should always be light even if UI is dark mode).
+
+WHERE TO ADD:
+- Deal Comparison PDF (the table-style PDF export).
+- Place the Grade Guide below the main results table and disclaimer, but above the footer/version area if possible.
+- If there isn’t enough space on the first page, put it at the top of page 2 (still compact), but prefer page 1 if it fits.
+
+CONTENT:
+Title: “Grade Guide”
+Small helper line under title (optional but recommended):
+“Grades are calculated automatically using Net Yield (Asset) bands.”
+
+Table columns:
+| Grade | Meaning | Based On |
+
+Rows:
+A | Excellent – strong yield | Net Yield (Asset)
+B | Good – solid performance | Net Yield (Asset)
+C | Average – acceptable return | Net Yield (Asset)
+D | Weak – below target yield | Net Yield (Asset)
+E–F | Poor – low return | Net Yield (Asset)
+
+STYLE REQUIREMENTS:
+- Font size: ~10–11px (smaller than main table)
+- Header row: light grey background (#f3f3f3 or similar)
+- Borders: 1px light grey (#ddd)
+- Padding: small (6–8px)
+- Width: ~85–90% of page, centred
+- Rounded corners optional (keep subtle)
+- Must look professional, not like a “web table dumped into PDF”
+
+IMPLEMENTATION NOTES:
+- Identify the function that generates the Deal Comparison PDF (likely in public/app.js).
+- Inject this section into the PDF HTML before rendering to canvas/pdf.
+- Ensure it appears only in the PDF export (not on-screen UI).
+- Ensure PDF output is forced into light mode (already done elsewhere — keep consistent).
+
+QA:
+- Export a Deal Comparison PDF with 8–10 deals and confirm:
+  - Table fits cleanly on page 1 under the results
+  - Doesn’t overlap disclaimer/footer
+  - Looks crisp and readable
+  - Still works when UI is in dark mode (PDF must remain light)
+  - Works when only 2–3 deals exist (still looks fine)
+
+FILES LIKELY TO EDIT:
+- public/app.js (PDF generation HTML)
+- public/style.css (PDF-specific styling if needed)
+
+DO NOT:
+- Change any calculations
+- Change ranking/sorting logic
+- Add any new dependencies unless required (should not be required)
