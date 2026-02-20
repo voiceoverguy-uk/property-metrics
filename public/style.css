@@ -2304,6 +2304,14 @@ body.dark .dark-mode-toggle-mobile:hover {
   letter-spacing: 0.5px;
 }
 
+.best-deal-helper {
+  display: block;
+  font-size: 0.65rem;
+  color: #999;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
 .compare-card-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2476,6 +2484,10 @@ body.dark .compare-card-address {
 
 body.dark .compare-card-label {
   color: #888;
+}
+
+body.dark .best-deal-helper {
+  color: #777;
 }
 
 body.dark .compare-metric-label {

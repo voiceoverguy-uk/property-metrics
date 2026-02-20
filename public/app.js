@@ -1,5 +1,5 @@
-const APP_VERSION = '2.2';
-const APP_VERSION_DATE = '20 February 2026';
+const APP_VERSION = '2.3';
+const APP_VERSION_DATE = 'February 2026';
 
 document.addEventListener('DOMContentLoaded', function() {
   const vf = document.getElementById('appVersionFooter');
@@ -1187,10 +1187,14 @@ function fmt(n) {
   return '\u00a3' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function fmtShort(n) {
-  if (n == null || isNaN(n)) return '\u00a30';
-  if (n >= 1000000) return '\u00a3' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
-  return '\u00a3' + Math.round(n / 1000) + 'k';
+function fmtShort(v) {
+  if (v == null) return '\u2014';
+  var n = (typeof v === 'string') ? parseFloat(String(v).replace(/[\u00a3,]/g, '')) : v;
+  if (isNaN(n) || !isFinite(n)) return '\u2014';
+  n = Math.round(n);
+  if (n < 1000) return '\u00a3' + n;
+  if (n < 1000000) return '\u00a3' + Math.round(n / 1000) + 'k';
+  return '\u00a3' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
 }
 
 function fmtPct(n) {
@@ -1218,7 +1222,7 @@ function getDealRating(netYield) {
   if (y >= 7) return { grade: 'B', label: 'Strong', color: '#1a9a4a' };
   if (y >= 6) return { grade: 'C', label: 'Fair', color: '#b8860b' };
   if (y >= 5) return { grade: 'D', label: 'Weak', color: '#cc5500' };
-  return { grade: 'F', label: 'Poor', color: '#B11217' };
+  return { grade: 'F', label: 'Very Weak', color: '#B11217' };
 }
 
 function calculateMortgage(price, data) {
@@ -3243,7 +3247,7 @@ function renderHistory() {
     const cfSign = monthlyCf >= 0 ? '+' : '';
     const cfClass = monthlyCf >= 0 ? 'history-cf-positive' : 'history-cf-negative';
 
-    let detailLine = fmtShort(entry.price) + ' \u00b7 Net ' + (parseFloat(netYield) || 0).toFixed(1) + '% \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
+    let detailLine = fmtShort(entry.price) + ' \u00b7 Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '% \u00b7 <span class="' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
       detailLine += ' \u00b7 <span class="history-coc">COC ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
     }
@@ -3380,7 +3384,7 @@ function renderCompareTable(highlightDealId) {
     const rank = idx + 1;
     const rankClass = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
     const isBest = bestNetYieldEntry && entry.id === bestNetYieldEntry.id;
-    const bestBadge = isBest ? '<span class="best-deal-badge">Best Deal</span>' : '';
+    const bestBadge = isBest ? '<span class="best-deal-badge">Best Deal</span><span class="best-deal-helper">Based on highest Net Yield (Asset)</span>' : '';
     const cfClass = entry.monthlyCashFlow >= 0 ? 'compare-positive' : 'compare-negative';
     const cfSign = entry.monthlyCashFlow >= 0 ? '+' : '';
     const highlightClass = highlightDealId && entry.id === highlightDealId ? 'compare-card-highlight' : '';
@@ -3535,6 +3539,8 @@ function downloadComparePdf() {
       return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, monthlyCashFlow: monthlyCf, cashOnCash: coc, isMortgage: isMortgage, ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 5 };
     });
 
+    const bestNetYieldEntry = entries.reduce((best, e) => (!best || e.displayNetYield > best.displayNetYield) ? e : best, null);
+
     entries.sort((a, b) => {
       switch (sortBy) {
         case 'rating': return a.ratingSort - b.ratingSort || b.displayNetYield - a.displayNetYield;
@@ -3597,11 +3603,17 @@ function downloadComparePdf() {
       const prop = e.address || e.dealReference || 'Untitled Deal';
       const cfSign = e.monthlyCashFlow >= 0 ? '+' : '';
       const cashColor = e.monthlyCashFlow >= 0 ? [10, 122, 46] : [177, 18, 23];
+      const isBestPdf = bestNetYieldEntry && e.id === bestNetYieldEntry.id;
 
       pdf.setFontSize(8);
       const propLines = pdf.splitTextToSize(prop, colW[2] - 2);
       const dynRowH = Math.max(rowH, propLines.length * 4 + 4);
       h.checkPage(dynRowH + 2);
+
+      if (isBestPdf) {
+        pdf.setFillColor(235, 250, 240);
+        pdf.rect(h.margins.left, h.getY() - 4, h.contentW, dynRowH + 2, 'F');
+      }
 
       const textY = h.getY();
       const textMid = textY - 1.4;
@@ -3611,7 +3623,7 @@ function downloadComparePdf() {
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(8);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(rank, cx, textY);
+      pdf.text(rank + (isBestPdf ? ' \u2605' : ''), cx, textY);
       cx += colW[0];
 
       const gradeRgb = h.hexToRgb(e.rating.color);
@@ -3667,7 +3679,9 @@ function downloadComparePdf() {
       h.setY(h.getY() + 2);
     });
 
-    h.gap(6);
+    h.gap(4);
+    h.textLine('\u2605 Best Deal \u2014 Based on highest Net Yield (Asset)', { size: 7, align: 'left', color: '#666666' });
+    h.gap(4);
     h.textLine('RentalMetrics v' + APP_VERSION + ' \u2013 ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
     h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions.');

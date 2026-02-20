@@ -55,7 +55,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Void Allowance**: Percentage-based void allowance impacting effective annual rent.
 - **Deal Reference**: Input field to identify deals.
 - **Interactive Charts**: SVG yield gauge and SDLT comparison bar chart.
-- **Currency Formatting**: Automatic formatting with £ and commas. `fmtShort()` for price shorthand (£143k, £1.2m).
+- **Currency Formatting**: Automatic formatting with £ and commas. `fmtShort()` for price shorthand (£143k, £1.2m). Sanitises string inputs (strips £/commas, parseFloat), returns "—" for NaN/Infinity. Under £1k shows full amount (e.g. £950), £1k–£999k whole k, £1m+ 1dp m.
 - **Version System**: `APP_VERSION` and `APP_VERSION_DATE` manual string constants. Displayed in footer and both PDFs (deal + comparison).
 - **"Start Again" Reset Button**.
 - **Deal Snapshot (Live Running Totals)**: Real-time Upfront Total, Monthly Cashflow, Net Yield (Asset), and Cash-on-Cash (when mortgage) display in the results panel (desktop) and a sticky top bar (mobile). Uses client-side SDLT calculation (`calcSDLTClient`) and shared helpers (`computeSnapshot`). Desktop shows 3 metrics (cash) or 4 metrics (mortgage adds Cash-on-Cash). Mobile shows 3 metrics with the 3rd switching between Net Yield (cash) and Cash-on-Cash (mortgage) with pulse animation on toggle. Snapshot yields show 1dp; details breakdown shows 2dp. Standardised labels: "Net Yield (Asset)", "Cash-on-Cash", "Gross Yield". Updates live as user types. Breakdown details collapsed by default. Hidden in SDLT-only mode.
