@@ -3946,10 +3946,9 @@ body.dark .mortgage-type-label {
 .snapshot-header-row {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
   gap: 4px 12px;
   margin-bottom: 12px;
-  align-items: center;
+  align-items: start;
 }
 
 .snapshot-header-title-area {
@@ -3960,21 +3959,19 @@ body.dark .mortgage-type-label {
 .snapshot-header-logo-wrap {
   grid-column: 2;
   grid-row: 1;
-  align-self: start;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-top: 4px;
+  margin-top: 2px;
   width: 160px;
   height: 30px;
   flex-shrink: 0;
 }
 
-.snapshot-header-btn-area {
-  grid-column: 2;
-  grid-row: 2;
+.snapshot-footer-btn-area {
   display: flex;
   justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .snapshot-header-logo {

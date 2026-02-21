@@ -4362,15 +4362,15 @@ checkUrlParams();
         <div class="snapshot-header-logo-wrap">
           <img src="/rental-metrics-logo-primary-600x60.png" alt="" class="snapshot-header-logo" />
         </div>
-        <div class="snapshot-header-btn-area">
-          <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot (PNG)">Capture Snapshot</button>
-        </div>
       </div>
       <div class="snapshot-totals" data-ref="totals"></div>
       <details class="snapshot-details">
         <summary>Breakdown</summary>
         <div class="snapshot-breakdown" data-ref="breakdown"></div>
       </details>
+      <div class="snapshot-footer-btn-area">
+        <button type="button" class="btn-capture-snapshot" onclick="captureSnapshot()" title="Download snapshot (PNG)">Capture Snapshot</button>
+      </div>
     </div>`;
     snapshotRefs = {
       card: snapshotEl.querySelector('.snapshot-card'),
