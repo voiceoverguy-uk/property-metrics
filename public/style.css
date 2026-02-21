@@ -702,6 +702,12 @@ header .subtitle {
   margin: 12px 0;
 }
 
+.form-thin-divider {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 8px 0 4px;
+}
+
 .disclaimer {
   margin: 28px 0;
   padding: 16px 20px;
@@ -1014,6 +1020,9 @@ header .subtitle {
 
 .yield-adjustments-details {
   margin-bottom: 8px;
+  border-top: 2px solid #d42027;
+  padding-top: 14px;
+  margin-top: 20px;
 }
 
 .yield-adjustments-details summary {
@@ -1044,6 +1053,8 @@ header .subtitle {
   font-size: 1rem;
   font-weight: 600;
   display: inline;
+  border-top: none;
+  padding-top: 0;
 }
 
 .yield-adjustments-details > .form-group {
@@ -2952,6 +2963,14 @@ body.dark .cost-total-row {
 }
 
 body.dark .form-section-divider {
+  border-top-color: #B11217;
+}
+
+body.dark .form-thin-divider {
+  border-top-color: #333;
+}
+
+body.dark .yield-adjustments-details {
   border-top-color: #B11217;
 }
 
