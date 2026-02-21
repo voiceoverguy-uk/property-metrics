@@ -3960,9 +3960,11 @@ body.dark .mortgage-type-label {
 .snapshot-header-logo-wrap {
   grid-column: 2;
   grid-row: 1;
+  align-self: start;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-top: 4px;
   width: 160px;
   height: 30px;
   flex-shrink: 0;
