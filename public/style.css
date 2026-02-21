@@ -4260,6 +4260,22 @@ body.dark .mortgage-type-label {
   display: block;
 }
 
+.snapshot-mobile-bar .tooltip-bubble {
+  left: 8px;
+  right: 8px;
+  transform: none;
+  max-width: none;
+  width: auto;
+}
+.snapshot-mobile-bar .tooltip-bubble.visible {
+  transform: scale(1);
+}
+.snapshot-mobile-bar .tooltip-bubble::before,
+.snapshot-mobile-bar .tooltip-bubble::after {
+  left: 24px;
+  transform: none;
+}
+
 
 .snapshot-mobile-summary {
   display: flex;
