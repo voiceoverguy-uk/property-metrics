@@ -122,6 +122,20 @@
       <section class="input-panel">
         <h2>Property Details</h2>
         <form id="dealForm" autocomplete="off">
+          <div class="form-group buyer-type-group">
+            <label>
+              Buyer Type
+              <span class="tooltip" data-tip="Select your buyer type. Main Residence uses standard SDLT rates. First-Time Buyer applies relief where eligible. Investor / Additional Property adds the higher rates surcharge.">?</span>
+            </label>
+            <div class="buyer-type-toggle buyer-type-3">
+              <button type="button" class="buyer-type-btn" data-buyer="main">Main Residence</button>
+              <button type="button" class="buyer-type-btn active" data-buyer="investor">Investor</button>
+              <button type="button" class="buyer-type-btn" data-buyer="ftb">First-Time Buyer</button>
+            </div>
+          </div>
+
+          <hr class="form-divider">
+
           <div class="form-group address-group">
             <label for="address">
               Address / Postcode
@@ -136,20 +150,6 @@
               <span class="tooltip" data-tip="Give this deal a name to help identify it later, e.g. 'Main Street'.">?</span>
             </label>
             <input type="text" id="dealReference" placeholder="e.g. house with mortgage" maxlength="60">
-          </div>
-
-          <hr class="form-divider">
-
-          <div class="form-group buyer-type-group">
-            <label>
-              Buyer Type
-              <span class="tooltip" data-tip="Select your buyer type. Main Residence uses standard SDLT rates. First-Time Buyer applies relief where eligible. Investor / Additional Property adds the higher rates surcharge.">?</span>
-            </label>
-            <div class="buyer-type-toggle buyer-type-3">
-              <button type="button" class="buyer-type-btn" data-buyer="main">Main Residence</button>
-              <button type="button" class="buyer-type-btn active" data-buyer="investor">Investor</button>
-              <button type="button" class="buyer-type-btn" data-buyer="ftb">First-Time Buyer</button>
-            </div>
           </div>
 
           <div class="form-group price-group">
