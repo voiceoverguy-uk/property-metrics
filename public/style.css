@@ -4452,7 +4452,8 @@ body.dark .snapshot-header-logo {
 }
 
 .is-capturing .no-export,
-.no-export-active .no-export {
+.no-export-active .no-export,
+body.is-exporting .no-export {
   display: none !important;
 }
 

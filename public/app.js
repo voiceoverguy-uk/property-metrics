@@ -1660,19 +1660,10 @@ function renderDealRating(netYield, targetYield) {
         <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, E = 4–4.99%, F = below 4%.">?</span></div>
         <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
         ${targetHtml}
-        <div class="yield-warning no-export" style="display:none;">⚠ Yield looks unusually high — double-check rent, price, and costs.</div>
+        <div class="yield-warning no-export" style="display:${parseFloat(netYield) > YIELD_WARN_THRESHOLD ? '' : 'none'};">⚠ Yield looks unusually high — double-check rent, price, and costs.</div>
       </div>
     </div>
   `;
-}
-
-function renderDealRatingYieldWarning(netYield) {
-  setTimeout(function() {
-    var warns = document.querySelectorAll('.yield-warning');
-    warns.forEach(function(el) {
-      el.style.display = (parseFloat(netYield) > YIELD_WARN_THRESHOLD) ? '' : 'none';
-    });
-  }, 0);
 }
 
 function renderMortgageSection(mortgage) {
@@ -2177,7 +2168,6 @@ function renderResults(result) {
   `;
 
   setResultsPanelContent(html);
-  renderDealRatingYieldWarning(data.netYield);
 }
 
 function checkRentWarning() {
@@ -2758,10 +2748,12 @@ function printReport() {
   const origText = btn ? btn.textContent : '';
   if (btn) { btn.textContent = 'Generating PDF...'; btn.disabled = true; }
 
+  document.body.classList.add('is-exporting');
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) {
       alert('PDF library not loaded. Please refresh the page and try again.');
       if (btn) { btn.textContent = origText; btn.disabled = false; }
+      document.body.classList.remove('is-exporting');
       return;
     }
 
@@ -2996,11 +2988,13 @@ function printReport() {
       alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
     }).finally(function() {
       if (btn) { btn.textContent = origText; btn.disabled = false; }
+      document.body.classList.remove('is-exporting');
     });
   } catch (err) {
     console.error('PDF generation failed:', err, err.stack);
     alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
     if (btn) { btn.textContent = origText; btn.disabled = false; }
+    document.body.classList.remove('is-exporting');
   }
 }
 
@@ -3652,10 +3646,12 @@ function downloadComparePdf() {
   const origText = pdfBtn ? pdfBtn.textContent : '';
   if (pdfBtn) { pdfBtn.textContent = 'Generating...'; pdfBtn.disabled = true; }
 
+  document.body.classList.add('is-exporting');
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) {
       alert('PDF library not loaded. Please refresh the page and try again.');
       if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+      document.body.classList.remove('is-exporting');
       return;
     }
 
@@ -3935,11 +3931,13 @@ function downloadComparePdf() {
       alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
     }).finally(function() {
       if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+      document.body.classList.remove('is-exporting');
     });
   } catch (err) {
     console.error('Compare PDF generation failed:', err, err.stack);
     alert('PDF generation failed: ' + (err.message || err) + '\nPlease try again.');
     if (pdfBtn) { pdfBtn.textContent = origText; pdfBtn.disabled = false; }
+    document.body.classList.remove('is-exporting');
   }
 }
 
