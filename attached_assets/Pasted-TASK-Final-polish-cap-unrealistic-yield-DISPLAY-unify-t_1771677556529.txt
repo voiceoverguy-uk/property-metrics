@@ -1,0 +1,89 @@
+TASK: Final polish — cap unrealistic yield DISPLAY, unify thresholds, improve warning styling, add one disclaimer line.
+IMPORTANT: Do NOT change any calculation logic. This is display + UX only.
+
+-----------------------------------------
+A) CAP YIELD DISPLAY (NOT THE MATHS)
+-----------------------------------------
+Problem: Users can accidentally input rent like £10,000/mo and see crazy yields (e.g. 153%). We already warn — but we should also cap what is DISPLAYED so the app doesn’t look broken.
+
+Rules:
+- Keep all underlying calculations unchanged.
+- Only cap displayed values for Net Yield (Asset) (and optionally Gross Yield if it appears prominently).
+
+Cap:
+- If computed yield > 99.9%, DISPLAY "99.9%+"
+- Otherwise display normally.
+
+Apply this display cap consistently in:
+1) Live Deal Snapshot Net Yield
+2) Deal Analysis panel yield figure (if shown)
+3) Deal Comparison table / modal Net Yield values
+4) PDFs (Deal PDF + Comparison PDF) where Net Yield is printed
+
+Implementation note:
+- Create a helper like formatYieldDisplay(value, dp) that:
+  - returns "—" for NaN/Infinity
+  - returns "99.9%+" if value > 99.9
+  - else returns value.toFixed(dp) + "%"
+
+Do not affect grade logic or benchmark logic — those must still use the real yield value.
+
+Optional tooltip (nice to have, not required):
+- On hover/tap of "99.9%+" show: "Display capped for readability — check rent input."
+
+-----------------------------------------
+B) UNIFY WARNING THRESHOLDS VIA CONSTANTS
+-----------------------------------------
+We already added warnings:
+- RENT_WARN_THRESHOLD
+- YIELD_WARN_THRESHOLD
+
+Make sure ALL warning checks use these constants only (no hardcoded numbers elsewhere).
+Do a quick search and replace so no stray thresholds exist.
+
+Recommended constants remain:
+RENT_WARN_THRESHOLD = 5000
+YIELD_WARN_THRESHOLD = 20
+
+-----------------------------------------
+C) INPUT STYLING: RED = INVALID, AMBER = UNUSUAL
+-----------------------------------------
+Currently the rent field can look “error red” when it’s simply unusual.
+
+Update styling language:
+- RED outline/text should be used only for truly invalid input (empty, negative, non-numeric when required).
+- AMBER outline should be used for unusual-but-valid input (rent > RENT_WARN_THRESHOLD).
+
+Requirements:
+- When rent triggers the warning, apply an "is-warning" class (amber border + subtle amber glow).
+- Keep existing "is-error" class for invalid inputs (red).
+- Ensure this works in light + dark mode.
+
+-----------------------------------------
+D) ADD ONE MORE DISCLAIMER LINE (CALM + PROFESSIONAL)
+-----------------------------------------
+In the PDF disclaimer area (Deal PDF + Comparison PDF), add ONE additional sentence under existing disclaimer:
+
+"Figures are estimates and may not reflect lender criteria, taxes, or property-specific costs."
+
+Keep styling consistent with existing disclaimer.
+Do not make it dominant.
+
+-----------------------------------------
+E) EXPORTS
+-----------------------------------------
+- All exports must remain light mode.
+- .no-export hiding during snapshot/PDF export must remain working (we already use .is-capturing and body.is-exporting).
+
+-----------------------------------------
+DO NOT CHANGE
+-----------------------------------------
+- Any yield calculations
+- Grade thresholds / grade logic
+- Sorting logic
+- Benchmark logic (still compares to real yield)
+Only display and UX polish.
+
+FILES LIKELY:
+- public/app.js
+- public/style.css

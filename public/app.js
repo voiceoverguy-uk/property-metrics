@@ -1199,6 +1199,13 @@ function fmtPct(n) {
   return n.toFixed(2) + '%';
 }
 
+function formatYieldDisplay(value, dp) {
+  var v = parseFloat(value);
+  if (v == null || isNaN(v) || !isFinite(v)) return '\u2014';
+  if (v > 99.9) return '99.9%+';
+  return v.toFixed(dp) + '%';
+}
+
 function getDealDisplayName(entry) {
   if (entry.dealReference && entry.address) return escHtml(entry.address) + ' <span class="history-card-ref">\u2014 ' + escHtml(entry.dealReference) + '</span>';
   if (entry.dealReference) return escHtml(entry.dealReference);
@@ -1727,7 +1734,7 @@ function renderYieldGauge(netYield, targetYield) {
         <path d="${bgPath}" fill="none" stroke="#e8e8e8" stroke-width="14" stroke-linecap="round"/>
         ${fillPath ? `<path d="${fillPath}" fill="none" stroke="${fillColor}" stroke-width="14" stroke-linecap="round"/>` : ''}
         <line x1="${tickInner.x}" y1="${tickInner.y}" x2="${tickOuter.x}" y2="${tickOuter.y}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-        <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="28" font-weight="800" fill="${fillColor}">${fmtPct(netYield)}</text>
+        <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="28" font-weight="800" fill="${fillColor}">${formatYieldDisplay(netYield, 2)}</text>
         <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="11" fill="#777">Net Yield (Asset)</text>
       </svg>
     </div>
@@ -2056,16 +2063,16 @@ function renderScenario(data, label, targetYield, mortgage) {
       <div class="yield-cards">
         <div class="yield-card">
           <div class="yield-label">Gross Yield <span class="tooltip" data-tip="Annual rent ÷ purchase price.">?</span></div>
-          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.grossYield, targetYield)}">${fmtPct(displayData.grossYield)}</div>
+          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.grossYield, targetYield)}">${formatYieldDisplay(displayData.grossYield, 2)}</div>
         </div>
         <div class="yield-card">
           <div class="yield-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></div>
-          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.netYield, targetYield)}">${fmtPct(displayData.netYield)}</div>
+          <div class="yield-value ${isSimple ? '' : yieldClass(displayData.netYield, targetYield)}">${formatYieldDisplay(displayData.netYield, 2)}</div>
         </div>
         ${mortgage ? `
         <div class="yield-card">
           <div class="yield-label">Cash-on-Cash Return <span class="tooltip" data-tip="Return on the actual cash you put in: annual cash flow ÷ cash invested.">?</span></div>
-          <div class="yield-value">${fmtPct(mortgage.cashOnCashReturn)}</div>
+          <div class="yield-value">${formatYieldDisplay(mortgage.cashOnCashReturn, 2)}</div>
         </div>
         <div class="yield-card">
           <div class="yield-label">Payback Period <span class="tooltip" data-tip="How long it may take to recover your cash invested from cash flow alone.">?</span></div>
@@ -2172,9 +2179,12 @@ function renderResults(result) {
 
 function checkRentWarning() {
   var el = document.getElementById('rentWarning');
-  if (!el) return;
-  var val = parseFloat(document.getElementById('monthlyRent').value) || 0;
-  el.style.display = val > RENT_WARN_THRESHOLD ? '' : 'none';
+  var input = document.getElementById('monthlyRent');
+  if (!el || !input) return;
+  var val = parseFloat(input.value) || 0;
+  var warn = val > RENT_WARN_THRESHOLD;
+  el.style.display = warn ? '' : 'none';
+  input.classList.toggle('is-warning', warn);
 }
 
 document.getElementById('monthlyRent').addEventListener('input', checkRentWarning);
@@ -2663,7 +2673,7 @@ function pdfHelper(pdf, margins) {
     pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(...arcColor);
-    pdf.text(fmtPct(netYield), cx, cy - 3, { align: 'center' });
+    pdf.text(formatYieldDisplay(netYield, 2), cx, cy - 3, { align: 'center' });
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(100, 100, 100);
@@ -2867,7 +2877,7 @@ function printReport() {
       h.dealRating(
         rating.grade,
         rating.label,
-        '(Net yield ' + fmtPct(displayData.netYield) + ' vs ' + fmtPct(parseFloat(targetYield)) + ' target)',
+        '(Net yield ' + formatYieldDisplay(displayData.netYield, 2) + ' vs ' + fmtPct(parseFloat(targetYield)) + ' target)',
         rating.color
       );
     }
@@ -2906,11 +2916,11 @@ function printReport() {
     }
 
     const yieldCardData = [
-      { label: 'Gross Yield', value: fmtPct(displayData.grossYield), color: '#333333' },
-      { label: 'Net Yield (Asset)', value: fmtPct(displayData.netYield), color: isSimplePdf ? '#333333' : (displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217') },
+      { label: 'Gross Yield', value: formatYieldDisplay(displayData.grossYield, 2), color: '#333333' },
+      { label: 'Net Yield (Asset)', value: formatYieldDisplay(displayData.netYield, 2), color: isSimplePdf ? '#333333' : (displayData.netYield >= parseFloat(targetYield) ? '#0a7a2e' : '#B11217') },
     ];
     if (selectedMortgage) {
-      yieldCardData.push({ label: 'Cash-on-Cash Return', value: fmtPct(selectedMortgage.cashOnCashReturn), color: selectedMortgage.cashOnCashReturn >= 0 ? '#0a7a2e' : '#B11217' });
+      yieldCardData.push({ label: 'Cash-on-Cash Return', value: formatYieldDisplay(selectedMortgage.cashOnCashReturn, 2), color: selectedMortgage.cashOnCashReturn >= 0 ? '#0a7a2e' : '#B11217' });
       const payback = selectedMortgage.annualCashFlow > 0 ? (selectedMortgage.totalCashInvested / selectedMortgage.annualCashFlow).toFixed(1) + ' yrs' : 'N/A';
       yieldCardData.push({ label: 'Payback Period', value: payback, color: '#333333' });
     }
@@ -2980,7 +2990,7 @@ function printReport() {
 
     h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
-    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only.');
+    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. SDLT rates and thresholds can change. Always consult a qualified professional before making investment decisions. This tool covers England & Northern Ireland only. Figures are estimates and may not reflect lender criteria, taxes, or property-specific costs.');
 
     safePdfDownload(pdf, filename);
     }).catch(function(err) {
@@ -3356,9 +3366,9 @@ function renderHistory() {
     const cfClass = monthlyCf >= 0 ? 'history-cf-positive' : 'history-cf-negative';
 
     let detailLine = '<span class="history-chunk">' + fmtShort(entry.price) + '</span>';
-    detailLine += ' \u00b7 <span class="history-chunk">Yield ' + (parseFloat(netYield) || 0).toFixed(1) + '%</span>';
+    detailLine += ' \u00b7 <span class="history-chunk">Yield ' + formatYieldDisplay(parseFloat(netYield) || 0, 1) + '</span>';
     if (isMortgage && entry.mortgageCashOnCash !== undefined && entry.mortgageCashOnCash !== 0) {
-      detailLine += ' \u00b7 <span class="history-chunk-nowrap">C-o-C ' + (parseFloat(entry.mortgageCashOnCash) || 0).toFixed(1) + '%</span>';
+      detailLine += ' \u00b7 <span class="history-chunk-nowrap">C-o-C ' + formatYieldDisplay(parseFloat(entry.mortgageCashOnCash) || 0, 1) + '</span>';
     }
     detailLine += ' \u00b7 <span class="history-chunk-nowrap ' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     detailLine += ' ' + purchaseIcon;
@@ -3571,7 +3581,7 @@ function renderCompareTable(highlightDealId) {
         <div class="compare-card-metrics compare-primary">
           <div class="compare-metric">
             <span class="compare-metric-label">Net Yield (Asset)</span>
-            <span class="compare-metric-value compare-highlight">${fmtPct(entry.displayNetYield)}</span>
+            <span class="compare-metric-value compare-highlight">${formatYieldDisplay(entry.displayNetYield, 2)}</span>
           </div>
           <div class="compare-metric">
             <span class="compare-metric-label">Monthly Cashflow</span>
@@ -3579,7 +3589,7 @@ function renderCompareTable(highlightDealId) {
           </div>
           <div class="compare-metric">
             <span class="compare-metric-label">Cash-on-Cash</span>
-            <span class="compare-metric-value">${entry.cashOnCash !== null ? fmtPct(entry.cashOnCash) : '\u2014'}</span>
+            <span class="compare-metric-value">${entry.cashOnCash !== null ? formatYieldDisplay(entry.cashOnCash, 2) : '\u2014'}</span>
           </div>
           <div class="compare-metric">
             <span class="compare-metric-label">Cash Invested</span>
@@ -3598,7 +3608,7 @@ function renderCompareTable(highlightDealId) {
           </div>
           <div class="compare-metric">
             <span class="compare-metric-label">Gross Yield</span>
-            <span class="compare-metric-value">${fmtPct(entry.grossYieldCalc)}</span>
+            <span class="compare-metric-value">${formatYieldDisplay(entry.grossYieldCalc, 2)}</span>
           </div>
           <div class="compare-metric">
             <span class="compare-metric-label">SDLT</span>
@@ -3823,7 +3833,7 @@ function downloadComparePdf() {
       cx += colW[4];
 
       pdf.setFont('helvetica', 'bold');
-      pdf.text(fmtPct(e.displayNetYield), cx, textY);
+      pdf.text(formatYieldDisplay(e.displayNetYield, 2), cx, textY);
       cx += colW[5];
 
       pdf.setTextColor(...cashColor);
@@ -3833,7 +3843,7 @@ function downloadComparePdf() {
 
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(0, 0, 0);
-      pdf.text(e.cashOnCash !== null ? fmtPct(e.cashOnCash) : '-', cx, textY);
+      pdf.text(e.cashOnCash !== null ? formatYieldDisplay(e.cashOnCash, 2) : '-', cx, textY);
       cx += colW[7];
 
       pdf.text(fmt(e.displaySdlt), cx, textY);
@@ -3921,7 +3931,7 @@ function downloadComparePdf() {
     h.gap(6);
     h.textLine('RentalMetrics v' + APP_VERSION + ' - ' + APP_VERSION_DATE, { size: 7, align: 'center', color: '#999999' });
     h.gap(2);
-    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions. Results are based solely on the information entered and do not account for void periods, maintenance shocks, taxation changes or market risk.');
+    h.disclaimer('Disclaimer: These calculations are estimates only and do not constitute financial or tax advice. Always consult a qualified professional before making investment decisions. Results are based solely on the information entered and do not account for void periods, maintenance shocks, taxation changes or market risk. Figures are estimates and may not reflect lender criteria, taxes, or property-specific costs.');
 
     const compTimeStr = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
     const filename = 'RentalMetrics-Deal-Comparison-' + dateStr + '-' + compTimeStr + '.pdf';
@@ -4509,9 +4519,9 @@ checkUrlParams();
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
-    breakdownHtml += `<div class="snapshot-breakdown-row"><span>Net Yield (Asset)</span><span>${snap.netYield.toFixed(2)}%</span></div>`;
+    breakdownHtml += `<div class="snapshot-breakdown-row"><span>Net Yield (Asset)</span><span>${formatYieldDisplay(snap.netYield, 2)}</span></div>`;
     if (b.isMortgage) {
-      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${snap.cashOnCash.toFixed(2)}%</span></div>`;
+      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${formatYieldDisplay(snap.cashOnCash, 2)}</span></div>`;
     }
 
     snapshotRefs.breakdown.innerHTML = breakdownHtml;
@@ -4545,7 +4555,7 @@ checkUrlParams();
       </div>
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
-        <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
+        <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${formatYieldDisplay(snap.netYield, 1)}</span>
       </div>`;
 
     if (b.isMortgage) {
@@ -4553,7 +4563,7 @@ checkUrlParams();
       totalsHtml += `
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Cash-on-Cash <span class="tooltip" data-tip="Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.">?</span></span>
-        <span class="snapshot-total-value ${cocClass}">${snap.cashOnCash.toFixed(1)}%</span>
+        <span class="snapshot-total-value ${cocClass}">${formatYieldDisplay(snap.cashOnCash, 1)}</span>
       </div>`;
     }
 
@@ -4575,13 +4585,12 @@ checkUrlParams();
     const isMortgageSnap = snap.breakdown.isMortgage;
     if (isMortgageSnap) {
       mobileReturnLabel.textContent = 'Cash-on-Cash';
-      const cocVal = snap.cashOnCash.toFixed(1) + '%';
-      mobileYield.textContent = cocVal;
+      mobileYield.textContent = formatYieldDisplay(snap.cashOnCash, 1);
       mobileYield.style.color = '';
       mobileYield.className = snap.cashOnCash >= 0 ? 'snapshot-positive' : 'snapshot-negative';
     } else {
       mobileReturnLabel.textContent = 'Net Yield';
-      mobileYield.textContent = snap.netYield.toFixed(1) + '%';
+      mobileYield.textContent = formatYieldDisplay(snap.netYield, 1);
       if (snap.netYield >= yieldThreshold) {
         mobileYield.style.color = '';
         mobileYield.className = 'snapshot-yield-good';
@@ -4600,7 +4609,7 @@ checkUrlParams();
 
     mobileDetails.innerHTML = breakdownHtml;
 
-    const currentReturnValue = isMortgageSnap ? snap.cashOnCash.toFixed(1) : snap.netYield.toFixed(1);
+    const currentReturnValue = formatYieldDisplay(isMortgageSnap ? snap.cashOnCash : snap.netYield, 1);
     const currentPurchaseType = selectedPurchaseType;
 
     if (currentPurchaseType !== lastPurchaseType) {

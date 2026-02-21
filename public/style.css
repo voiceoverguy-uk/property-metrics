@@ -947,6 +947,11 @@ header .subtitle {
   color: #B11217;
 }
 
+input.is-warning {
+  border-color: #b8860b !important;
+  box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.15);
+}
+
 .input-warning,
 .yield-warning {
   font-size: 0.78rem;
@@ -3192,6 +3197,11 @@ body.dark .target-pass {
 
 body.dark .target-fail {
   color: #e74c3c;
+}
+
+body.dark input.is-warning {
+  border-color: #e0a820 !important;
+  box-shadow: 0 0 0 2px rgba(224, 168, 32, 0.15);
 }
 
 body.dark .input-warning,
