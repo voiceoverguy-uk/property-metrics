@@ -947,6 +947,26 @@ header .subtitle {
   color: #B11217;
 }
 
+.target-yield-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.target-yield-link:hover {
+  text-decoration-style: solid;
+}
+
+@keyframes inputHighlight {
+  0% { box-shadow: 0 0 0 3px rgba(212, 32, 39, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 32, 39, 0); }
+}
+input.input-highlight {
+  animation: inputHighlight 1.5s ease-out;
+  border-color: #d42027;
+}
+
 input.is-warning {
   border-color: #b8860b !important;
   box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.15);
@@ -3208,6 +3228,15 @@ body.dark .target-pass {
 
 body.dark .target-fail {
   color: #e74c3c;
+}
+
+body.dark input.input-highlight {
+  border-color: #e74c3c;
+  animation: inputHighlightDark 1.5s ease-out;
+}
+@keyframes inputHighlightDark {
+  0% { box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
 }
 
 body.dark input.is-warning {

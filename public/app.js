@@ -1653,12 +1653,13 @@ function renderDealRating(netYield, targetYield) {
   const diff = netYield - targetYield;
   const absDiff = Math.abs(diff).toFixed(2);
   let targetHtml = '';
+  const targetLink = `<a href="#targetYield" class="target-yield-link" onclick="event.preventDefault();document.getElementById('targetYield').scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('targetYield').classList.add('input-highlight');setTimeout(function(){document.getElementById('targetYield').classList.remove('input-highlight');},1500);">${fmtPct(targetYield)} target</a>`;
   if (Math.abs(diff) < 0.005) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your ${fmtPct(targetYield)} target</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your ${targetLink}</div>`;
   } else if (diff > 0) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> +${absDiff}% above your ${fmtPct(targetYield)} target</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> +${absDiff}% above your ${targetLink}</div>`;
   } else {
-    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> &minus;${absDiff}% below your ${fmtPct(targetYield)} target</div>`;
+    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> &minus;${absDiff}% below your ${targetLink}</div>`;
   }
   return `
     <div class="deal-rating">
