@@ -704,7 +704,7 @@ header .subtitle {
 
 .form-thin-divider {
   border: none;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #d42027;
   margin: 8px 0 4px;
 }
 
@@ -2965,7 +2965,7 @@ body.dark .form-section-divider {
 }
 
 body.dark .form-thin-divider {
-  border-top-color: #333;
+  border-top-color: #B11217;
 }
 
 
