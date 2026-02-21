@@ -1218,6 +1218,7 @@ function getDealRating(netYield) {
   if (y >= 7) return { grade: 'B', label: 'Strong', color: '#1a9a4a' };
   if (y >= 6) return { grade: 'C', label: 'Fair', color: '#b8860b' };
   if (y >= 5) return { grade: 'D', label: 'Weak', color: '#cc5500' };
+  if (y >= 4) return { grade: 'E', label: 'Poor', color: '#e07000' };
   return { grade: 'F', label: 'Very Weak', color: '#B11217' };
 }
 
@@ -1653,7 +1654,7 @@ function renderDealRating(netYield, targetYield) {
     <div class="deal-rating">
       <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
       <div class="deal-rating-info">
-        <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, F = below 5%.">?</span></div>
+        <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, E = 4–4.99%, F = below 4%.">?</span></div>
         <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
         ${targetHtml}
       </div>
@@ -3442,7 +3443,7 @@ function renderCompareTable(highlightDealId) {
   if (history.length === 0) return;
   
   const sortBy = document.getElementById('compareSortBy').value;
-  const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4 };
+  const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5 };
   
   const entries = history.map(entry => {
     const bt = entry.buyerType || 'investor';
@@ -3494,7 +3495,7 @@ function renderCompareTable(highlightDealId) {
       cashOnCash: coc,
       cashInvested: cashInvested,
       isMortgage: isMortgage,
-      ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 5
+      ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6
     };
   });
 
@@ -3636,7 +3637,7 @@ function downloadComparePdf() {
     }
 
     const sortBy = document.getElementById('compareSortBy').value;
-    const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'F': 4 };
+    const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5 };
 
     const entries = history.map(entry => {
       const bt = entry.buyerType || 'investor';
@@ -3676,7 +3677,7 @@ function downloadComparePdf() {
 
       const coc = isMortgage ? (entry.mortgageCashOnCash || 0) : null;
 
-      return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, monthlyCashFlow: monthlyCf, cashOnCash: coc, isMortgage: isMortgage, ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 5 };
+      return { ...entry, displayNetYield: netYield, displaySdlt: sdlt, rating, grossYieldCalc: Math.round(grossYield * 100) / 100, monthlyCashFlow: monthlyCf, cashOnCash: coc, isMortgage: isMortgage, ratingSort: ratingOrder[rating.grade] !== undefined ? ratingOrder[rating.grade] : 6 };
     });
 
     const bestNetYieldEntry = entries.reduce((best, e) => (!best || e.displayNetYield > best.displayNetYield) ? e : best, null);
@@ -3837,8 +3838,8 @@ function downloadComparePdf() {
       { grade: 'B', meaning: 'Strong - solid performance', band: '7% - 7.99%', color: '#1a9a4a' },
       { grade: 'C', meaning: 'Fair - acceptable return', band: '6% - 6.99%', color: '#b8860b' },
       { grade: 'D', meaning: 'Weak - below target yield', band: '5% - 5.99%', color: '#cc5500' },
-      { grade: 'E', meaning: 'Very weak - high caution', band: '4% - 4.99%', color: '#B11217' },
-      { grade: 'F', meaning: 'Poor - low return', band: 'Below 4%', color: '#B11217' }
+      { grade: 'E', meaning: 'Poor - low return', band: '4% - 4.99%', color: '#e07000' },
+      { grade: 'F', meaning: 'Very Weak - high caution', band: 'Below 4%', color: '#B11217' }
     ];
     const ggTotalH = 10 + 6 + (gradeGuideRows.length + 1) * 7 + 6;
     h.checkPage(ggTotalH);
