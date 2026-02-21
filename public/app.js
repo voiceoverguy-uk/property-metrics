@@ -3389,32 +3389,6 @@ function captureSnapshot() {
 }
 window.captureSnapshot = captureSnapshot;
 
-function toggleBenchmarkInput() {
-  var row = document.getElementById('benchmarkInputRow');
-  if (row) row.style.display = row.style.display === 'none' ? 'flex' : 'none';
-}
-window.toggleBenchmarkInput = toggleBenchmarkInput;
-
-function saveBenchmark() {
-  var input = document.getElementById('benchmarkYieldInput');
-  if (!input) return;
-  var val = parseFloat(input.value);
-  if (!Number.isFinite(val) || val < 0 || val > 30) {
-    alert('Please enter a valid benchmark yield (0-30%).');
-    return;
-  }
-  localStorage.setItem('rm_benchmark_yield', val);
-  document.getElementById('benchmarkInputRow').style.display = 'none';
-  if (typeof updateSnapshot === 'function') updateSnapshot();
-}
-window.saveBenchmark = saveBenchmark;
-
-function clearBenchmark() {
-  localStorage.removeItem('rm_benchmark_yield');
-  document.getElementById('benchmarkInputRow').style.display = 'none';
-  if (typeof updateSnapshot === 'function') updateSnapshot();
-}
-window.clearBenchmark = clearBenchmark;
 
 function openCompare() {
   const history = getHistory();
@@ -4479,17 +4453,6 @@ checkUrlParams();
     if (!breakdownOpen) snapshotRefs.details.removeAttribute('open');
     else snapshotRefs.details.setAttribute('open', '');
 
-    const benchmarkVal = parseFloat(localStorage.getItem('rm_benchmark_yield'));
-    let benchmarkHtml = '';
-    if (Number.isFinite(benchmarkVal)) {
-      const delta = snap.netYield - benchmarkVal;
-      const deltaClass = delta >= 0 ? 'benchmark-positive' : 'benchmark-negative';
-      const deltaSign = delta >= 0 ? '+' : '';
-      benchmarkHtml = '<div class="benchmark-line"><span class="benchmark-label">Benchmark: ' + benchmarkVal.toFixed(1) + '%</span> <span class="benchmark-delta ' + deltaClass + '">(' + String.fromCharCode(916) + ' ' + deltaSign + delta.toFixed(1) + '%)</span></div>';
-    }
-    benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a> <span class="benchmark-browser-hint">Stored in this browser only</span></div>';
-    benchmarkHtml += '<div class="benchmark-input-row" id="benchmarkInputRow" style="display:none;"><input type="number" step="0.1" min="0" max="30" id="benchmarkYieldInput" placeholder="e.g. 7.0" value="' + (Number.isFinite(benchmarkVal) ? benchmarkVal : '') + '"><button type="button" onclick="saveBenchmark()">Save</button><button type="button" onclick="clearBenchmark()">Clear</button></div>';
-
     const buyerTypeSnap = getSelectedBuyerType();
     let upfrontTip;
     if (b.isMortgage) {
@@ -4514,7 +4477,6 @@ checkUrlParams();
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Net Yield (Asset) <span class="tooltip" data-tip="Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.">?</span></span>
         <span class="snapshot-total-value snapshot-yield-primary ${yieldColorClass}" style="${yieldInlineColor}">${snap.netYield.toFixed(1)}%</span>
-        ${benchmarkHtml}
       </div>`;
 
     if (b.isMortgage) {

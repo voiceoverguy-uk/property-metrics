@@ -4095,82 +4095,6 @@ body.dark .mortgage-type-label {
   font-weight: 800;
 }
 
-.benchmark-line {
-  font-size: 0.78rem;
-  margin-top: 2px;
-  font-weight: 400;
-}
-
-.benchmark-label {
-  color: #888;
-}
-
-.benchmark-delta {
-  font-weight: 600;
-}
-
-.benchmark-positive {
-  color: #27ae60;
-}
-
-.benchmark-negative {
-  color: #e74c3c;
-}
-
-.benchmark-link-row {
-  margin-top: 2px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.benchmark-browser-hint {
-  font-size: 0.65rem;
-  color: #bbb;
-  font-weight: 400;
-}
-
-.benchmark-set-link {
-  font-size: 0.72rem;
-  color: #999;
-  text-decoration: none;
-  border-bottom: 1px dashed #ccc;
-}
-
-.benchmark-set-link:hover {
-  color: #B11217;
-  border-bottom-color: #B11217;
-}
-
-.benchmark-input-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.benchmark-input-row input {
-  width: 60px;
-  font-size: 0.78rem;
-  padding: 3px 6px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.benchmark-input-row button {
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #f5f5f5;
-  cursor: pointer;
-  color: #555;
-}
-
-.benchmark-input-row button:hover {
-  background: #eee;
-}
 
 .snapshot-upfront-value {
   font-weight: 600;
@@ -4362,9 +4286,6 @@ body.dark .snapshot-header-logo {
   filter: grayscale(100%) invert(1);
 }
 
-body.dark .benchmark-browser-hint {
-  color: #555;
-}
 
 .snapshot-card.is-capturing {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%) !important;
@@ -4415,25 +4336,6 @@ body.dark .benchmark-browser-hint {
 .snapshot-card.is-capturing .snapshot-hint {
   color: #aaa !important;
 }
-.snapshot-card.is-capturing .benchmark-label {
-  color: #999 !important;
-}
-.snapshot-card.is-capturing .benchmark-set-link {
-  color: #999 !important;
-}
-.snapshot-card.is-capturing .benchmark-browser-hint {
-  color: #bbb !important;
-}
-.snapshot-card.is-capturing .benchmark-input-row input {
-  background: #fff !important;
-  border-color: #ddd !important;
-  color: #333 !important;
-}
-.snapshot-card.is-capturing .benchmark-input-row button {
-  background: #f5f5f5 !important;
-  border-color: #ddd !important;
-  color: #555 !important;
-}
 
 body.dark .snapshot-card {
   background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
@@ -4467,35 +4369,6 @@ body.dark .snapshot-hint {
   color: #777;
 }
 
-body.dark .benchmark-label {
-  color: #777;
-}
-
-body.dark .benchmark-set-link {
-  color: #777;
-  border-bottom-color: #555;
-}
-
-body.dark .benchmark-set-link:hover {
-  color: #d42027;
-  border-bottom-color: #d42027;
-}
-
-body.dark .benchmark-input-row input {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #ccc;
-}
-
-body.dark .benchmark-input-row button {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #aaa;
-}
-
-body.dark .benchmark-input-row button:hover {
-  background: #333;
-}
 
 body.dark .snapshot-breakdown-highlight {
   color: #2ecc71;
