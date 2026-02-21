@@ -1,6 +1,9 @@
 const APP_VERSION = '2.6';
 const APP_VERSION_DATE = 'February 2026';
 
+const RENT_WARN_THRESHOLD = 5000;
+const YIELD_WARN_THRESHOLD = 20;
+
 document.addEventListener('DOMContentLoaded', function() {
   const vf = document.getElementById('appVersionFooter');
   if (vf) vf.textContent = 'Version ' + APP_VERSION + ' \u2014 ' + APP_VERSION_DATE;
@@ -1657,9 +1660,19 @@ function renderDealRating(netYield, targetYield) {
         <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, E = 4–4.99%, F = below 4%.">?</span></div>
         <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
         ${targetHtml}
+        <div class="yield-warning no-export" style="display:none;">⚠ Yield looks unusually high — double-check rent, price, and costs.</div>
       </div>
     </div>
   `;
+}
+
+function renderDealRatingYieldWarning(netYield) {
+  setTimeout(function() {
+    var warns = document.querySelectorAll('.yield-warning');
+    warns.forEach(function(el) {
+      el.style.display = (parseFloat(netYield) > YIELD_WARN_THRESHOLD) ? '' : 'none';
+    });
+  }, 0);
 }
 
 function renderMortgageSection(mortgage) {
@@ -2164,7 +2177,17 @@ function renderResults(result) {
   `;
 
   setResultsPanelContent(html);
+  renderDealRatingYieldWarning(data.netYield);
 }
+
+function checkRentWarning() {
+  var el = document.getElementById('rentWarning');
+  if (!el) return;
+  var val = parseFloat(document.getElementById('monthlyRent').value) || 0;
+  el.style.display = val > RENT_WARN_THRESHOLD ? '' : 'none';
+}
+
+document.getElementById('monthlyRent').addEventListener('input', checkRentWarning);
 
 async function runCalculation() {
   const price = getCurrencyFieldValue('price');

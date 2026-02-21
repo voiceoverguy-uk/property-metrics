@@ -947,6 +947,22 @@ header .subtitle {
   color: #B11217;
 }
 
+.input-warning,
+.yield-warning {
+  font-size: 0.78rem;
+  color: #b8860b;
+  background: rgba(184, 134, 11, 0.08);
+  padding: 4px 8px;
+  margin-top: 4px;
+  border-radius: 4px;
+  border-left: 3px solid #b8860b;
+  line-height: 1.4;
+}
+
+.yield-warning {
+  margin-top: 6px;
+}
+
 .mortgage-header {
   cursor: pointer;
   user-select: none;
@@ -3178,6 +3194,13 @@ body.dark .target-fail {
   color: #e74c3c;
 }
 
+body.dark .input-warning,
+body.dark .yield-warning {
+  color: #e0a820;
+  background: rgba(224, 168, 32, 0.1);
+  border-left-color: #e0a820;
+}
+
 body.dark .sdlt-comparison-chart {
   background: #1a1a2e;
 }
@@ -4426,6 +4449,11 @@ body.dark .snapshot-header-logo {
 }
 .snapshot-card.is-capturing .snapshot-hint {
   color: #aaa !important;
+}
+
+.is-capturing .no-export,
+.no-export-active .no-export {
+  display: none !important;
 }
 
 body.dark .snapshot-card {
