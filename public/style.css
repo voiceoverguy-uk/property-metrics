@@ -1058,46 +1058,53 @@ input.is-warning {
   background: #e8e8e8;
 }
 
-.yield-adjustments-details {
+.yield-adjustments-section {
   margin-bottom: 8px;
   margin-top: 20px;
   border-top: 2px solid #d42027;
   padding-top: 14px;
 }
 
-.yield-adjustments-details summary {
+.input-panel h3.yield-adjustments-heading {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  border-top: none;
+  padding-top: 0;
+}
+
+.yield-advanced-details {
+  margin-top: 10px;
+}
+
+.yield-advanced-summary {
   cursor: pointer;
   list-style: none;
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #666;
+  padding: 6px 0;
 }
 
-.yield-adjustments-details summary::-webkit-details-marker {
+.yield-advanced-summary::-webkit-details-marker {
   display: none;
 }
 
-.yield-adjustments-details summary::before {
+.yield-advanced-summary::before {
   content: '\25B6';
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #888;
   transition: transform 0.2s;
 }
 
-.yield-adjustments-details[open] summary::before {
+.yield-advanced-details[open] .yield-advanced-summary::before {
   transform: rotate(90deg);
 }
 
-.input-panel h3.yield-adjustments-heading {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  display: inline;
-  border-top: none;
-  padding-top: 0;
-}
-
-.yield-adjustments-details > .form-group {
+.yield-advanced-details > .form-group {
   margin-top: 12px;
 }
 
@@ -3010,8 +3017,12 @@ body.dark .form-thin-divider {
   border-top-color: #B11217;
 }
 
-body.dark .yield-adjustments-details {
+body.dark .yield-adjustments-section {
   border-top-color: #B11217;
+}
+
+body.dark .yield-advanced-summary {
+  color: #999;
 }
 
 body.dark .btn-add-item {
@@ -4179,10 +4190,10 @@ body.dark .mortgage-type-label {
   font-weight: 600;
   margin-top: 2px;
 }
-.snapshot-cf-positive {
+.snapshot-breakdown-row.snapshot-cf-positive {
   color: #0a7a2e;
 }
-.snapshot-cf-negative {
+.snapshot-breakdown-row.snapshot-cf-negative {
   color: #B11217;
 }
 
@@ -4464,10 +4475,10 @@ body.dark .snapshot-header-logo {
 .snapshot-card.is-capturing .snapshot-breakdown-highlight {
   color: #1a8c3a !important;
 }
-.snapshot-card.is-capturing .snapshot-cf-positive {
+.snapshot-card.is-capturing .snapshot-breakdown-row.snapshot-cf-positive {
   color: #0a7a2e !important;
 }
-.snapshot-card.is-capturing .snapshot-cf-negative {
+.snapshot-card.is-capturing .snapshot-breakdown-row.snapshot-cf-negative {
   color: #B11217 !important;
 }
 .snapshot-card.is-capturing .snapshot-details summary {
@@ -4523,10 +4534,10 @@ body.dark .snapshot-hint {
 body.dark .snapshot-breakdown-highlight {
   color: #2ecc71;
 }
-body.dark .snapshot-cf-positive {
+body.dark .snapshot-breakdown-row.snapshot-cf-positive {
   color: #2ecc71;
 }
-body.dark .snapshot-cf-negative {
+body.dark .snapshot-breakdown-row.snapshot-cf-negative {
   color: #e74c3c;
 }
 
