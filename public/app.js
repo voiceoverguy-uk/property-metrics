@@ -4266,9 +4266,9 @@ checkUrlParams();
     if (!bubble) {
       bubble = document.createElement('span');
       bubble.className = 'tooltip-bubble';
-      bubble.textContent = el.getAttribute('data-tip');
       el.appendChild(bubble);
     }
+    bubble.textContent = el.getAttribute('data-tip');
     bubble.classList.remove('below', 'nudge-left', 'nudge-right');
     bubble.classList.add('visible');
 
@@ -4490,9 +4490,21 @@ checkUrlParams();
     benchmarkHtml += '<div class="benchmark-link-row"><a href="#" class="benchmark-set-link" onclick="event.preventDefault();toggleBenchmarkInput();">' + (Number.isFinite(benchmarkVal) ? 'Edit benchmark' : 'Set benchmark') + '</a> <span class="benchmark-browser-hint">Stored in this browser only</span></div>';
     benchmarkHtml += '<div class="benchmark-input-row" id="benchmarkInputRow" style="display:none;"><input type="number" step="0.1" min="0" max="30" id="benchmarkYieldInput" placeholder="e.g. 7.0" value="' + (Number.isFinite(benchmarkVal) ? benchmarkVal : '') + '"><button type="button" onclick="saveBenchmark()">Save</button><button type="button" onclick="clearBenchmark()">Clear</button></div>';
 
+    const buyerTypeSnap = getSelectedBuyerType();
+    let upfrontTip;
+    if (b.isMortgage) {
+      if (buyerTypeSnap === 'investor') upfrontTip = 'Deposit + SDLT (higher rate for additional properties) + fees and costs.';
+      else if (buyerTypeSnap === 'ftb') upfrontTip = 'Deposit + SDLT (with first-time buyer relief) + fees and costs.';
+      else upfrontTip = 'Deposit + SDLT (standard residential rate) + fees and costs.';
+    } else {
+      if (buyerTypeSnap === 'investor') upfrontTip = 'Purchase price + SDLT (higher rate for additional properties) + fees and costs.';
+      else if (buyerTypeSnap === 'ftb') upfrontTip = 'Purchase price + SDLT (with first-time buyer relief) + fees and costs.';
+      else upfrontTip = 'Purchase price + SDLT (standard residential rate) + fees and costs.';
+    }
+
     let totalsHtml = `
       <div class="snapshot-total-item">
-        <span class="snapshot-total-label">Upfront Total</span>
+        <span class="snapshot-total-label">Upfront Total <span class="tooltip" data-tip="${upfrontTip}">?</span></span>
         <span class="snapshot-total-value snapshot-upfront-value">${fmt(Math.round(snap.upfrontTotal))}</span>
       </div>
       <div class="snapshot-total-item">
@@ -4519,6 +4531,8 @@ checkUrlParams();
     mobileBar.classList.add('visible');
     if (typeof syncBarPadding === 'function') syncBarPadding();
     mobileUpfront.textContent = fmt(Math.round(snap.upfrontTotal));
+    const mobileUpfrontTip = document.getElementById('snapshotMobileUpfrontTip');
+    if (mobileUpfrontTip) mobileUpfrontTip.setAttribute('data-tip', upfrontTip);
     const mCfSign = snap.monthlyCashflow >= 0 ? '+' : '';
     mobileCashflow.textContent = mCfSign + fmt(Math.round(snap.monthlyCashflow)) + '/mo';
     mobileCashflow.className = cashflowClass;
