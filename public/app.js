@@ -1643,17 +1643,17 @@ function renderDealRating(netYield, targetYield) {
   const absDiff = Math.abs(diff).toFixed(2);
   let targetHtml = '';
   if (Math.abs(diff) < 0.005) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your target (${fmtPct(targetYield)})</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your ${fmtPct(targetYield)} target</div>`;
   } else if (diff > 0) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> Above your target (${fmtPct(targetYield)}) by +${absDiff}%</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> +${absDiff}% above your ${fmtPct(targetYield)} target</div>`;
   } else {
-    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> Below your target (${fmtPct(targetYield)}) by -${absDiff}%</div>`;
+    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> &minus;${absDiff}% below your ${fmtPct(targetYield)} target</div>`;
   }
   return `
     <div class="deal-rating">
       <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
       <div class="deal-rating-info">
-        <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label}</div>
+        <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, F = below 5%.">?</span></div>
         <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
         ${targetHtml}
       </div>
@@ -2784,7 +2784,7 @@ function printReport() {
       var pageW = pdf.internal.pageSize.getWidth();
       var logoW = 50, logoH = 5;
       pdf.addImage(logoData, 'PNG', (pageW - logoW) / 2, h.getY(), logoW, logoH);
-      h.setY(h.getY() + logoH + 3);
+      h.setY(h.getY() + logoH + 6);
     }
     h.title('Property Deal Report');
     h.subtitle('Generated: ' + timestamp);
@@ -3713,7 +3713,7 @@ function downloadComparePdf() {
       var pageW = pdf.internal.pageSize.getWidth();
       var logoW = 50, logoH = 5;
       pdf.addImage(logoData, 'PNG', (pageW - logoW) / 2, h.getY(), logoW, logoH);
-      h.setY(h.getY() + logoH + 3);
+      h.setY(h.getY() + logoH + 6);
     }
     h.title('Deal Comparison');
     h.subtitle('Generated: ' + timestamp);
