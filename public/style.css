@@ -1046,7 +1046,7 @@ header .subtitle {
   transform: rotate(90deg);
 }
 
-.yield-adjustments-heading {
+.input-panel h3.yield-adjustments-heading {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
