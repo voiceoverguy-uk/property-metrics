@@ -1020,7 +1020,9 @@ header .subtitle {
 
 .yield-adjustments-details {
   margin-bottom: 8px;
-  margin-top: 12px;
+  margin-top: 20px;
+  border-top: 2px solid #d42027;
+  padding-top: 14px;
 }
 
 .yield-adjustments-details summary {
@@ -2968,6 +2970,9 @@ body.dark .form-thin-divider {
   border-top-color: #B11217;
 }
 
+body.dark .yield-adjustments-details {
+  border-top-color: #B11217;
+}
 
 body.dark .btn-add-item {
   background: #1a1a2e;
