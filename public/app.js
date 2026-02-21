@@ -4518,6 +4518,10 @@ checkUrlParams();
     if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
+    const cfSign = snap.monthlyCashflow >= 0 ? '+' : '';
+    const cfColor = snap.monthlyCashflow >= 0 ? 'snapshot-cf-positive' : 'snapshot-cf-negative';
+    breakdownHtml += `<div class="snapshot-breakdown-row snapshot-breakdown-subtotal ${cfColor}"><span>Monthly Cashflow</span><span>${cfSign}${fmt(Math.round(snap.monthlyCashflow))}/mo</span></div>`;
+
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>Net Yield (Asset)</span><span>${formatYieldDisplay(snap.netYield, 2)}</span></div>`;
     if (b.isMortgage) {
