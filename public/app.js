@@ -4630,22 +4630,55 @@ checkUrlParams();
 
   const isMobileWidth = () => window.innerWidth < 992;
 
+  function clearBarInlinePos() {
+    mobileBar.style.top = '';
+    mobileBar.style.width = '';
+  }
+
   function syncBarPadding() {
     const siteHeader = document.getElementById('siteHeader');
     if (!isMobileWidth() || !mobileBar.classList.contains('visible')) {
       document.body.style.paddingTop = '';
       if (siteHeader) siteHeader.classList.remove('snapshot-active');
+      clearBarInlinePos();
       return;
     }
     const barH = mobileBar.offsetHeight || 0;
     document.body.style.paddingTop = barH + 'px';
     if (siteHeader) siteHeader.classList.add('snapshot-active');
+    repositionBarForKeyboard();
+  }
+
+  let vvRafId = null;
+  function repositionBarForKeyboard() {
+    if (!isMobileWidth() || !mobileBar.classList.contains('visible')) {
+      clearBarInlinePos();
+      return;
+    }
+    const vv = window.visualViewport;
+    if (!vv) return;
+    if (vv.offsetTop > 0) {
+      mobileBar.style.top = vv.offsetTop + 'px';
+      mobileBar.style.width = vv.width + 'px';
+    } else {
+      clearBarInlinePos();
+    }
+  }
+
+  function onVisualViewportChange() {
+    if (vvRafId) cancelAnimationFrame(vvRafId);
+    vvRafId = requestAnimationFrame(repositionBarForKeyboard);
   }
 
   syncBarPadding();
   window.addEventListener('resize', syncBarPadding);
   if (window.ResizeObserver) {
     new ResizeObserver(syncBarPadding).observe(mobileBar);
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onVisualViewportChange);
+    window.visualViewport.addEventListener('scroll', onVisualViewportChange);
   }
 
   let scrollTimer = null;
@@ -4657,6 +4690,7 @@ checkUrlParams();
       const targetEl = e.target;
       scrollTimer = setTimeout(() => {
         if (document.activeElement !== targetEl) return;
+        repositionBarForKeyboard();
         const barH = mobileBar.classList.contains('visible') ? (mobileBar.offsetHeight || 0) : 0;
         const hdr = document.querySelector('header');
         const hdrBottom = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 0;
@@ -4667,6 +4701,15 @@ checkUrlParams();
         }
       }, 350);
     }
+  });
+
+  document.addEventListener('focusout', () => {
+    if (!isMobileWidth()) return;
+    setTimeout(() => {
+      if (!document.activeElement || document.activeElement === document.body) {
+        clearBarInlinePos();
+      }
+    }, 150);
   });
 
   window.updateSnapshot = renderSnapshot;
