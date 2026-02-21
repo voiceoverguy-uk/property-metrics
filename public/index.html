@@ -168,12 +168,20 @@
             <input type="number" id="monthlyRent" min="0" step="any" required placeholder="e.g. £900">
           </div>
 
-          <div class="form-group analyser-only full-only">
-            <label for="solicitorFees">
-              Solicitor Fees (&pound;)
-              <span class="tooltip" data-tip="Legal fees for the purchase. Default is &pound;1,500.">?</span>
+          <input type="hidden" id="solicitorFees" value="0">
+
+          <div class="form-group hide-in-sdlt">
+            <label for="lettingAgentFee">
+              Letting Agent Fee (%)
+              <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
             </label>
-            <input type="number" id="solicitorFees" min="0" step="any" placeholder="e.g. £1,500">
+            <div class="letting-agent-row">
+              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" placeholder="e.g. 10">
+              <label class="toggle-checkbox vat-checkbox">
+                <input type="checkbox" id="lettingAgentVat">
+                <span class="toggle-checkbox-label">+ 20% VAT</span>
+              </label>
+            </div>
           </div>
 
           <div class="analyser-only simple-only">
@@ -203,7 +211,7 @@
 
           <h3 class="analyser-only full-only">
             Additional Costs
-            <span class="tooltip" data-tip="Add itemised costs such as refurb, repairs, decorating, EPC, EICR, surveys, etc.">?</span>
+            <span class="tooltip" data-tip="Add itemised upfront costs such as solicitor fees, electrics, decorating, refurb, surveys, etc.">?</span>
           </h3>
 
           <div id="costItemsList" class="analyser-only full-only"></div>
@@ -211,6 +219,17 @@
           <div class="cost-total-row analyser-only full-only">
             <span>Total Additional Costs:</span>
             <span id="costItemsTotal">&pound;0</span>
+          </div>
+
+          <h3 class="analyser-only full-only">
+            Recurring Monthly Costs
+            <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are handled separately.">?</span>
+          </h3>
+          <div id="runningCostItemsList" class="analyser-only full-only"></div>
+          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Recurring Cost</button>
+          <div class="cost-total-row analyser-only full-only">
+            <span>Total Recurring Monthly Costs:</span>
+            <span id="runningCostItemsTotal">&pound;0</span>
           </div>
 
           <h3 class="analyser-only full-only">Yield Adjustments</h3>
@@ -246,33 +265,6 @@
               <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum offer price to achieve this yield.">?</span>
             </label>
             <input type="number" id="targetYield" min="0" max="50" step="any" value="7">
-          </div>
-
-          <h3 class="analyser-only full-only">
-            Recurring Monthly Costs
-            <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc). Letting agent fee and maintenance are separate below.">?</span>
-          </h3>
-          <div id="runningCostItemsList" class="analyser-only full-only"></div>
-          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Recurring Cost</button>
-          <div class="cost-total-row analyser-only full-only">
-            <span>Total Recurring Monthly Costs:</span>
-            <span id="runningCostItemsTotal">&pound;0</span>
-          </div>
-
-          <hr class="form-section-divider hide-in-sdlt" style="border-top-width:1px;">
-
-          <div class="form-group hide-in-sdlt">
-            <label for="lettingAgentFee">
-              Letting Agent Fee (%)
-              <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
-            </label>
-            <div class="letting-agent-row">
-              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" placeholder="e.g. 10">
-              <label class="toggle-checkbox vat-checkbox">
-                <input type="checkbox" id="lettingAgentVat">
-                <span class="toggle-checkbox-label">+ 20% VAT</span>
-              </label>
-            </div>
           </div>
 
           <hr class="form-section-divider analyser-only">
@@ -352,10 +344,6 @@
               <div class="borrowing-row">
                 <span class="borrowing-label">SDLT</span>
                 <span class="borrowing-value" id="borrowingSDLT">&pound;0</span>
-              </div>
-              <div class="borrowing-row">
-                <span class="borrowing-label">Solicitor Fees</span>
-                <span class="borrowing-value" id="borrowingSolicitor">&pound;0</span>
               </div>
               <div class="borrowing-row borrowing-highlight">
                 <span class="borrowing-label">Mortgage Amount</span>

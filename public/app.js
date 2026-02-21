@@ -459,7 +459,7 @@ function setMode(mode, pushHistory) {
   }
 }
 
-const CURRENCY_FIELDS = ['price', 'monthlyRent', 'solicitorFees', 'maintenanceFixed'];
+const CURRENCY_FIELDS = ['price', 'monthlyRent', 'maintenanceFixed'];
 
 function parseCurrencyValue(str) {
   if (typeof str === 'number') return str;
@@ -714,7 +714,6 @@ function computeSnapshot() {
   if (!monthlyRent || monthlyRent <= 0) missing.push('rent');
 
   const sdlt = price > 0 ? calcSDLTClient(price, buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main')) : 0;
-  const solicitorFees = isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 0);
   const additionalCosts = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
 
   const isMortgage = selectedPurchaseType === 'mortgage';
@@ -726,9 +725,9 @@ function computeSnapshot() {
 
   let upfrontTotal;
   if (isMortgage) {
-    upfrontTotal = deposit + sdlt + solicitorFees + additionalCosts;
+    upfrontTotal = deposit + sdlt + additionalCosts;
   } else {
-    upfrontTotal = price + sdlt + solicitorFees + additionalCosts;
+    upfrontTotal = price + sdlt + additionalCosts;
   }
 
   const lettingAgentFee = getLettingAgentFeeMonthly();
@@ -748,7 +747,7 @@ function computeSnapshot() {
   const netYield = price > 0 ? (netAnnualRent / price) * 100 : 0;
 
   const annualCashflowAfterMortgage = monthlyCashflow * 12;
-  const cashInvested = isMortgage ? (deposit + sdlt + solicitorFees + additionalCosts) : upfrontTotal;
+  const cashInvested = isMortgage ? (deposit + sdlt + additionalCosts) : upfrontTotal;
   const cashOnCash = cashInvested > 0 ? (annualCashflowAfterMortgage / cashInvested) * 100 : 0;
 
   return {
@@ -761,7 +760,6 @@ function computeSnapshot() {
       price,
       deposit,
       sdlt,
-      solicitorFees,
       additionalCosts,
       lettingAgentFee,
       baseRunningCosts,
@@ -863,9 +861,7 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
   const price = getCurrencyFieldValue('price');
   const deposit = getDepositAmount();
   const isSimple = currentMode === 'simple';
-  const solicitorFees = isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500);
   const summary = document.getElementById('borrowingSummary');
-  const solicitorRow = document.getElementById('borrowingSolicitor').closest('.borrowing-row');
 
   if (!price || price <= 0) {
     summary.style.display = 'none';
@@ -876,9 +872,7 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
   const depositPctCalc = price > 0 ? ((deposit / price) * 100) : 0;
   document.getElementById('borrowingDepositLabel').textContent = 'Cash Deposit (' + depositPctCalc.toFixed(1).replace(/\.0$/, '') + '%)';
   document.getElementById('borrowingDeposit').textContent = fmt(deposit);
-  document.getElementById('borrowingSolicitor').textContent = fmt(solicitorFees);
   document.getElementById('borrowingMortgage').textContent = fmt(mortgageAmt);
-  solicitorRow.style.display = isSimple ? 'none' : '';
   console.log('Mortgage Calc Debug:', { purchasePrice: price, deposit: deposit, calculatedMortgageAmount: mortgageAmt });
 
   try {
@@ -888,11 +882,11 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
     const sdltData = getSdltApiDataForBuyerType(data, buyerType);
     const sdlt = sdltData.total;
     document.getElementById('borrowingSDLT').textContent = fmt(sdlt);
-    const totalFunds = Math.max(deposit + sdlt + solicitorFees + mortgageAmt, 0);
+    const totalFunds = Math.max(deposit + sdlt + mortgageAmt, 0);
     document.getElementById('borrowingAmount').textContent = fmt(totalFunds);
   } catch (e) {
     document.getElementById('borrowingSDLT').textContent = '-';
-    const totalFunds = Math.max(deposit + solicitorFees + mortgageAmt, 0);
+    const totalFunds = Math.max(deposit + mortgageAmt, 0);
     document.getElementById('borrowingAmount').textContent = fmt(totalFunds);
   }
 
@@ -1236,7 +1230,6 @@ function calculateMortgage(price, data) {
   const lettingAgentFee = getLettingAgentFeeMonthly();
   const maintenanceMonthly = isSimple ? 0 : (getMaintenanceAnnual() / 12);
   const runningCosts = baseRunningCosts + lettingAgentFee + maintenanceMonthly;
-  const solicitorFees = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
   const refurbCosts = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
 
   const mortgageAmount = Math.max(price - depositAmount, 0);
@@ -1247,7 +1240,7 @@ function calculateMortgage(price, data) {
   const effectiveMonthlyRent = (data.effectiveAnnualRent || data.annualRent) / 12;
   const monthlyCashFlow = effectiveMonthlyRent - monthlyPayment - runningCosts;
   const annualCashFlow = monthlyCashFlow * 12;
-  const totalCashInvested = depositAmount + data.sdlt + solicitorFees + refurbCosts;
+  const totalCashInvested = depositAmount + data.sdlt + refurbCosts;
   const cashOnCashReturn = totalCashInvested > 0 ? (annualCashFlow / totalCashInvested) * 100 : 0;
 
   const stressRate = parseFloat(document.getElementById('stressTestRate').value) || 7.0;
@@ -1308,7 +1301,7 @@ function renderCostItems() {
   costItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
-    const placeholders = ['e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors', 'e.g. Damp / Timber Treatment'];
+    const placeholders = ['e.g. Solicitor Fees', 'e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors'];
     const placeholder = placeholders[index] || 'e.g. Cost description';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${item.label}" placeholder="${placeholder}" data-index="${index}">
@@ -1361,7 +1354,7 @@ function getSimpleCostItemsTotal() {
 
 function renderSimpleCostItems() {
   simpleCostItemsList.innerHTML = '';
-  const placeholders = ['e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors', 'e.g. Damp / Timber Treatment'];
+  const placeholders = ['e.g. Solicitor Fees', 'e.g. Electrics', 'e.g. Decorating', 'e.g. Carpets / Flooring', 'e.g. Plumbing', 'e.g. Bathroom', 'e.g. Kitchen', 'e.g. Grounds Maintenance', 'e.g. Roofing', 'e.g. Windows & Doors'];
   simpleCostItems.forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'cost-item-row';
@@ -1554,7 +1547,6 @@ function renderCostBreakdownRows(data) {
       html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Additional cost')}</span><span class="value">${fmt(item.amount)}</span></div>`;
     }
   } else {
-    html += `<div class="result-row"><span class="label">Solicitor Fees</span><span class="value">${fmt(data.breakdown.solicitorFees)}</span></div>`;
     if (data.breakdown.costItems && data.breakdown.costItems.length > 0) {
       for (const item of data.breakdown.costItems) {
         if (item.amount > 0) {
@@ -2173,7 +2165,7 @@ async function runCalculation() {
   const body = {
     price,
     monthlyRent,
-    solicitorFees: isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500),
+    solicitorFees: 0,
     refurbCosts: totalAdditionalCosts,
     otherCosts: 0,
     costItems: isSimple
@@ -2283,8 +2275,6 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
     const input = document.getElementById(id);
     if (input) { input.dataset.rawValue = ''; input.value = ''; }
   });
-  document.getElementById('solicitorFees').dataset.rawValue = '';
-  document.getElementById('solicitorFees').value = '';
   document.getElementById('voidAllowance').value = '';
   document.getElementById('maintenancePct').value = '';
   document.getElementById('maintenanceFixed').value = '';
@@ -2728,7 +2718,7 @@ function printReport() {
     const price = getCurrencyFieldValue('price');
     const monthlyRent = getCurrencyFieldValue('monthlyRent');
     const isSimplePdf = currentMode === 'simple';
-    const solicitorFees = isSimplePdf ? 0 : getCurrencyFieldValue('solicitorFees');
+    const solicitorFees = 0;
     const runningCosts = isSimplePdf ? 0 : getRunningCostItemsTotal();
     const targetYield = isSimplePdf ? '6.0' : document.getElementById('targetYield').value;
     const voidPct = isSimplePdf ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0);
@@ -2780,7 +2770,6 @@ function printReport() {
       { cells: ['Expected Monthly Rent', fmt(monthlyRent)] },
     ];
     if (!isSimplePdf) {
-      inputRows.push({ cells: ['Solicitor Fees', fmt(solicitorFees)] });
       inputRows.push({ cells: ['Void Allowance', voidPct + '%'] });
       const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
       activeRunning.forEach(i => inputRows.push({ cells: [i.label || 'Running cost', fmt(i.amount) + '/mo'] }));
@@ -2848,7 +2837,6 @@ function printReport() {
     const costBreakdownRows = [
       { cells: ['Purchase Price', fmt(scenarioData.breakdown.price)] },
       { cells: ['SDLT', fmt(scenarioData.breakdown.sdlt)] },
-      { cells: ['Solicitor Fees', fmt(scenarioData.breakdown.solicitorFees)] },
     ];
     if (scenarioData.breakdown.costItems) {
       scenarioData.breakdown.costItems.filter(i => i.amount > 0).forEach(i => {
@@ -3079,7 +3067,7 @@ function addToHistory(result) {
       : ((result.investor.effectiveAnnualRent || result.investor.annualRent) - (getRunningCostItemsTotal() || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual()),
     hasMortgage: selectedPurchaseType === 'mortgage',
     depositAmount: getDepositAmount(),
-    solicitorFees: isSimple ? 0 : (getCurrencyFieldValue('solicitorFees') || 1500),
+    solicitorFees: 0,
     refurbCosts: isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal(),
     simpleCostItems: isSimple ? simpleCostItems.filter(i => (parseFloat(i.amount) || 0) > 0).map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })) : [],
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
@@ -3151,12 +3139,13 @@ function applyHistoryEntry(entry) {
   rentInput.dataset.rawValue = entry.monthlyRent;
   rentInput.value = formatCurrencyDisplay(entry.monthlyRent);
 
-  if (entry.solicitorFees !== undefined) {
-    const solInput = document.getElementById('solicitorFees');
-    solInput.dataset.rawValue = entry.solicitorFees;
-    solInput.value = formatCurrencyDisplay(entry.solicitorFees);
+  if (entry.solicitorFees && entry.solicitorFees > 0 && entry.mode !== 'simple') {
+    const hasSolInCosts = (entry.costItems || []).some(i => /solicitor/i.test(i.label));
+    if (!hasSolInCosts) {
+      costItems.unshift({ label: 'Solicitor Fees', amount: entry.solicitorFees });
+      renderCostItems();
+    }
   }
-
 
   if (entry.runningCostItems && entry.runningCostItems.length > 0) {
     runningCostItems = entry.runningCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
@@ -3908,7 +3897,7 @@ function shareDeal(btnEl) {
   const price = getCurrencyFieldValue('price');
   const rent = getCurrencyFieldValue('monthlyRent');
   const isSimple = currentMode === 'simple';
-  const sol = isSimple ? 0 : getCurrencyFieldValue('solicitorFees');
+  const sol = 0;
   const refurb = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
   const running = getRunningCostItemsTotal();
   const target = isSimple ? 6 : (parseFloat(document.getElementById('targetYield').value) || 7);
@@ -3938,8 +3927,14 @@ function shareDeal(btnEl) {
   }
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
-  if (!isSimple && sol) params.set('sol', sol);
-  if (!isSimple && refurb) params.set('refurb', refurb);
+  if (!isSimple) {
+    const activeCostItems = costItems.filter(i => (parseFloat(i.amount) || 0) > 0 || i.label);
+    if (activeCostItems.length > 0) {
+      params.set('citems', JSON.stringify(activeCostItems.map(i => ({ l: i.label, a: i.amount }))));
+    }
+  } else if (refurb) {
+    params.set('refurb', refurb);
+  }
   if (running) params.set('running', running);
   if (!isSimple && agentPct) params.set('agentpct', agentPct);
   if (!isSimple && agentVat) params.set('agentvat', '1');
@@ -4076,11 +4071,21 @@ function checkUrlParams() {
     rentInput.value = formatCurrencyDisplay(rent);
   }
 
-  if (params.has('sol')) {
+  if (params.has('citems')) {
+    try {
+      const items = JSON.parse(params.get('citems'));
+      if (Array.isArray(items) && items.length > 0) {
+        costItems = items.map(i => ({ label: i.l || '', amount: parseFloat(i.a) || 0 }));
+        while (costItems.length < 3) costItems.push({ label: '', amount: 0 });
+        renderCostItems();
+      }
+    } catch (e) {}
+  } else if (params.has('sol')) {
     const sol = parseFloat(params.get('sol'));
-    const solInput = document.getElementById('solicitorFees');
-    solInput.dataset.rawValue = sol;
-    solInput.value = formatCurrencyDisplay(sol);
+    if (sol > 0) {
+      costItems = [{ label: 'Solicitor Fees', amount: sol }, { label: '', amount: 0 }, { label: '', amount: 0 }];
+      renderCostItems();
+    }
   }
 
   if (currentMode === 'simple' && params.has('scitems')) {
@@ -4432,8 +4437,7 @@ checkUrlParams();
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
     }
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>SDLT</span><span>${fmt(b.sdlt)}</span></div>`;
-    if (b.solicitorFees > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Solicitor Fees</span><span>${fmt(b.solicitorFees)}</span></div>`;
-    if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs <span class="snapshot-hint">(electrics, decorating, carpets etc)</span></span><span>${fmt(b.additionalCosts)}</span></div>`;
+    if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs <span class="snapshot-hint">(solicitor, electrics, decorating etc)</span></span><span>${fmt(b.additionalCosts)}</span></div>`;
     if (b.isMortgage && b.mortgageAmount > 0) breakdownHtml += `<div class="snapshot-breakdown-row snapshot-breakdown-highlight"><span>Mortgage Amount</span><span>${fmt(b.mortgageAmount)}</span></div>`;
 
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
@@ -4563,7 +4567,7 @@ checkUrlParams();
     mobileToggle.setAttribute('aria-expanded', mobileExpanded);
   });
 
-  const inputIds = ['price', 'monthlyRent', 'solicitorFees', 'voidAllowance', 'maintenancePct', 'maintenanceFixed', 'lettingAgentFee', 'depositAmount', 'interestRate', 'mortgageTerm', 'address'];
+  const inputIds = ['price', 'monthlyRent', 'voidAllowance', 'maintenancePct', 'maintenanceFixed', 'lettingAgentFee', 'depositAmount', 'interestRate', 'mortgageTerm', 'address'];
   inputIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', renderSnapshot);
