@@ -4503,10 +4503,9 @@ checkUrlParams();
     }
 
     let breakdownHtml = '';
+    breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
     if (b.isMortgage) {
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Deposit</span><span>${fmt(b.deposit)}</span></div>`;
-    } else {
-      breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
     }
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>SDLT</span><span>${fmt(b.sdlt)}</span></div>`;
     if (b.additionalCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Additional Costs <span class="snapshot-hint">(solicitor, electrics, decorating etc)</span></span><span>${fmt(b.additionalCosts)}</span></div>`;
