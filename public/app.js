@@ -4535,9 +4535,10 @@ checkUrlParams();
     }
     let upfrontTip;
     if (b.isMortgage) {
-      if (buyerTypeSnap === 'investor') upfrontTip = 'Deposit + SDLT (higher rate for additional properties) + fees and costs.';
-      else if (buyerTypeSnap === 'ftb') upfrontTip = 'Deposit + SDLT (with first-time buyer relief) + fees and costs.';
-      else upfrontTip = 'Deposit + SDLT (standard residential rate) + fees and costs.';
+      var noDeposit = b.deposit <= 0;
+      if (buyerTypeSnap === 'investor') upfrontTip = noDeposit ? 'This is Stamp Duty only (higher rate for additional properties). Enter a deposit to see your full upfront costs.' : 'Deposit + SDLT (higher rate for additional properties) + fees and costs.';
+      else if (buyerTypeSnap === 'ftb') upfrontTip = noDeposit ? 'This is Stamp Duty only (with first-time buyer relief). Enter a deposit to see your full upfront costs.' : 'Deposit + SDLT (with first-time buyer relief) + fees and costs.';
+      else upfrontTip = noDeposit ? 'This is Stamp Duty only (standard residential rate). Enter a deposit to see your full upfront costs.' : 'Deposit + SDLT (standard residential rate) + fees and costs.';
     } else {
       if (buyerTypeSnap === 'investor') upfrontTip = 'Purchase price + SDLT (higher rate for additional properties) + fees and costs.';
       else if (buyerTypeSnap === 'ftb') upfrontTip = 'Purchase price + SDLT (with first-time buyer relief) + fees and costs.';
