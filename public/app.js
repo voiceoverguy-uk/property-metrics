@@ -1639,12 +1639,23 @@ function renderRunningCostsBreakdown() {
 
 function renderDealRating(netYield, targetYield) {
   const rating = getDealRating(netYield);
+  const diff = netYield - targetYield;
+  const absDiff = Math.abs(diff).toFixed(2);
+  let targetHtml = '';
+  if (Math.abs(diff) < 0.005) {
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your target (${fmtPct(targetYield)})</div>`;
+  } else if (diff > 0) {
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> Above your target (${fmtPct(targetYield)}) by +${absDiff}%</div>`;
+  } else {
+    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> Below your target (${fmtPct(targetYield)}) by -${absDiff}%</div>`;
+  }
   return `
     <div class="deal-rating">
       <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
       <div class="deal-rating-info">
-        <div class="deal-rating-label" style="color:${rating.color};">${rating.label}</div>
-        <div class="deal-rating-detail">Net yield ${fmtPct(netYield)} vs ${fmtPct(targetYield)} target</div>
+        <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label}</div>
+        <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
+        ${targetHtml}
       </div>
     </div>
   `;

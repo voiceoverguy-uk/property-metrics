@@ -924,8 +924,27 @@ header .subtitle {
 }
 
 .deal-rating-detail {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #777;
+}
+
+.deal-rating-target {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.deal-rating-target .target-icon {
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.target-pass {
+  color: #0a7a2e;
+}
+
+.target-fail {
+  color: #B11217;
 }
 
 .mortgage-header {
@@ -3149,6 +3168,14 @@ body.dark .deal-rating {
 
 body.dark .deal-rating-detail {
   color: #a0a0b0;
+}
+
+body.dark .target-pass {
+  color: #2ecc71;
+}
+
+body.dark .target-fail {
+  color: #e74c3c;
 }
 
 body.dark .sdlt-comparison-chart {
