@@ -3934,14 +3934,13 @@ body.dark .mortgage-type-label {
 
 .snapshot-card {
   background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  border: 1px solid #e0e0e0;
+  border: 1.5px solid #d42027;
   border-radius: 12px;
   padding: 18px 20px;
 }
 
 .snapshot-card-warning {
   background: #fffcf0;
-  border-color: #e8dbb0;
 }
 
 .snapshot-header-row {
@@ -4249,7 +4248,7 @@ body.dark .mortgage-type-label {
   right: 0;
   width: 100%;
   background: #fff;
-  border-bottom: 2px solid #d42027;
+  border: 1.5px solid #d42027;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   z-index: 1001;
   padding: 10px 16px;
@@ -4423,12 +4422,11 @@ body.dark .benchmark-browser-hint {
 
 body.dark .snapshot-card {
   background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
-  border-color: #444;
+  border-color: #d42027;
 }
 
 body.dark .snapshot-card-warning {
   background: #2a2718;
-  border-color: #4a4020;
 }
 
 body.dark .snapshot-title {
@@ -4518,7 +4516,7 @@ body.dark .snapshot-details summary {
 
 body.dark .snapshot-mobile-bar {
   background: #1e1e1e;
-  border-bottom-color: #d42027;
+  border-color: #d42027;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
