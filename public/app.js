@@ -1283,6 +1283,31 @@ function getLettingAgentFeeMonthly() {
   return includeVat ? fee * 1.2 : fee;
 }
 
+function saveAgentFeePreference() {
+  const pct = document.getElementById('lettingAgentFee').value;
+  const vat = document.getElementById('lettingAgentVat').checked;
+  if (pct && parseFloat(pct) > 0) {
+    localStorage.setItem('rm_agent_fee_pct', pct);
+    localStorage.setItem('rm_agent_fee_vat', vat ? '1' : '0');
+  }
+}
+
+function loadAgentFeePreference() {
+  const saved = localStorage.getItem('rm_agent_fee_pct');
+  if (saved && parseFloat(saved) > 0) {
+    const el = document.getElementById('lettingAgentFee');
+    if (!el.value || el.value === '0') {
+      el.value = saved;
+      const vatSaved = localStorage.getItem('rm_agent_fee_vat');
+      document.getElementById('lettingAgentVat').checked = vatSaved === '1';
+    }
+  }
+}
+
+document.getElementById('lettingAgentFee').addEventListener('change', saveAgentFeePreference);
+document.getElementById('lettingAgentVat').addEventListener('change', saveAgentFeePreference);
+loadAgentFeePreference();
+
 function getMaintenanceAnnual() {
   if (maintenanceMode === 'pct') {
     const pct = parseFloat(document.getElementById('maintenancePct').value) || 0;
@@ -2319,6 +2344,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('targetYield').value = '7';
   document.getElementById('showStressTest').checked = false;
   document.getElementById('stressTestInput').style.display = 'none';
+  loadAgentFeePreference();
   setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   document.getElementById('savePdfBtn').style.display = 'none';
@@ -4335,7 +4361,7 @@ checkUrlParams();
     snapshotEl.innerHTML = `<div class="snapshot-card">
       <div class="snapshot-header-row">
         <div class="snapshot-header-title-area">
-          <h2 class="snapshot-title">Deal Snapshot</h2>
+          <h2 class="snapshot-title">Deal Snapshot <span class="snapshot-buyer-type" data-ref="buyerType"></span></h2>
           <div class="snapshot-deal-ref" data-ref="dealRef"></div>
         </div>
         <div class="snapshot-header-logo-wrap">
@@ -4354,6 +4380,7 @@ checkUrlParams();
     snapshotRefs = {
       card: snapshotEl.querySelector('.snapshot-card'),
       dealRef: snapshotEl.querySelector('[data-ref="dealRef"]'),
+      buyerType: snapshotEl.querySelector('[data-ref="buyerType"]'),
       totals: snapshotEl.querySelector('[data-ref="totals"]'),
       breakdown: snapshotEl.querySelector('[data-ref="breakdown"]'),
       details: snapshotEl.querySelector('.snapshot-details')
@@ -4458,6 +4485,10 @@ checkUrlParams();
     else snapshotRefs.details.setAttribute('open', '');
 
     const buyerTypeSnap = getSelectedBuyerType();
+    const buyerTypeLabels = { investor: 'Investor', ftb: 'First-Time Buyer', main: 'Main Residence' };
+    if (snapshotRefs.buyerType) {
+      snapshotRefs.buyerType.textContent = '\u2014 ' + (buyerTypeLabels[buyerTypeSnap] || 'Investor');
+    }
     let upfrontTip;
     if (b.isMortgage) {
       if (buyerTypeSnap === 'investor') upfrontTip = 'Deposit + SDLT (higher rate for additional properties) + fees and costs.';

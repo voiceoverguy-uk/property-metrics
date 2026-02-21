@@ -1012,6 +1012,44 @@ header .subtitle {
   background: #e8e8e8;
 }
 
+.yield-adjustments-details {
+  margin-bottom: 8px;
+}
+
+.yield-adjustments-details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.yield-adjustments-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.yield-adjustments-details summary::before {
+  content: '\25B6';
+  font-size: 0.7rem;
+  color: #888;
+  transition: transform 0.2s;
+}
+
+.yield-adjustments-details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.yield-adjustments-heading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline;
+}
+
+.yield-adjustments-details > .form-group {
+  margin-top: 12px;
+}
+
 .target-offer-toggle-row {
   display: flex;
   align-items: flex-start;
@@ -4004,6 +4042,13 @@ body.dark .mortgage-type-label {
   margin: 0;
 }
 
+.snapshot-buyer-type {
+  font-weight: 400;
+  color: #aaa;
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
 .snapshot-deal-ref {
   font-size: 0.82rem;
   color: #888;
@@ -4348,6 +4393,10 @@ body.dark .snapshot-card-warning {
 
 body.dark .snapshot-title {
   color: #eee;
+}
+
+body.dark .snapshot-buyer-type {
+  color: #666;
 }
 
 body.dark .snapshot-deal-ref {
