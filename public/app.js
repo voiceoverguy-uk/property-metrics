@@ -2390,15 +2390,6 @@ function loadPdfLogo() {
   });
 }
 
-function addPdfLogo(pdf, logoData, margins) {
-  if (!logoData) return;
-  var pageW = pdf.internal.pageSize.getWidth();
-  var logoDisplayW = 40;
-  var logoDisplayH = 4;
-  var x = pageW - margins.right - logoDisplayW;
-  var yPos = margins.top - 2;
-  pdf.addImage(logoData, 'PNG', x, yPos, logoDisplayW, logoDisplayH);
-}
 
 function sanitizePdfText(val) {
   if (!val) return '';
@@ -2789,8 +2780,13 @@ function printReport() {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const h = pdfHelper(pdf, pdfMargins);
 
-    addPdfLogo(pdf, logoData, pdfMargins);
-    h.title('RentalMetrics - Property Deal Report');
+    if (logoData) {
+      var pageW = pdf.internal.pageSize.getWidth();
+      var logoW = 50, logoH = 5;
+      pdf.addImage(logoData, 'PNG', (pageW - logoW) / 2, h.getY(), logoW, logoH);
+      h.setY(h.getY() + logoH + 3);
+    }
+    h.title('Property Deal Report');
     h.subtitle('Generated: ' + timestamp);
     h.gap(2);
     h.textLine(sanitizePdfText(address), { size: 11, bold: true, align: 'center' });
@@ -3713,8 +3709,13 @@ function downloadComparePdf() {
     const pdf = new jsPDF('l', 'mm', 'a4');
     const h = pdfHelper(pdf, cmpMargins);
 
-    addPdfLogo(pdf, logoData, cmpMargins);
-    h.title('RentalMetrics - Deal Comparison');
+    if (logoData) {
+      var pageW = pdf.internal.pageSize.getWidth();
+      var logoW = 50, logoH = 5;
+      pdf.addImage(logoData, 'PNG', (pageW - logoW) / 2, h.getY(), logoW, logoH);
+      h.setY(h.getY() + logoH + 3);
+    }
+    h.title('Deal Comparison');
     h.subtitle('Generated: ' + timestamp);
     h.textLine(entries.length + ' deals compared \u00b7 Sorted by ' + sortLabel, { size: 9, align: 'center', color: '#333333' });
     h.gap(2);
