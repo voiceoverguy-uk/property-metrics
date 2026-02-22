@@ -771,7 +771,8 @@ function computeSnapshot() {
       mortgageAmount,
       effectiveMonthlyRent,
       isMortgage,
-      cashInvested
+      cashInvested,
+      interestRate
     }
   };
 }
@@ -4516,7 +4517,7 @@ checkUrlParams();
     if (b.lettingAgentFee > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Agent Fee</span><span>-${fmt(b.lettingAgentFee)}/mo</span></div>`;
     if (b.baseRunningCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Running Costs</span><span>-${fmt(b.baseRunningCosts)}/mo</span></div>`;
     if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
-    if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
+    if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage${b.interestRate ? ' (' + b.interestRate + '%)' : ''}</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
     const cfSign = snap.monthlyCashflow >= 0 ? '+' : '';
     const cfColor = snap.monthlyCashflow >= 0 ? 'snapshot-cf-positive' : 'snapshot-cf-negative';
