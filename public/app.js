@@ -2269,14 +2269,28 @@ function renderResults(result) {
 
   document.getElementById('savePdfBtn').style.display = '';
 
-  const dealRef = escHtml(document.getElementById('dealReference').value || '');
+  const summaryParts = [];
+  if (addressRaw.trim()) summaryParts.push(address);
+  const addrUpper = addressRaw.toUpperCase().replace(/\s+/g, ' ').trim();
+  let postcodeToShow = '';
+  if (suggestedPostcode) {
+    const normSuggested = suggestedPostcode.replace(/\s+/g, ' ').trim();
+    if (!addrUpper.includes(normSuggested)) postcodeToShow = suggestedPostcode;
+  } else {
+    const addrMatch = addressRaw.match(UK_POSTCODE_RE);
+    if (addrMatch) postcodeToShow = '';
+  }
+  if (postcodeToShow) summaryParts.push(escHtml(postcodeToShow));
+  const buyerLabel = getBuyerTypeLabel(buyerType) || 'Investor';
+  summaryParts.push(escHtml(buyerLabel));
+  const dealSummaryLine = summaryParts.join(' · ');
+
   const html = `
     <div class="results-content">
       <div class="results-header-row">
         <div>
           <h2>Deal Analysis</h2>
-          <p class="address-line">${address}</p>
-          ${dealRef ? `<p class="deal-ref-line">${dealRef}</p>` : ''}
+          ${dealSummaryLine ? `<p class="address-line">${dealSummaryLine}</p>` : ''}
         </div>
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareDeal(this)">Share</button>
