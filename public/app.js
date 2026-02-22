@@ -1773,7 +1773,7 @@ function renderDealRating(netYield, targetYield) {
   const diff = netYield - targetYield;
   const absDiff = Math.abs(diff).toFixed(2);
   let targetHtml = '';
-  const targetLink = `<a href="#targetYield" class="target-yield-link" onclick="event.preventDefault();document.getElementById('targetYield').scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('targetYield').classList.add('input-highlight');setTimeout(function(){document.getElementById('targetYield').classList.remove('input-highlight');},1500);">${fmtPct(targetYield)} target</a>`;
+  const targetLink = `<a href="#targetYield" class="target-yield-link" onclick="event.preventDefault();scrollToYieldAdjustments();">${fmtPct(targetYield)} target</a>`;
   if (Math.abs(diff) < 0.005) {
     targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your ${targetLink}</div>`;
   } else if (diff > 0) {
@@ -2407,6 +2407,24 @@ async function runCalculation() {
     }
   } catch (err) {
     setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
+  }
+}
+
+function scrollToYieldAdjustments() {
+  var heading = document.querySelector('.yield-adjustments-heading');
+  var input = document.getElementById('targetYield');
+  var target = heading || input;
+  if (!target) return;
+  var mobileBar = document.getElementById('snapshotMobileBar');
+  var barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
+  var hdr = document.querySelector('header');
+  var hdrH = hdr ? hdr.offsetHeight : 0;
+  var offset = Math.max(barH, hdrH) + 8;
+  var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+  window.scrollTo({ top: top, behavior: 'smooth' });
+  if (input) {
+    input.classList.add('input-highlight');
+    setTimeout(function() { input.classList.remove('input-highlight'); }, 1500);
   }
 }
 
