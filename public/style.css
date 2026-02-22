@@ -1443,6 +1443,7 @@ input.is-warning {
   justify-content: center;
   gap: 6px;
   line-height: 1;
+  transform: translateY(1px);
 }
 
 .vat-checkbox input[type="checkbox"] {
