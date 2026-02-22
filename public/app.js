@@ -2399,7 +2399,7 @@ async function runCalculation() {
         const barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
         const hdrEl = document.querySelector('header');
         const hdrH = hdrEl ? hdrEl.offsetHeight : 0;
-        const offset = Math.max(barH, hdrH) + 40;
+        const offset = Math.max(barH, hdrH) + 80;
         const target = resultsPanel.querySelector('.results-header-row') || resultsPanel;
         const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
         window.scrollTo({ top, behavior: 'smooth' });
@@ -2419,7 +2419,7 @@ function scrollToYieldAdjustments() {
   var barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
   var hdr = document.querySelector('header');
   var hdrH = hdr ? hdr.offsetHeight : 0;
-  var offset = Math.max(barH, hdrH) + 24;
+  var offset = Math.max(barH, hdrH) + 56;
   var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
   window.scrollTo({ top: top, behavior: 'smooth' });
   if (input) {
