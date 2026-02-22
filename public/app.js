@@ -2464,20 +2464,26 @@ function getCurrentTargetYield() {
 function checkReanalyseVisibility() {
   var btn = document.getElementById('reanalyseBtn');
   if (!btn) return;
-  if (currentMode === 'sdlt') { btn.classList.add('hidden'); return; }
+  if (currentMode === 'sdlt') {
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
   var currentVal = getCurrentTargetYield();
   var compareVal = hasAnalysedOnce ? lastAnalysedTargetYield : getDefaultTargetYield();
   if (currentVal !== compareVal) {
-    btn.classList.remove('hidden');
+    btn.disabled = false;
+    btn.classList.add('active');
   } else {
-    btn.classList.add('hidden');
+    btn.disabled = true;
+    btn.classList.remove('active');
   }
 }
 
 function reanalyseWithNewYield() {
   if (!validateDealForm()) return;
   var btn = document.getElementById('reanalyseBtn');
-  if (btn) btn.classList.add('hidden');
+  if (btn) { btn.disabled = true; btn.classList.remove('active'); }
   runCalculation();
 }
 

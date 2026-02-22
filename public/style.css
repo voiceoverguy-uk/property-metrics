@@ -188,34 +188,50 @@ header .subtitle {
   box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
-.reanalyse-btn {
-  display: inline-flex;
+.target-yield-row {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  padding: 8px 18px;
-  background: #B11217;
+  gap: 10px;
+}
+.target-yield-row input {
+  flex: 0 1 120px;
+  min-width: 80px;
+}
+.reanalyse-btn {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: #ccc;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
+  cursor: default;
+  transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+}
+.reanalyse-btn:disabled {
+  background: #ccc;
+  color: #fff;
+  cursor: default;
+  opacity: 0.85;
+}
+.reanalyse-btn.active {
+  background: #B11217;
+  color: #fff;
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.2s, background 0.2s;
-  animation: reanalyseFadeIn 0.25s ease-out;
+  animation: reanalysePulse 0.3s ease-out;
 }
-.reanalyse-btn:hover {
+.reanalyse-btn.active:hover {
   background: #8e0e12;
+  box-shadow: 0 2px 8px rgba(177,18,23,0.25);
 }
-.reanalyse-btn:active {
+.reanalyse-btn.active:active {
   transform: scale(0.97);
 }
-.reanalyse-btn.hidden {
-  display: none;
-}
-@keyframes reanalyseFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes reanalysePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
 }
 
 .field-validation-error {
