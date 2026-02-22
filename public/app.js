@@ -4,6 +4,9 @@ const APP_VERSION_DATE = 'February 2026';
 const RENT_WARN_THRESHOLD = 5000;
 const YIELD_WARN_THRESHOLD = 20;
 
+var lastAnalysedTargetYield = null;
+var hasAnalysedOnce = false;
+
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
@@ -567,13 +570,18 @@ function setMode(mode, pushHistory) {
   } else if (mode === 'simple') {
     document.body.classList.add('simple-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
+    document.getElementById('targetYield').value = '6';
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
+    document.getElementById('targetYield').value = '7';
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   }
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
+  lastAnalysedTargetYield = null;
+  hasAnalysedOnce = false;
+  checkReanalyseVisibility();
   updateMeta(mode);
   updateFaqSchema(mode);
   if (pushHistory !== false) {
@@ -2395,7 +2403,7 @@ async function runCalculation() {
       : costItems.map(item => ({ label: item.label, amount: parseFloat(item.amount) || 0 })),
     voidPct: isSimple ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0),
     runningCosts: totalRunningCosts,
-    targetYield: isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0),
+    targetYield: getCurrentTargetYield(),
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
     simpleMode: isSimple,
@@ -2416,6 +2424,9 @@ async function runCalculation() {
     }
 
     const result = await res.json();
+    lastAnalysedTargetYield = getCurrentTargetYield();
+    hasAnalysedOnce = true;
+    checkReanalyseVisibility();
     renderResults(result);
     if (currentMode === 'analyser' || currentMode === 'simple') {
       addToHistory(result);
@@ -2440,6 +2451,34 @@ function scrollToYieldAdjustments() {
     input.classList.add('input-highlight');
     setTimeout(function() { input.classList.remove('input-highlight'); }, 1500);
   }
+}
+
+function getDefaultTargetYield() {
+  return currentMode === 'simple' ? 6.0 : 7.0;
+}
+
+function getCurrentTargetYield() {
+  return parseFloat(document.getElementById('targetYield').value) || getDefaultTargetYield();
+}
+
+function checkReanalyseVisibility() {
+  var btn = document.getElementById('reanalyseBtn');
+  if (!btn) return;
+  if (currentMode === 'sdlt') { btn.classList.add('hidden'); return; }
+  var currentVal = getCurrentTargetYield();
+  var compareVal = hasAnalysedOnce ? lastAnalysedTargetYield : getDefaultTargetYield();
+  if (currentVal !== compareVal) {
+    btn.classList.remove('hidden');
+  } else {
+    btn.classList.add('hidden');
+  }
+}
+
+function reanalyseWithNewYield() {
+  if (!validateDealForm()) return;
+  var btn = document.getElementById('reanalyseBtn');
+  if (btn) btn.classList.add('hidden');
+  runCalculation();
 }
 
 function scrollToFieldBelowHeader(field) {
@@ -2496,6 +2535,10 @@ form.addEventListener('submit', (e) => {
   if (!validateDealForm()) return;
   runCalculation();
   document.getElementById('startAgainBtn').style.display = '';
+});
+
+document.getElementById('targetYield').addEventListener('input', function() {
+  checkReanalyseVisibility();
 });
 
 document.getElementById('startAgainBtn').addEventListener('click', () => {
@@ -2562,6 +2605,9 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('startAgainBtn').style.display = 'none';
   lastResult = null;
   lastMortgageData = null;
+  lastAnalysedTargetYield = null;
+  hasAnalysedOnce = false;
+  checkReanalyseVisibility();
 });
 
 document.getElementById('showStressTest').addEventListener('change', function() {
@@ -2950,7 +2996,7 @@ function printReport() {
     const isSimplePdf = currentMode === 'simple';
     const solicitorFees = 0;
     const runningCosts = isSimplePdf ? 0 : getRunningCostItemsTotal();
-    const targetYield = isSimplePdf ? '6.0' : document.getElementById('targetYield').value;
+    const targetYield = document.getElementById('targetYield').value;
     const voidPct = isSimplePdf ? 0 : (parseFloat(document.getElementById('voidAllowance').value) || 0);
     const now = new Date();
     const timestamp = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -3276,7 +3322,7 @@ function addToHistory(result) {
   const price = getCurrencyFieldValue('price');
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
   const isSimple = currentMode === 'simple';
-  const targetYield = isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
+  const targetYield = getCurrentTargetYield();
   const investorRating = getDealRating(result.investor.netYield);
   const now = new Date();
 
@@ -3393,6 +3439,9 @@ function applyHistoryEntry(entry) {
 
   if (entry.targetYield !== undefined) {
     document.getElementById('targetYield').value = entry.targetYield;
+    lastAnalysedTargetYield = parseFloat(entry.targetYield) || 7.0;
+    hasAnalysedOnce = true;
+    checkReanalyseVisibility();
   }
 
   if (entry.address) {
@@ -4650,8 +4699,8 @@ checkUrlParams();
     const cashflowSign = snap.monthlyCashflow >= 0 ? '+' : '';
 
     const isSimpleSnap = currentMode === 'simple';
-    const targetYieldSnap = isSimpleSnap ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
-    const yieldThresholdSnap = isSimpleSnap ? 6.0 : targetYieldSnap;
+    const targetYieldSnap = getCurrentTargetYield();
+    const yieldThresholdSnap = targetYieldSnap;
     let yieldColorClass;
     let yieldInlineColor = '';
     if (snap.netYield >= yieldThresholdSnap) {
@@ -4758,8 +4807,8 @@ checkUrlParams();
     mobileCashflow.className = cashflowClass;
 
     const isSimple = currentMode === 'simple';
-    const targetYieldVal = isSimple ? 6.0 : (parseFloat(document.getElementById('targetYield').value) || 7.0);
-    const yieldThreshold = isSimple ? 6.0 : targetYieldVal;
+    const targetYieldVal = getCurrentTargetYield();
+    const yieldThreshold = targetYieldVal;
 
     const isMortgageSnap = snap.breakdown.isMortgage;
     if (isMortgageSnap) {

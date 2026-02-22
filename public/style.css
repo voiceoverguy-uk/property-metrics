@@ -188,6 +188,36 @@ header .subtitle {
   box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
+.reanalyse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 8px 18px;
+  background: #B11217;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  animation: reanalyseFadeIn 0.25s ease-out;
+}
+.reanalyse-btn:hover {
+  background: #8e0e12;
+}
+.reanalyse-btn:active {
+  transform: scale(0.97);
+}
+.reanalyse-btn.hidden {
+  display: none;
+}
+@keyframes reanalyseFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .field-validation-error {
   border-color: #B11217 !important;
   box-shadow: 0 0 0 3px rgba(177,18,23,0.15) !important;
