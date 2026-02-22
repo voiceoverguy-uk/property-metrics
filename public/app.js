@@ -81,6 +81,72 @@ const RECURRING_MONTHLY_COST_SUGGESTIONS = [
   "Communal cleaning","CCTV maintenance","Security monitoring"
 ];
 
+let suggestedPostcode = '';
+const UK_POSTCODE_RE = /[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}/i;
+
+function showPostcodeSuggestion(postcode) {
+  const el = document.getElementById('postcodeSuggestion');
+  const valEl = document.getElementById('postcodeSuggestionValue');
+  const btn = document.getElementById('postcodeAddBtn');
+  if (!el || !valEl) return;
+  if (!postcode) {
+    el.style.display = 'none';
+    suggestedPostcode = '';
+    return;
+  }
+  suggestedPostcode = postcode.toUpperCase().trim();
+  valEl.textContent = suggestedPostcode;
+  btn.style.display = '';
+  btn.textContent = 'Add to reference';
+  el.style.display = '';
+  el.querySelector('.postcode-added')?.remove();
+}
+
+function addPostcodeToReference() {
+  const dealRefInput = document.getElementById('dealReference');
+  if (!dealRefInput || !suggestedPostcode) return;
+  let ref = dealRefInput.value.trim();
+
+  if (UK_POSTCODE_RE.test(ref)) {
+    const btn = document.getElementById('postcodeAddBtn');
+    btn.style.display = 'none';
+    const el = document.getElementById('postcodeSuggestion');
+    if (!el.querySelector('.postcode-added')) {
+      const added = document.createElement('span');
+      added.className = 'postcode-added';
+      added.textContent = '✓ Postcode already in reference';
+      el.appendChild(added);
+    }
+    return;
+  }
+
+  const btlSuffix = /\s*[\u2013\-–]\s*BTL\s*$/i;
+  if (btlSuffix.test(ref)) {
+    ref = ref.replace(btlSuffix, '') + ' \u2013 ' + suggestedPostcode + ' \u2013 BTL';
+  } else if (ref) {
+    ref = ref + ' \u2013 ' + suggestedPostcode;
+  } else {
+    const short = getShortAddress();
+    ref = short ? short + ' \u2013 ' + suggestedPostcode + ' \u2013 BTL' : suggestedPostcode;
+  }
+
+  dealRefInput.value = ref;
+  const btn = document.getElementById('postcodeAddBtn');
+  btn.style.display = 'none';
+  const el = document.getElementById('postcodeSuggestion');
+  if (!el.querySelector('.postcode-added')) {
+    const added = document.createElement('span');
+    added.className = 'postcode-added';
+    added.textContent = '✓ Added';
+    el.appendChild(added);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('postcodeAddBtn');
+  if (btn) btn.addEventListener('click', addPostcodeToReference);
+});
+
 function getShortAddress() {
   const addr = document.getElementById('address').value.trim();
   if (!addr) return '';
@@ -989,7 +1055,7 @@ function setupAutocomplete(placesLib) {
     (async () => {
       try {
         const place = pred.toPlace();
-        await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location'] });
+        await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'] });
         if (place.location) {
           selectedLocation = {
             lat: place.location.lat(),
@@ -998,6 +1064,16 @@ function setupAutocomplete(placesLib) {
           };
           showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
         }
+        let postcode = '';
+        if (place.addressComponents) {
+          for (const comp of place.addressComponents) {
+            if (comp.types && comp.types.includes('postal_code')) {
+              postcode = comp.longText || comp.shortText || '';
+              break;
+            }
+          }
+        }
+        showPostcodeSuggestion(postcode);
         sessionToken = new AutocompleteSessionToken();
       } catch (err) {
         console.error('Google Maps: place details error:', err);
@@ -1010,6 +1086,7 @@ function setupAutocomplete(placesLib) {
     if (query.length < 3) {
       dropdown.style.display = 'none';
       activeIndex = -1;
+      if (query.length === 0) showPostcodeSuggestion('');
       return;
     }
 
@@ -1094,7 +1171,7 @@ function setupClassicAutocomplete(addressInput, dropdown) {
   console.log('Google Maps: using classic Autocomplete widget');
   const autocomplete = new google.maps.places.Autocomplete(addressInput, {
     componentRestrictions: { country: 'gb' },
-    fields: ['formatted_address', 'geometry', 'name'],
+    fields: ['formatted_address', 'geometry', 'name', 'address_components'],
   });
 
   autocomplete.addListener('place_changed', () => {
@@ -1107,6 +1184,16 @@ function setupClassicAutocomplete(addressInput, dropdown) {
       };
       showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
     }
+    let postcode = '';
+    if (place.address_components) {
+      for (const comp of place.address_components) {
+        if (comp.types && comp.types.includes('postal_code')) {
+          postcode = comp.long_name || comp.short_name || '';
+          break;
+        }
+      }
+    }
+    showPostcodeSuggestion(postcode);
     updateDealRefPlaceholder();
   });
 }
@@ -2377,6 +2464,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   if (ioBtn) ioBtn.classList.add('active');
   document.getElementById('borrowingSummary').style.display = 'none';
   document.getElementById('dealReference').value = '';
+  showPostcodeSuggestion('');
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderSimpleCostItems();
   document.getElementById('targetYield').value = '7';

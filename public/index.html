@@ -142,6 +142,10 @@
               <span class="tooltip" data-tip="Enter the property address or postcode for reference.">?</span>
             </label>
             <input type="text" id="address" placeholder="e.g. LS1" autocomplete="nope">
+            <div id="postcodeSuggestion" class="postcode-suggestion no-export" style="display:none;">
+              <span class="postcode-suggestion-text">Suggested postcode: <strong id="postcodeSuggestionValue"></strong></span>
+              <button type="button" id="postcodeAddBtn" class="postcode-add-btn">Add to reference</button>
+            </div>
           </div>
 
           <div class="form-group analyser-only">

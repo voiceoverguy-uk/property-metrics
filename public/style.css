@@ -972,6 +972,45 @@ input.is-warning {
   box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.15);
 }
 
+.postcode-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 0.8rem;
+  color: #666;
+  flex-wrap: wrap;
+}
+.postcode-suggestion-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.postcode-suggestion-text strong {
+  color: #333;
+  font-weight: 600;
+}
+.postcode-add-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  color: #B11217;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s;
+}
+.postcode-add-btn:hover {
+  background: rgba(177, 18, 23, 0.06);
+  border-color: #B11217;
+}
+.postcode-added {
+  color: #0a7a2e;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
 .input-warning,
 .yield-warning {
   font-size: 0.78rem;
@@ -3237,6 +3276,24 @@ body.dark input.input-highlight {
 @keyframes inputHighlightDark {
   0% { box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.4); }
   100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+body.dark .postcode-suggestion {
+  color: #aaa;
+}
+body.dark .postcode-suggestion-text strong {
+  color: #ddd;
+}
+body.dark .postcode-add-btn {
+  color: #e07070;
+  border-color: #555;
+}
+body.dark .postcode-add-btn:hover {
+  background: rgba(224, 112, 112, 0.1);
+  border-color: #e07070;
+}
+body.dark .postcode-added {
+  color: #2ecc71;
 }
 
 body.dark input.is-warning {

@@ -66,6 +66,6 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **"Start Again" Reset Button**.
 
 ## External Dependencies
-- **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`.
+- **Google Maps API**: Used for address autocomplete suggestions and displaying a map preview with a marker. The API key is served via `/api/maps-key`. Postcode extraction from `addressComponents`/`address_components` shows a suggestion line under the address input with an [Add to reference] button that intelligently appends to Deal Reference (before "– BTL" suffix), includes duplicate detection via `UK_POSTCODE_RE`. `.no-export` class excludes from PDF/snapshot.
 - **Node.js**: Backend runtime environment.
 - **Express**: Web framework for the Node.js backend.
