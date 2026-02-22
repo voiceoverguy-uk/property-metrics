@@ -2388,8 +2388,14 @@ async function runCalculation() {
     }
     if (window.innerWidth <= 860) {
       setTimeout(() => {
-        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+        const mobileBar = document.getElementById('snapshotMobileBar');
+        const barHeight = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
+        const headerEl = document.querySelector('header');
+        const headerH = headerEl ? headerEl.offsetHeight : 0;
+        const offset = Math.max(barHeight, headerH) + 10;
+        const top = resultsPanel.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }, 150);
     }
   } catch (err) {
     setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
@@ -3208,7 +3214,13 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
         const top = buyerTypeEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
         window.scrollTo({ top, behavior: 'smooth' });
       } else {
-        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const mobileBar = document.getElementById('snapshotMobileBar');
+        const barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
+        const hdrEl = document.querySelector('header');
+        const hdrH = hdrEl ? hdrEl.offsetHeight : 0;
+        const off = Math.max(barH, hdrH) + 10;
+        const topPos = resultsPanel.getBoundingClientRect().top + window.pageYOffset - off;
+        window.scrollTo({ top: topPos, behavior: 'smooth' });
       }
     }, 100);
   } catch (err) {
