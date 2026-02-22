@@ -82,6 +82,7 @@ const RECURRING_MONTHLY_COST_SUGGESTIONS = [
 ];
 
 let suggestedPostcode = '';
+let autoRefValue = '';
 const UK_POSTCODE_RE = /[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}/i;
 const UK_FULL_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s+\d[A-Z]{2}$/i;
 
@@ -135,6 +136,7 @@ function addPostcodeToReference() {
   }
 
   dealRefInput.value = ref;
+  autoRefValue = ref;
   const btn = document.getElementById('postcodeAddBtn');
   btn.style.display = 'none';
   const el = document.getElementById('postcodeSuggestion');
@@ -144,6 +146,22 @@ function addPostcodeToReference() {
     added.textContent = '✓ Added';
     el.appendChild(added);
   }
+}
+
+function updateRefOnAddressChange() {
+  const dealRefInput = document.getElementById('dealReference');
+  if (!dealRefInput) return;
+  const currentRef = dealRefInput.value.trim();
+  if (!autoRefValue || currentRef !== autoRefValue) return;
+  const newShort = getShortAddress();
+  if (!newShort) {
+    dealRefInput.value = '';
+    autoRefValue = '';
+    return;
+  }
+  const newRef = newShort + ' \u2013 BTL';
+  dealRefInput.value = newRef;
+  autoRefValue = newRef;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1054,6 +1072,7 @@ function setupAutocomplete(placesLib) {
     addressInput.value = pred.text.text;
     dropdown.style.display = 'none';
     activeIndex = -1;
+    updateRefOnAddressChange();
     updateDealRefPlaceholder();
 
     (async () => {
@@ -1198,6 +1217,7 @@ function setupClassicAutocomplete(addressInput, dropdown) {
       }
     }
     showPostcodeSuggestion(postcode);
+    updateRefOnAddressChange();
     updateDealRefPlaceholder();
   });
 }
@@ -2468,6 +2488,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   if (ioBtn) ioBtn.classList.add('active');
   document.getElementById('borrowingSummary').style.display = 'none';
   document.getElementById('dealReference').value = '';
+  autoRefValue = '';
   showPostcodeSuggestion('');
   simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
   renderSimpleCostItems();
