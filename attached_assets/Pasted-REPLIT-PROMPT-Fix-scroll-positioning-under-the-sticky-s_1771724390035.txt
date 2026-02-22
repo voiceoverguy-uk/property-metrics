@@ -1,0 +1,44 @@
+REPLIT PROMPT: Fix scroll positioning under the sticky snapshot bar (no more hidden headings)
+
+We have a sticky “Deal Snapshot” bar at the top of the viewport on mobile. When we scroll to sections (after clicking Analyse Deal, or clicking the “7.00% target” text in the grade card), the target heading lands under/too close to the sticky bar.
+
+Implement a robust solution that always scrolls to the correct position, based on the live height of the sticky bar (no hardcoded pixel guesses).
+
+Requirements
+	1.	Create a single helper:
+
+	•	getStickyBarHeight() — returns the height of the sticky snapshot bar (the element containing “UPFRONT / CASHFLOW / NET YIELD / Details”). If not found, return 0.
+	•	scrollToWithOffset(targetEl, extraPadding = 12) — smooth scroll so the target lands below the sticky bar:
+	•	compute offset = getStickyBarHeight() + extraPadding
+	•	compute top = window.scrollY + targetEl.getBoundingClientRect().top - offset
+	•	window.scrollTo({ top, behavior: "smooth" })
+
+	2.	Use this helper in BOTH places:
+
+	•	After clicking Analyse Deal (once results are rendered), scroll to the Deal Analysis section heading (or container) using scrollToWithOffset.
+	•	When the user clicks the “7.00% target” text in the grade card, scroll to the Target Yield (%) input section (Yield Adjustments area) using scrollToWithOffset, then focus the Target Yield input.
+
+	3.	Add a CSS backup using scroll-margin-top (so anchor jumps also behave):
+
+	•	Identify the scroll targets (e.g. #deal-analysis, #yield-adjustments)
+	•	Apply scroll-margin-top using a CSS variable:
+	•	:root { --stickyOffset: 110px; }
+	•	.scroll-target { scroll-margin-top: calc(var(--stickyOffset) + 12px); }
+
+	4.	Keep the CSS variable in sync:
+
+	•	On load + resize, set --stickyOffset to the live sticky bar height:
+	•	document.documentElement.style.setProperty("--stickyOffset", ${getStickyBarHeight()}px);
+
+	5.	Do NOT inject these targets via innerHTML on every render (avoid jitter). Ensure target elements have stable IDs or classes.
+
+Target elements
+	•	Deal Analysis section wrapper/heading: add id="deal-analysis" and class scroll-target
+	•	Yield Adjustments wrapper/heading: add id="yield-adjustments" and class scroll-target
+	•	Sticky bar selector: use the existing DOM element for the snapshot bar (add an id like id="sticky-snapshot-bar" if needed)
+
+Acceptance tests
+	•	On iPhone/Android: tap Analyse Deal → “Deal Analysis” heading sits neatly below the sticky bar (not hidden).
+	•	Tap “7.00% target” → scroll lands with “Target Yield (%)” clearly visible below sticky bar, and the input is focused.
+	•	No hardcoded magic numbers except the small extraPadding (12px).
+	•	No regressions to desktop layout.
