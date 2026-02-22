@@ -397,10 +397,12 @@
       <h2>Comparison History</h2>
       <div class="history-meta" id="historyMeta" style="display:none;">
         <div class="history-meta-top">
-          <span>Sorted by: Net Yield (Asset) &middot; Highest first</span>
+          <div class="history-sort-toggle">
+            <button type="button" class="history-sort-btn active" id="sortLatestBtn" onclick="setHistorySort('latest')">Latest</button>
+            <button type="button" class="history-sort-btn" id="sortBestBtn" onclick="setHistorySort('best')">Best Yield</button>
+          </div>
           <label class="rank-toggle-label"><input type="checkbox" id="showRanksToggle" onchange="toggleRanks()"> Show rank badges</label>
         </div>
-        <div class="history-meta-helper">Badges reflect the current sort order.</div>
       </div>
       <div id="historyList"></div>
     </section>

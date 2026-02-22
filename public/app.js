@@ -3533,6 +3533,22 @@ function applyHistoryEntry(entry) {
   runCalculation();
 }
 
+function getHistorySortMode() {
+  return localStorage.getItem('historySortMode') || 'latest';
+}
+
+function setHistorySort(mode) {
+  localStorage.setItem('historySortMode', mode);
+  var latestBtn = document.getElementById('sortLatestBtn');
+  var bestBtn = document.getElementById('sortBestBtn');
+  if (latestBtn && bestBtn) {
+    latestBtn.classList.toggle('active', mode === 'latest');
+    bestBtn.classList.toggle('active', mode === 'best');
+  }
+  renderHistory();
+}
+window.setHistorySort = setHistorySort;
+
 function renderHistory() {
   const historyList = document.getElementById('historyList');
   if (!historyList) return;
@@ -3552,6 +3568,14 @@ function renderHistory() {
 
   if (metaEl) metaEl.style.display = '';
 
+  var sortMode = getHistorySortMode();
+  var latestBtn = document.getElementById('sortLatestBtn');
+  var bestBtn = document.getElementById('sortBestBtn');
+  if (latestBtn && bestBtn) {
+    latestBtn.classList.toggle('active', sortMode === 'latest');
+    bestBtn.classList.toggle('active', sortMode === 'best');
+  }
+
   if (section) {
     const h2 = section.querySelector('h2');
     if (h2) h2.innerHTML = 'Comparison History ' + (history.length >= 2 ? '<button type="button" class="btn-compare-deals" onclick="openCompare()">Compare Deals</button> ' : '') + '<button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
@@ -3564,7 +3588,13 @@ function renderHistory() {
       : entry.investorNetYield;
     const parsed = parseFloat(ny);
     return { entry, sortYield: Number.isFinite(parsed) ? parsed : -Infinity, idx };
-  }).sort((a, b) => b.sortYield - a.sortYield || a.idx - b.idx);
+  });
+
+  if (sortMode === 'best') {
+    sorted.sort((a, b) => b.sortYield - a.sortYield || a.idx - b.idx);
+  } else {
+    sorted.sort((a, b) => b.entry.id - a.entry.id);
+  }
 
   const showRanks = document.getElementById('showRanksToggle') && document.getElementById('showRanksToggle').checked;
   let html = '';
