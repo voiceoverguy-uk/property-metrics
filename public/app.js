@@ -772,7 +772,8 @@ function computeSnapshot() {
       effectiveMonthlyRent,
       isMortgage,
       cashInvested,
-      interestRate
+      interestRate,
+      lettingAgentPct: getLettingAgentPct()
     }
   };
 }
@@ -4514,7 +4515,7 @@ checkUrlParams();
 
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>Rent</span><span>${fmt(b.effectiveMonthlyRent)}/mo</span></div>`;
-    if (b.lettingAgentFee > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Agent Fee</span><span>-${fmt(b.lettingAgentFee)}/mo</span></div>`;
+    if (b.lettingAgentFee > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Agent Fee${b.lettingAgentPct ? ' (' + b.lettingAgentPct + '%)' : ''}</span><span>-${fmt(b.lettingAgentFee)}/mo</span></div>`;
     if (b.baseRunningCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Running Costs</span><span>-${fmt(b.baseRunningCosts)}/mo</span></div>`;
     if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage${b.interestRate ? ' (' + b.interestRate + '%)' : ''}</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
