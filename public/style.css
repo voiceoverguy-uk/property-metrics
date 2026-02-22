@@ -1409,6 +1409,7 @@ input.is-warning {
 .letting-agent-row input[type="number"] {
   flex: 1;
   padding: 8px 10px;
+  margin: 0;
   height: var(--control-height);
   box-sizing: border-box;
   border: 1.5px solid #ddd;
@@ -1431,14 +1432,25 @@ input.is-warning {
   color: #555;
   background: #f8f9fb;
   padding: 0 14px;
+  margin: 0;
   height: var(--control-height);
   box-sizing: border-box;
   border-radius: 10px;
   border: 1.5px solid #ddd;
   transition: border-color 0.2s, background 0.2s;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  line-height: 1;
+}
+
+.vat-checkbox input[type="checkbox"] {
+  display: block;
+  margin: 0;
+}
+
+.vat-checkbox .toggle-checkbox-label {
   line-height: 1;
 }
 
@@ -2348,8 +2360,9 @@ body.dark .rank-badge {
 
   .vat-checkbox {
     height: var(--control-height);
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
   }
 
   .btn-add-item,
