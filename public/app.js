@@ -83,11 +83,13 @@ const RECURRING_MONTHLY_COST_SUGGESTIONS = [
 
 let suggestedPostcode = '';
 const UK_POSTCODE_RE = /[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}/i;
+const UK_FULL_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s+\d[A-Z]{2}$/i;
 
 function showPostcodeSuggestion(postcode) {
   const el = document.getElementById('postcodeSuggestion');
   const valEl = document.getElementById('postcodeSuggestionValue');
   const btn = document.getElementById('postcodeAddBtn');
+  const labelEl = el ? el.querySelector('.postcode-suggestion-label') : null;
   if (!el || !valEl) return;
   if (!postcode) {
     el.style.display = 'none';
@@ -96,6 +98,8 @@ function showPostcodeSuggestion(postcode) {
   }
   suggestedPostcode = postcode.toUpperCase().trim();
   valEl.textContent = suggestedPostcode;
+  const isFull = UK_FULL_POSTCODE_RE.test(suggestedPostcode);
+  if (labelEl) labelEl.textContent = isFull ? 'Suggested postcode: ' : 'Postcode area: ';
   btn.style.display = '';
   btn.textContent = 'Add to reference';
   el.style.display = '';
