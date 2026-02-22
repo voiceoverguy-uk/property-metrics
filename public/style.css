@@ -1971,6 +1971,44 @@ body.dark .dark-mode-toggle-mobile:hover {
   flex-shrink: 0;
 }
 
+.btn-collapse-results {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.btn-collapse-results:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+body.dark .btn-collapse-results {
+  background: #333;
+  color: #aaa;
+  border-color: #444;
+}
+
+body.dark .btn-collapse-results:hover {
+  background: #444;
+  color: #ddd;
+}
+
+.results-body.collapsed {
+  display: none;
+}
+
 .history-section {
   background: #fff;
   border-radius: 14px;

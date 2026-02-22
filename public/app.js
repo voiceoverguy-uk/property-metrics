@@ -61,6 +61,17 @@ function setResultsPanelContent(html) {
   resultsPanel.insertAdjacentHTML('beforeend', html);
 }
 
+function toggleResultsCollapse(btn) {
+  var content = btn.closest('.results-content');
+  if (!content) return;
+  var body = content.querySelector('.results-body');
+  if (!body) return;
+  var isCollapsed = body.classList.toggle('collapsed');
+  btn.innerHTML = isCollapsed ? '&#9660;' : '&#9650;';
+  btn.title = isCollapsed ? 'Expand results' : 'Collapse results';
+}
+window.toggleResultsCollapse = toggleResultsCollapse;
+
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
 let simpleCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
 let runningCostItems = [{ label: '', amount: 0 }];
@@ -2337,10 +2348,12 @@ function renderResults(result) {
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareDeal(this)">Share</button>
           <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
+          <button type="button" class="btn-collapse-results" onclick="toggleResultsCollapse(this)" title="Collapse results">&#9650;</button>
         </div>
       </div>
-
-      ${renderScenario(data, label, targetYield, mortgage)}
+      <div class="results-body">
+        ${renderScenario(data, label, targetYield, mortgage)}
+      </div>
     </div>
   `;
 
@@ -2541,15 +2554,30 @@ function validateDealForm() {
   return true;
 }
 
+function checkStartAgainVisibility() {
+  var price = document.getElementById('price');
+  var rent = document.getElementById('monthlyRent');
+  var address = document.getElementById('address');
+  var hasData = (price && (price.dataset.rawValue || price.value)) ||
+                (rent && (rent.dataset.rawValue || rent.value)) ||
+                (address && address.value.trim());
+  document.getElementById('startAgainBtn').style.display = hasData ? '' : 'none';
+}
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
   if (!validateDealForm()) return;
   runCalculation();
-  document.getElementById('startAgainBtn').style.display = '';
+  checkStartAgainVisibility();
 });
 
 document.getElementById('targetYield').addEventListener('input', function() {
   checkReanalyseVisibility();
+});
+
+['price', 'monthlyRent', 'address'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('input', checkStartAgainVisibility);
 });
 
 document.getElementById('startAgainBtn').addEventListener('click', () => {
@@ -3277,10 +3305,12 @@ function renderSDLTStandaloneResults(data, price) {
         </div>
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareSDLT(this)">Share</button>
+          <button type="button" class="btn-collapse-results" onclick="toggleResultsCollapse(this)" title="Collapse results">&#9650;</button>
         </div>
       </div>
-
-      ${renderSDLTSection(sdltLabel, sdltData)}
+      <div class="results-body">
+        ${renderSDLTSection(sdltLabel, sdltData)}
+      </div>
     </div>
   `;
 
@@ -3531,6 +3561,7 @@ function applyHistoryEntry(entry) {
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   runCalculation();
+  checkStartAgainVisibility();
 }
 
 function getHistorySortMode() {
@@ -4537,6 +4568,8 @@ function checkUrlParams() {
   }
 
   window.history.replaceState({}, '', window.location.pathname);
+
+  checkStartAgainVisibility();
 
   const isSDLT = currentMode === 'sdlt' || window.location.pathname === '/sdlt-calculator';
   if (isSDLT) {
