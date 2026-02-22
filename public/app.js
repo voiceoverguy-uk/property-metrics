@@ -8,10 +8,37 @@ if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
 
+function getStickyBarHeight() {
+  var bar = document.getElementById('snapshotMobileBar');
+  if (bar && bar.classList.contains('visible')) return bar.offsetHeight;
+  var hdr = document.querySelector('header');
+  if (hdr) return hdr.offsetHeight;
+  return 0;
+}
+
+function scrollToWithOffset(targetEl) {
+  if (!targetEl) return;
+  syncStickyOffset();
+  if (targetEl.classList.contains('scroll-target')) {
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    var offset = getStickyBarHeight() + 12;
+    var top = window.scrollY + targetEl.getBoundingClientRect().top - offset;
+    window.scrollTo({ top: top, behavior: 'smooth' });
+  }
+}
+
+function syncStickyOffset() {
+  document.documentElement.style.setProperty('--stickyOffset', getStickyBarHeight() + 'px');
+}
+window.addEventListener('load', syncStickyOffset);
+window.addEventListener('resize', syncStickyOffset);
+
 document.addEventListener('DOMContentLoaded', function() {
   if (!window.location.hash) {
     window.scrollTo(0, 0);
   }
+  syncStickyOffset();
   const vf = document.getElementById('appVersionFooter');
   if (vf) vf.textContent = 'Version ' + APP_VERSION + ' \u2014 ' + APP_VERSION_DATE;
 });
@@ -2294,7 +2321,7 @@ function renderResults(result) {
 
   const html = `
     <div class="results-content">
-      <div class="results-header-row">
+      <div class="results-header-row scroll-target" id="deal-analysis">
         <div>
           <h2>Deal Analysis</h2>
           ${dealSummaryLine ? `<p class="address-line">${dealSummaryLine}</p>` : ''}
@@ -2395,14 +2422,8 @@ async function runCalculation() {
     }
     if (window.innerWidth <= 860) {
       setTimeout(() => {
-        const mobileBar = document.getElementById('snapshotMobileBar');
-        const barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
-        const hdrEl = document.querySelector('header');
-        const hdrH = hdrEl ? hdrEl.offsetHeight : 0;
-        const offset = Math.max(barH, hdrH) + 80;
-        const target = resultsPanel.querySelector('.results-header-row') || resultsPanel;
-        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top, behavior: 'smooth' });
+        var target = document.getElementById('deal-analysis') || resultsPanel;
+        scrollToWithOffset(target);
       }, 150);
     }
   } catch (err) {
@@ -2411,17 +2432,10 @@ async function runCalculation() {
 }
 
 function scrollToYieldAdjustments() {
-  var heading = document.querySelector('.yield-adjustments-heading');
-  var input = document.getElementById('targetYield');
-  var target = heading || input;
+  var target = document.getElementById('yield-adjustments') || document.querySelector('.yield-adjustments-heading') || document.getElementById('targetYield');
   if (!target) return;
-  var mobileBar = document.getElementById('snapshotMobileBar');
-  var barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
-  var hdr = document.querySelector('header');
-  var hdrH = hdr ? hdr.offsetHeight : 0;
-  var offset = Math.max(barH, hdrH) + 56;
-  var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-  window.scrollTo({ top: top, behavior: 'smooth' });
+  scrollToWithOffset(target);
+  var input = document.getElementById('targetYield');
   if (input) {
     input.classList.add('input-highlight');
     setTimeout(function() { input.classList.remove('input-highlight'); }, 1500);
@@ -3236,18 +3250,10 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     setTimeout(() => {
       const buyerTypeEl = document.querySelector('.buyer-type-group');
       if (buyerTypeEl) {
-        const headerHeight = document.querySelector('header')?.offsetHeight || 0;
-        const top = buyerTypeEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
-        window.scrollTo({ top, behavior: 'smooth' });
+        scrollToWithOffset(buyerTypeEl);
       } else {
-        const mobileBar2 = document.getElementById('snapshotMobileBar');
-        const barH2 = (mobileBar2 && mobileBar2.classList.contains('visible')) ? mobileBar2.offsetHeight : 0;
-        const hdrEl2 = document.querySelector('header');
-        const hdrH2 = hdrEl2 ? hdrEl2.offsetHeight : 0;
-        const off = Math.max(barH2, hdrH2) + 8;
-        const tgt = resultsPanel.querySelector('.results-header-row') || resultsPanel;
-        const topPos = tgt.getBoundingClientRect().top + window.pageYOffset - off;
-        window.scrollTo({ top: topPos, behavior: 'smooth' });
+        var tgt = resultsPanel.querySelector('.results-header-row') || resultsPanel;
+        scrollToWithOffset(tgt);
       }
     }, 100);
   } catch (err) {
