@@ -8,6 +8,7 @@
 
 :root {
   --stickyOffset: 110px;
+  --control-height: 42px;
 }
 
 .scroll-target {
@@ -176,6 +177,8 @@ header .subtitle {
   width: 100%;
   max-width: 100%;
   padding: 10px 12px;
+  height: var(--control-height);
+  box-sizing: border-box;
   border: 1.5px solid #ddd;
   border-radius: 10px;
   font-size: 0.95rem;
@@ -1390,6 +1393,7 @@ input.is-warning {
   accent-color: #B11217;
   cursor: pointer;
   flex-shrink: 0;
+  display: block;
 }
 
 .toggle-checkbox-label {
@@ -1398,13 +1402,15 @@ input.is-warning {
 
 .letting-agent-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 8px;
 }
 
 .letting-agent-row input[type="number"] {
   flex: 1;
   padding: 8px 10px;
+  height: var(--control-height);
+  box-sizing: border-box;
   border: 1.5px solid #ddd;
   border-radius: 10px;
   font-size: 0.88rem;
@@ -1424,13 +1430,16 @@ input.is-warning {
   font-weight: 600;
   color: #555;
   background: #f8f9fb;
-  padding: 8px 10px;
+  padding: 0 14px;
+  height: var(--control-height);
+  box-sizing: border-box;
   border-radius: 10px;
   border: 1.5px solid #ddd;
   transition: border-color 0.2s, background 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  line-height: 1;
 }
 
 .vat-checkbox:has(input:checked) {
@@ -2225,11 +2234,15 @@ body.dark .rank-badge {
     gap: 0;
   }
 
+  :root {
+    --control-height: 44px;
+  }
+
   .form-group input,
   .form-group select {
     padding: 12px;
     font-size: 16px;
-    min-height: 44px;
+    height: var(--control-height);
   }
 
   .btn-calculate {
@@ -2334,9 +2347,8 @@ body.dark .rank-badge {
   }
 
   .vat-checkbox {
-    align-self: flex-start;
-    min-height: 44px;
-    display: flex;
+    height: var(--control-height);
+    display: inline-flex;
     align-items: center;
   }
 
