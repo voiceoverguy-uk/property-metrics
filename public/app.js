@@ -2481,8 +2481,13 @@ function checkReanalyseVisibility() {
 }
 
 function reanalyseWithNewYield() {
-  if (!validateDealForm()) return;
   var btn = document.getElementById('reanalyseBtn');
+  if (!hasAnalysedOnce) {
+    lastAnalysedTargetYield = getCurrentTargetYield();
+    if (btn) { btn.disabled = true; btn.classList.remove('active'); }
+    return;
+  }
+  if (!validateDealForm()) return;
   if (btn) { btn.disabled = true; btn.classList.remove('active'); }
   runCalculation();
 }
