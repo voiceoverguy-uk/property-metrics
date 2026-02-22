@@ -4,7 +4,14 @@ const APP_VERSION_DATE = 'February 2026';
 const RENT_WARN_THRESHOLD = 5000;
 const YIELD_WARN_THRESHOLD = 20;
 
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+  }
   const vf = document.getElementById('appVersionFooter');
   if (vf) vf.textContent = 'Version ' + APP_VERSION + ' \u2014 ' + APP_VERSION_DATE;
 });
@@ -2389,11 +2396,12 @@ async function runCalculation() {
     if (window.innerWidth <= 860) {
       setTimeout(() => {
         const mobileBar = document.getElementById('snapshotMobileBar');
-        const barHeight = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
-        const headerEl = document.querySelector('header');
-        const headerH = headerEl ? headerEl.offsetHeight : 0;
-        const offset = Math.max(barHeight, headerH) + 10;
-        const top = resultsPanel.getBoundingClientRect().top + window.pageYOffset - offset;
+        const barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
+        const hdrEl = document.querySelector('header');
+        const hdrH = hdrEl ? hdrEl.offsetHeight : 0;
+        const offset = Math.max(barH, hdrH) + 8;
+        const target = resultsPanel.querySelector('.results-header-row') || resultsPanel;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
         window.scrollTo({ top, behavior: 'smooth' });
       }, 150);
     }
@@ -3214,12 +3222,13 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
         const top = buyerTypeEl.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
         window.scrollTo({ top, behavior: 'smooth' });
       } else {
-        const mobileBar = document.getElementById('snapshotMobileBar');
-        const barH = (mobileBar && mobileBar.classList.contains('visible')) ? mobileBar.offsetHeight : 0;
-        const hdrEl = document.querySelector('header');
-        const hdrH = hdrEl ? hdrEl.offsetHeight : 0;
-        const off = Math.max(barH, hdrH) + 10;
-        const topPos = resultsPanel.getBoundingClientRect().top + window.pageYOffset - off;
+        const mobileBar2 = document.getElementById('snapshotMobileBar');
+        const barH2 = (mobileBar2 && mobileBar2.classList.contains('visible')) ? mobileBar2.offsetHeight : 0;
+        const hdrEl2 = document.querySelector('header');
+        const hdrH2 = hdrEl2 ? hdrEl2.offsetHeight : 0;
+        const off = Math.max(barH2, hdrH2) + 8;
+        const tgt = resultsPanel.querySelector('.results-header-row') || resultsPanel;
+        const topPos = tgt.getBoundingClientRect().top + window.pageYOffset - off;
         window.scrollTo({ top: topPos, behavior: 'smooth' });
       }
     }, 100);
