@@ -3591,6 +3591,10 @@ function addToHistory(result) {
     maintenanceMode: isSimple ? 'pct' : maintenanceMode,
     maintenancePct: isSimple ? 0 : (parseFloat(document.getElementById('maintenancePct').value) || 0),
     maintenanceFixed: isSimple ? 0 : (parseFloat(document.getElementById('maintenanceFixed').value) || 0),
+    locationLat: selectedLocation ? selectedLocation.lat : null,
+    locationLng: selectedLocation ? selectedLocation.lng : null,
+    formattedAddress: selectedLocation ? selectedLocation.address : '',
+    propertyTown: propertyTown || '',
     mode: currentMode,
     date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
   };
@@ -3739,9 +3743,51 @@ function applyHistoryEntry(entry) {
     if (mtBtn) mtBtn.classList.add('active');
   }
 
+  restoreMapFromHistory(entry);
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
   runCalculation();
   checkStartAgainVisibility();
+}
+
+function restoreMapFromHistory(entry) {
+  if (entry.locationLat && entry.locationLng) {
+    selectedLocation = { lat: entry.locationLat, lng: entry.locationLng, address: entry.formattedAddress || entry.address || '' };
+    propertyTown = entry.propertyTown || '';
+    try {
+      showMap(entry.locationLat, entry.locationLng, entry.formattedAddress || entry.address || 'Property Location');
+      updateAreaContext(entry.locationLat, entry.locationLng);
+    } catch (e) {
+      console.warn('Map restore failed:', e);
+    }
+  } else if (entry.address && typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: entry.address + ', UK', region: 'gb' }, function(results, status) {
+      if (status === 'OK' && results && results.length > 0) {
+        var loc = results[0].geometry.location;
+        var lat = loc.lat();
+        var lng = loc.lng();
+        selectedLocation = { lat: lat, lng: lng, address: entry.address };
+        propertyTown = '';
+        var comps = results[0].address_components;
+        if (comps) {
+          propertyTown = extractPropertyTown(comps, 'classic');
+        }
+        try {
+          showMap(lat, lng, entry.address);
+          updateAreaContext(lat, lng);
+        } catch (e) {
+          console.warn('Map restore failed:', e);
+        }
+      } else {
+        var ctx = document.getElementById('areaContext');
+        if (ctx) {
+          ctx.style.display = '';
+          ctx.innerHTML = '<div class="distance-row" style="color:var(--text-muted,#888);">Location not found \u2014 try adding a postcode</div>';
+        }
+      }
+    });
+  }
 }
 
 function getHistorySortMode() {
