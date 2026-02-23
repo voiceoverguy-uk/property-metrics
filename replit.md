@@ -26,6 +26,7 @@ RentalMetrics is a web-based UK property investment deal analyser for England & 
 - **Results Display**: Single scenario display (Investor or FTB), not side-by-side. Mortgage calculations are based on cash invested (deposit + SDLT + fees + costs) when a mortgage is active.
 - **Comparison Feature**: "Compare Deals" overlay in the history section, ranking deals by rating/yield with gold/silver/bronze badges for top deals.
 - **PDF Export**: Clean print layout for generating PDF reports.
+- **Excel Export**: "Export to Excel" button in Deal Analysis results, downloads `.xlsx` via SheetJS (CDN). Single "Deal Summary" sheet with two-column Label/Value layout covering meta, purchase/upfront, monthly, yield/rating, and location sections. File named `RentalMetrics-Deal-<ref>-YYYY-MM-DD.xlsx`.
 
 ### Technical Implementations
 - **Client-side Routing**: Implemented using `pushState` for SEO-friendly URLs (`/`, `/deal-analyser`, `/sdlt-calculator`) with Express fallback routes. Unique title, description, canonical, OG, and Twitter metadata per route. Body class system: `simple-mode` (homepage), `deal-mode` (deal analyser), `sdlt-mode` (SDLT calculator) controls route-specific visibility.

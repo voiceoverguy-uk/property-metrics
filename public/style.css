@@ -1039,6 +1039,25 @@ body.dark .epc-note {
   color: #fff;
 }
 
+.btn-export-excel {
+  padding: 8px 18px;
+  background: #fff;
+  color: #1a7a2e;
+  border: 2px solid #1a7a2e;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-export-excel:hover {
+  background: #1a7a2e;
+  color: #fff;
+}
+
 .results-header-row {
   display: flex;
   justify-content: space-between;
@@ -2576,7 +2595,8 @@ body.dark .rank-badge {
   .btn-calculate,
   .btn-share,
   .btn-save-pdf,
-  .btn-save-pdf-inline {
+  .btn-save-pdf-inline,
+  .btn-export-excel {
     max-width: 100%;
   }
 
@@ -3071,6 +3091,7 @@ body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow
   .btn-save-pdf,
   .btn-save-pdf-inline,
   .btn-share,
+  .btn-export-excel,
   .btn-add-item,
   .btn-remove-item,
   .tooltip,
@@ -3651,6 +3672,17 @@ body.dark .btn-save-pdf-inline {
 
 body.dark .btn-save-pdf-inline:hover {
   background: #e8e8e8;
+  color: #16213e;
+}
+
+body.dark .btn-export-excel {
+  background: #16213e;
+  color: #4ec9a0;
+  border-color: #4ec9a0;
+}
+
+body.dark .btn-export-excel:hover {
+  background: #4ec9a0;
   color: #16213e;
 }
 

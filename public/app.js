@@ -2610,6 +2610,7 @@ function renderResults(result) {
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareDeal(this)">Share</button>
           <button type="button" class="btn-save-pdf-inline" onclick="printReport()">Save as PDF</button>
+          <button type="button" class="btn-export-excel" onclick="exportDealToExcel()">Export to Excel</button>
           <button type="button" class="btn-collapse-results" onclick="toggleResultsCollapse(this)" title="Collapse results">&#9650;</button>
         </div>
       </div>
@@ -3538,6 +3539,113 @@ function printReport() {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
     document.body.classList.remove('is-exporting');
   }
+}
+
+function exportDealToExcel() {
+  if (!lastResult) {
+    alert('Please run a deal analysis first.');
+    return;
+  }
+  if (typeof XLSX === 'undefined') {
+    alert('Excel library not loaded. Please refresh the page and try again.');
+    return;
+  }
+
+  const buyerType = getSelectedBuyerType();
+  const data = getResultForBuyerType(lastResult, buyerType);
+  if (!data || !data.breakdown) {
+    alert('Deal data is incomplete. Please run the analysis again.');
+    return;
+  }
+
+  const address = document.getElementById('address').value || 'Not specified';
+  const dealRef = document.getElementById('dealReference').value || '';
+  const price = getCurrencyFieldValue('price');
+  const monthlyRent = getCurrencyFieldValue('monthlyRent');
+  const purchaseType = getSelectedPurchaseType();
+  const includeMortgage = purchaseType === 'mortgage';
+  const mortgage = includeMortgage && lastMortgageData ? lastMortgageData[buyerType] : null;
+  const targetYield = parseFloat(document.getElementById('targetYield').value) || 7;
+  const rating = getDealRating(data.netYield);
+  const buyerLabel = getBuyerTypeLabel(buyerType) || 'Investor';
+  const lettingPct = getLettingAgentPct();
+  const lettingMonthly = getLettingAgentFeeMonthly();
+  const isSimple = currentMode === 'simple';
+  const runningCosts = getRunningCostItemsTotal();
+  const refurbCosts = isSimple ? getSimpleCostItemsTotal() : getCostItemsTotal();
+  const now = new Date();
+  const dateExported = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+    + ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  var rows = [];
+  rows.push(['Deal Reference', dealRef || '—']);
+  rows.push(['Address / Postcode', address]);
+  rows.push(['Buyer Type', buyerLabel]);
+  rows.push(['Purchase Type', includeMortgage ? 'Mortgage' : 'Cash']);
+  rows.push(['Date Exported', dateExported]);
+
+  rows.push(['Asking Price (£)', price]);
+  if (mortgage) {
+    rows.push(['Deposit (£)', mortgage.depositAmount]);
+    rows.push(['Mortgage Amount (£)', mortgage.mortgageAmount]);
+  }
+  rows.push(['SDLT (£)', data.sdlt]);
+  rows.push(['Additional Costs Total (£)', refurbCosts]);
+  var upfrontTotal = mortgage ? mortgage.totalCashInvested : data.totalCost;
+  rows.push(['Upfront Total (£)', upfrontTotal]);
+
+  rows.push(['Expected Monthly Rent (£/mo)', monthlyRent]);
+  rows.push(['Letting Agent Fee (%)', lettingPct]);
+  rows.push(['Letting Agent Fee (£/mo)', Math.round(lettingMonthly * 100) / 100]);
+  rows.push(['Total Recurring Monthly Costs (£/mo)', Math.round(runningCosts * 100) / 100]);
+  if (mortgage) {
+    rows.push(['Mortgage Payment (£/mo)', Math.round(mortgage.monthlyPayment * 100) / 100]);
+    rows.push(['Monthly Cashflow (£/mo)', Math.round(mortgage.monthlyCashFlow * 100) / 100]);
+  } else {
+    var cashMonthlyCashflow = (data.netAnnualRent || 0) / 12;
+    rows.push(['Monthly Cashflow (£/mo)', Math.round(cashMonthlyCashflow * 100) / 100]);
+  }
+
+  rows.push(['Gross Yield (%)', data.grossYield]);
+  rows.push(['Net Yield - Asset (%)', data.netYield]);
+  if (mortgage) {
+    rows.push(['Cash-on-Cash (%)', Math.round(mortgage.cashOnCashReturn * 100) / 100]);
+  }
+  rows.push(['Target Yield (%)', targetYield]);
+  if (data.targetOffer) {
+    rows.push(['Target Offer Price (£)', data.targetOffer.offerPrice || 0]);
+  }
+  rows.push(['Grade', rating.grade + ' \u2013 ' + rating.label]);
+  var delta = data.netYield - targetYield;
+  var deltaSign = delta >= 0 ? '+' : '';
+  rows.push(['Delta vs Target', deltaSign + (Math.round(delta * 100) / 100) + '% vs your ' + targetYield.toFixed(2) + '% target']);
+
+  if (propertyTown) {
+    rows.push(['Property Town', propertyTown]);
+  }
+
+  var ws = XLSX.utils.aoa_to_sheet([['Label', 'Value']].concat(rows));
+  ws['!cols'] = [{ wch: 32 }, { wch: 40 }];
+
+  for (var r = 0; r <= rows.length; r++) {
+    var cellRef = XLSX.utils.encode_cell({ r: r, c: 0 });
+    if (ws[cellRef]) {
+      if (!ws[cellRef].s) ws[cellRef].s = {};
+      ws[cellRef].s.font = { bold: true };
+    }
+  }
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Deal Summary');
+
+  var dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  var sanitisedRef = dealRef.replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '-').substring(0, 40);
+  var fileParts = ['RentalMetrics-Deal'];
+  if (sanitisedRef) fileParts.push(sanitisedRef);
+  fileParts.push(dateStr);
+  var filename = fileParts.join('-') + '.xlsx';
+
+  XLSX.writeFile(wb, filename);
 }
 
 function renderSDLTStandaloneResults(data, price) {
