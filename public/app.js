@@ -1639,8 +1639,8 @@ function getDealRating(netYield) {
   const y = parseFloat(netYield);
   if (y >= 8) return { grade: 'A', label: 'Excellent', color: '#0a7a2e' };
   if (y >= 7) return { grade: 'B', label: 'Strong', color: '#1a9a4a' };
-  if (y >= 6) return { grade: 'C', label: 'Fair', color: '#b8860b' };
-  if (y >= 5) return { grade: 'D', label: 'Weak', color: '#cc5500' };
+  if (y >= 6) return { grade: 'C', label: 'Moderate', color: '#b8860b' };
+  if (y >= 5) return { grade: 'D', label: 'Below Target', color: '#cc5500' };
   if (y >= 4) return { grade: 'E', label: 'Poor', color: '#e07000' };
   return { grade: 'F', label: 'Very Weak', color: '#B11217' };
 }
