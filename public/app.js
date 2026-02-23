@@ -1275,6 +1275,70 @@ function setupClassicAutocomplete(addressInput, dropdown) {
   });
 }
 
+var CITY_CENTRES = [
+  { name: "London", lat: 51.5074, lng: -0.1278 },
+  { name: "Manchester", lat: 53.4808, lng: -2.2426 },
+  { name: "Birmingham", lat: 52.4862, lng: -1.8904 },
+  { name: "Leeds", lat: 53.7997, lng: -1.5492 },
+  { name: "Sheffield", lat: 53.3811, lng: -1.4701 },
+  { name: "Liverpool", lat: 53.4084, lng: -2.9916 },
+  { name: "Bristol", lat: 51.4545, lng: -2.5879 },
+  { name: "Nottingham", lat: 52.9548, lng: -1.1581 },
+  { name: "Leicester", lat: 52.6369, lng: -1.1398 },
+  { name: "Newcastle", lat: 54.9783, lng: -1.6178 },
+  { name: "Bradford", lat: 53.7950, lng: -1.7594 },
+  { name: "Wakefield", lat: 53.6833, lng: -1.4977 },
+  { name: "Coventry", lat: 52.4068, lng: -1.5197 },
+  { name: "Sunderland", lat: 54.9069, lng: -1.3838 },
+  { name: "Belfast", lat: 54.5973, lng: -5.9301 },
+  { name: "Stoke-on-Trent", lat: 53.0027, lng: -2.1794 },
+  { name: "Plymouth", lat: 50.3755, lng: -4.1427 },
+  { name: "Southampton", lat: 50.9097, lng: -1.4044 },
+  { name: "Cambridge", lat: 52.2053, lng: 0.1218 },
+  { name: "Oxford", lat: 51.7520, lng: -1.2577 }
+];
+
+function haversineDistanceMiles(lat1, lng1, lat2, lng2) {
+  var R = 3958.8;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function findNearestCity(lat, lng) {
+  var nearest = null;
+  var minDist = Infinity;
+  for (var i = 0; i < CITY_CENTRES.length; i++) {
+    var d = haversineDistanceMiles(lat, lng, CITY_CENTRES[i].lat, CITY_CENTRES[i].lng);
+    if (d < minDist) { minDist = d; nearest = CITY_CENTRES[i]; }
+  }
+  return nearest ? { name: nearest.name, miles: Math.round(minDist * 10) / 10 } : null;
+}
+
+function updateAreaContext(lat, lng) {
+  var ctx = document.getElementById('areaContext');
+  var cityEl = document.getElementById('nearestCityLine');
+  var epcEl = document.getElementById('epcLinkLine');
+  if (!ctx) return;
+
+  var nearest = findNearestCity(lat, lng);
+  if (nearest && cityEl) {
+    cityEl.textContent = 'Nearest city centre: ' + nearest.name + ' \u2014 ' + nearest.miles + ' miles (straight-line)';
+  }
+
+  if (epcEl) {
+    var postcode = suggestedPostcode || '';
+    var pcHint = postcode ? ' (postcode: ' + escHtml(postcode) + ')' : '';
+    epcEl.innerHTML = '<a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer">EPC: Check rating on GOV.UK</a>' +
+      pcHint + ' <span class="epc-note">(opens official EPC register)</span>';
+  }
+
+  ctx.style.display = '';
+}
+
 function showMap(lat, lng, title) {
   mapSection.style.display = '';
   const pos = { lat, lng };
@@ -1308,6 +1372,8 @@ function showMap(lat, lng, title) {
     dirBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
     dirBtn.style.display = '';
   }
+
+  updateAreaContext(lat, lng);
 }
 
 initGoogleMaps();
