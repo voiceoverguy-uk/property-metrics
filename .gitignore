@@ -132,5 +132,5 @@ dist
 # Replit debugger
 .breakpoints
 
-# Suggestion data
-data/
+# Suggestion data (runtime-generated, root level)
+/data/cost-label-suggestions.json
