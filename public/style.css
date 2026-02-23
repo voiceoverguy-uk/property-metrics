@@ -2352,6 +2352,143 @@ body.dark .rank-badge {
   background: #fcc;
 }
 
+.history-card-checkbox {
+  width: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.history-card-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #B11217;
+  cursor: pointer;
+  margin: 0;
+}
+
+.history-selection-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+}
+
+.sel-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-sel-action {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-sel-action:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.sel-count {
+  color: #888;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.btn-compare-deals:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
+
+.compare-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.compare-prompt-container {
+  background: #fff;
+  border-radius: 14px;
+  max-width: 440px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.compare-prompt-container h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.15rem;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.compare-prompt-container p {
+  margin: 0 0 24px 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.compare-prompt-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-compare-prompt-primary {
+  padding: 10px 20px;
+  background: #B11217;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare-prompt-primary:hover {
+  background: #8e0e13;
+}
+
+.btn-compare-prompt-secondary {
+  padding: 10px 20px;
+  background: transparent;
+  color: #555;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-compare-prompt-secondary:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
 .history-empty {
   text-align: center;
   padding: 20px;
@@ -2686,6 +2823,23 @@ body.dark .rank-badge {
 .btn-compare-pdf:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.btn-compare-xlsx {
+  padding: 6px 16px;
+  background: transparent;
+  color: #B11217;
+  border: 1.5px solid #B11217;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-compare-xlsx:hover {
+  background: #B11217;
+  color: #fff;
 }
 
 .compare-close {
@@ -3046,6 +3200,22 @@ body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow
   .compare-container {
     padding: 20px 16px;
   }
+
+  .compare-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .compare-header-buttons {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-compare-xlsx,
+  .btn-compare-pdf {
+    font-size: 0.78rem;
+    padding: 5px 12px;
+  }
   
   .compare-card-metrics {
     grid-template-columns: repeat(2, 1fr);
@@ -3062,6 +3232,15 @@ body.dark .compare-card-highlight { border-color: #d42027 !important; box-shadow
   .best-deal-badge {
     font-size: 0.6rem;
     padding: 1px 5px;
+  }
+
+  .history-selection-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .compare-prompt-container {
+    padding: 24px 20px;
   }
 }
 
@@ -3913,6 +4092,22 @@ body.dark .btn-clear-history:hover {
 body.dark .history-empty {
   color: #a0a0b0;
 }
+
+body.dark .history-selection-controls { color: #aaa; }
+body.dark .btn-sel-action { color: #bbb; border-color: #444; }
+body.dark .btn-sel-action:hover { background: #333; border-color: #666; }
+body.dark .sel-count { color: #888; }
+
+body.dark .compare-prompt-container { background: #1e1e1e; }
+body.dark .compare-prompt-container h3 { color: #eee; }
+body.dark .compare-prompt-container p { color: #aaa; }
+body.dark .btn-compare-prompt-primary { background: #B11217; color: #fff; }
+body.dark .btn-compare-prompt-primary:hover { background: #d41920; }
+body.dark .btn-compare-prompt-secondary { color: #bbb; border-color: #444; }
+body.dark .btn-compare-prompt-secondary:hover { background: #2a2a2a; border-color: #666; }
+
+body.dark .btn-compare-xlsx { color: #e88; border-color: #B11217; }
+body.dark .btn-compare-xlsx:hover { background: #B11217; color: #fff; }
 
 body.dark .yield-gauge svg path[stroke="#e8e8e8"] {
   stroke: #2a2a4a;

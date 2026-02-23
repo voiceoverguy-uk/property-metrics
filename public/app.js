@@ -3727,6 +3727,8 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
   }
 });
 
+var selectedHistoryIds = new Set();
+
 function getHistory() {
   try {
     return JSON.parse(localStorage.getItem('dealHistory')) || [];
@@ -3823,12 +3825,14 @@ function addToHistory(result) {
 function deleteHistoryItem(id) {
   let history = getHistory();
   history = history.filter(h => h.id !== id);
+  selectedHistoryIds.delete(id);
   saveHistory(history);
   renderHistory();
 }
 
 function clearHistory() {
   localStorage.removeItem('dealHistory');
+  selectedHistoryIds.clear();
   renderHistory();
 }
 
@@ -4034,7 +4038,29 @@ function renderHistory() {
 
   if (section) {
     const h2 = section.querySelector('h2');
-    if (h2) h2.innerHTML = 'Comparison History ' + (history.length >= 2 ? '<button type="button" class="btn-compare-deals" onclick="openCompare()">Compare Deals</button> ' : '') + '<button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
+    const canCompare = history.length >= 2;
+    const compareBtnDisabled = canCompare ? '' : ' disabled title="Add at least two deals to compare"';
+    if (h2) h2.innerHTML = 'Comparison History <button type="button" class="btn-compare-deals"' + compareBtnDisabled + ' onclick="openCompare()">Compare Deals</button> <button type="button" class="btn-clear-history" onclick="clearHistory()">Clear All</button>';
+  }
+
+  var selControls = document.getElementById('historySelectionControls');
+  if (!selControls && history.length >= 2) {
+    selControls = document.createElement('div');
+    selControls.id = 'historySelectionControls';
+    selControls.className = 'history-selection-controls';
+    var metaEl2 = document.getElementById('historyMeta');
+    if (metaEl2) metaEl2.parentNode.insertBefore(selControls, historyList);
+  }
+  if (selControls) {
+    if (history.length < 2) {
+      selControls.style.display = 'none';
+    } else {
+      selControls.style.display = '';
+      var validIds = new Set(history.map(function(e) { return e.id; }));
+      selectedHistoryIds.forEach(function(id) { if (!validIds.has(id)) selectedHistoryIds.delete(id); });
+      var selCount = selectedHistoryIds.size;
+      selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="selectAllHistory()">Select all</button><button type="button" class="btn-sel-action" onclick="selectNoneHistory()">Select none</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
+    }
   }
 
   const sorted = history.map((entry, idx) => {
@@ -4094,8 +4120,10 @@ function renderHistory() {
     detailLine += ' \u00b7 <span class="history-chunk-nowrap ' + cfClass + '">' + cfSign + '\u00a3' + Math.abs(monthlyCf).toLocaleString('en-GB') + '/mo</span>';
     detailLine += ' ' + purchaseIcon;
 
+    const isChecked = selectedHistoryIds.has(entry.id) ? ' checked' : '';
     html += `
       <div class="history-card" onclick="loadHistoryItem(${entry.id})">
+        <label class="history-card-checkbox" onclick="event.stopPropagation();"><input type="checkbox"${isChecked} onchange="toggleHistorySelection(${entry.id}, this.checked)"></label>
         <div class="history-card-grade" style="background:${rating.color};" onclick="event.stopPropagation(); openCompareForDeal(${entry.id});" title="Tap to compare">${rating.grade}</div>
         <div class="history-card-info">
           <div class="history-card-address">${showRanks ? '<span class="rank-badge">#' + (rank + 1) + '</span>' : ''}${displayName}</div>
@@ -4161,24 +4189,99 @@ function captureSnapshot() {
 window.captureSnapshot = captureSnapshot;
 
 
-function openCompare() {
-  const history = getHistory();
-  if (history.length < 2) return;
+function toggleHistorySelection(id, checked) {
+  if (checked) selectedHistoryIds.add(id); else selectedHistoryIds.delete(id);
+  var selControls = document.getElementById('historySelectionControls');
+  if (selControls) {
+    var selCount = selectedHistoryIds.size;
+    selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="selectAllHistory()">Select all</button><button type="button" class="btn-sel-action" onclick="selectNoneHistory()">Select none</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
+  }
+}
+window.toggleHistorySelection = toggleHistorySelection;
+
+function selectAllHistory() {
+  var history = getHistory();
+  selectedHistoryIds.clear();
+  history.forEach(function(e) { selectedHistoryIds.add(e.id); });
+  renderHistory();
+}
+window.selectAllHistory = selectAllHistory;
+
+function selectNoneHistory() {
+  selectedHistoryIds.clear();
+  renderHistory();
+}
+window.selectNoneHistory = selectNoneHistory;
+
+function showComparePrompt() {
+  var existing = document.getElementById('comparePromptOverlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'comparePromptOverlay';
+  overlay.className = 'compare-prompt-overlay';
+  overlay.innerHTML = '<div class="compare-prompt-container">' +
+    '<h3>Select Deals for Comparison</h3>' +
+    '<p>No deals have been selected for comparison.<br>You can analyse your full comparison history or return to select specific investments.</p>' +
+    '<div class="compare-prompt-buttons">' +
+    '<button type="button" class="btn-compare-prompt-primary" onclick="closeComparePrompt(); openCompareWithAll();">Compare All Deals</button>' +
+    '<button type="button" class="btn-compare-prompt-secondary" onclick="closeComparePrompt();">Select Specific Deals</button>' +
+    '</div></div>';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeComparePrompt(); });
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+}
+window.showComparePrompt = showComparePrompt;
+
+function closeComparePrompt() {
+  var overlay = document.getElementById('comparePromptOverlay');
+  if (overlay) overlay.remove();
+  document.body.style.overflow = '';
+}
+window.closeComparePrompt = closeComparePrompt;
+
+function openCompareWithAll() {
   document.getElementById('compareOverlay').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   hideSnapshotForCompare();
+  compareFilteredIds = null;
   renderCompareTable();
+}
+window.openCompareWithAll = openCompareWithAll;
+
+var compareFilteredIds = null;
+
+function openCompare() {
+  const history = getHistory();
+  if (history.length < 2) return;
+  if (selectedHistoryIds.size > 0) {
+    var validIds = new Set(history.map(function(e) { return e.id; }));
+    var filtered = [];
+    selectedHistoryIds.forEach(function(id) { if (validIds.has(id)) filtered.push(id); });
+    if (filtered.length < 2) {
+      alert('Please select at least 2 deals to compare.');
+      return;
+    }
+    compareFilteredIds = new Set(filtered);
+    document.getElementById('compareOverlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    hideSnapshotForCompare();
+    renderCompareTable();
+  } else {
+    showComparePrompt();
+  }
 }
 
 function closeCompare() {
   document.getElementById('compareOverlay').style.display = 'none';
   document.body.style.overflow = '';
+  compareFilteredIds = null;
   restoreSnapshotAfterCompare();
 }
 
 function openCompareForDeal(dealId) {
   const history = getHistory();
   if (history.length < 1) return;
+  compareFilteredIds = null;
   document.getElementById('compareOverlay').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   hideSnapshotForCompare();
@@ -4186,9 +4289,15 @@ function openCompareForDeal(dealId) {
 }
 window.openCompareForDeal = openCompareForDeal;
 
+var lastCompareEntries = [];
+
 function renderCompareTable(highlightDealId) {
-  const history = getHistory();
+  let history = getHistory();
   if (history.length === 0) return;
+  if (compareFilteredIds) {
+    history = history.filter(function(e) { return compareFilteredIds.has(e.id); });
+    if (history.length === 0) return;
+  }
   
   const sortBy = document.getElementById('compareSortBy').value;
   const ratingOrder = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5 };
@@ -4265,6 +4374,8 @@ function renderCompareTable(highlightDealId) {
       default: return 0;
     }
   });
+
+  lastCompareEntries = entries;
   
   let html = '<div class="compare-cards">';
   
@@ -4364,13 +4475,74 @@ document.getElementById('compareOverlay').addEventListener('click', function(e) 
   if (e.target === this) closeCompare();
 });
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('compareOverlay').style.display !== 'none') {
-    closeCompare();
+  if (e.key === 'Escape') {
+    var promptEl = document.getElementById('comparePromptOverlay');
+    if (promptEl) { closeComparePrompt(); return; }
+    if (document.getElementById('compareOverlay').style.display !== 'none') {
+      closeCompare();
+    }
   }
 });
 
+function downloadCompareXlsx() {
+  if (!lastCompareEntries || lastCompareEntries.length === 0) return;
+  if (!window.XLSX) { alert('Excel library not loaded. Please refresh and try again.'); return; }
+
+  var rows = lastCompareEntries.map(function(e) {
+    var dateSaved = e.date || '';
+    var ref = e.dealReference || '';
+    var addr = e.address || '';
+    var buyerType = getBuyerTypeLabel(e.buyerType || 'investor');
+    var purchaseType = e.isMortgage ? 'Mortgage' : 'Cash';
+    var price = e.price || '';
+    var rent = e.monthlyRent || '';
+    var netYield = e.displayNetYield != null ? Math.round(e.displayNetYield * 100) / 100 : '';
+    var grossYield = e.grossYieldCalc != null ? e.grossYieldCalc : '';
+    var cf = e.monthlyCashFlow != null ? e.monthlyCashFlow : '';
+    var coc = e.cashOnCash != null ? Math.round(e.cashOnCash * 100) / 100 : '';
+    var sdlt = e.displaySdlt != null ? e.displaySdlt : '';
+    var deposit = e.isMortgage && e.mortgageDeposit ? e.mortgageDeposit : '';
+    var mortgageAmount = e.isMortgage && e.mortgageAmount ? e.mortgageAmount : '';
+    var agentPct = e.lettingAgentPct != null ? e.lettingAgentPct : '';
+    return {
+      'Date Saved': dateSaved,
+      'Deal Reference': ref,
+      'Address': addr,
+      'Buyer Type': buyerType,
+      'Purchase Type': purchaseType,
+      'Asking Price (\u00a3)': price,
+      'Monthly Rent (\u00a3)': rent,
+      'Net Yield (Asset) %': netYield,
+      'Gross Yield %': grossYield,
+      'Monthly Cashflow (\u00a3)': cf,
+      'Cash-on-Cash %': coc,
+      'SDLT (\u00a3)': sdlt,
+      'Deposit (\u00a3)': deposit,
+      'Mortgage Amount (\u00a3)': mortgageAmount,
+      'Agent Fee (%)': agentPct
+    };
+  });
+
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.json_to_sheet(rows);
+  var colWidths = [
+    { wch: 12 }, { wch: 18 }, { wch: 30 }, { wch: 14 }, { wch: 12 },
+    { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 16 },
+    { wch: 14 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 12 }
+  ];
+  ws['!cols'] = colWidths;
+  XLSX.utils.book_append_sheet(wb, ws, 'Comparison');
+  var now = new Date();
+  var ds = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  XLSX.writeFile(wb, 'rental-metrics-comparison-' + ds + '.xlsx');
+}
+window.downloadCompareXlsx = downloadCompareXlsx;
+
 function downloadComparePdf() {
-  const history = getHistory();
+  let history = getHistory();
+  if (compareFilteredIds) {
+    history = history.filter(function(e) { return compareFilteredIds.has(e.id); });
+  }
   if (history.length < 2) return;
 
   const pdfBtn = document.querySelector('.btn-compare-pdf');
