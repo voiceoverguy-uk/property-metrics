@@ -1429,28 +1429,32 @@ function findNearestStations(lat, lng, stations) {
   return out;
 }
 
-function updateAreaContext(lat, lng) {
-  var ctx = document.getElementById('areaContext');
-  var townEl = document.getElementById('townCentreLine');
-  var majorEl = document.getElementById('majorCityLine');
-  var trainEl = document.getElementById('trainStationLine');
-  var trainEl2 = document.getElementById('trainStationLine2');
-  if (!ctx) return;
+function reverseGeocodeTown(lat, lng, callback) {
+  if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+    callback('');
+    return;
+  }
+  var geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ location: { lat: lat, lng: lng } }, function(results, status) {
+    if (status === 'OK' && results && results.length > 0) {
+      var town = extractPropertyTown(results[0].address_components, 'classic');
+      callback(town || '');
+    } else {
+      callback('');
+    }
+  });
+}
 
-  if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
-  if (majorEl) { majorEl.style.display = 'none'; majorEl.innerHTML = ''; majorEl.className = 'distance-row'; }
-  if (trainEl) { trainEl.style.display = 'none'; trainEl.innerHTML = ''; trainEl.className = 'distance-row'; }
-  if (trainEl2) { trainEl2.style.display = 'none'; trainEl2.innerHTML = ''; trainEl2.className = 'distance-row'; }
-
+function renderTownAndMajorCity(lat, lng, town, townEl, majorEl) {
   var nearestMajor = findNearestCity(lat, lng);
-  var townNorm = propertyTown.toLowerCase().trim();
+  var townNorm = town.toLowerCase().trim();
 
-  if (propertyTown) {
-    geocodeTownCentre(propertyTown, function(centre) {
+  if (town) {
+    geocodeTownCentre(town, function(centre) {
       if (centre && townEl) {
         var townDist = haversineDistanceMiles(lat, lng, centre.lat, centre.lng);
         var band = getDistanceBand(townDist);
-        renderDistanceRow(townEl, band.label, band.icon, band.className, propertyTown + ' centre', townDist, true);
+        renderDistanceRow(townEl, band.label, band.icon, band.className, town + ' centre', townDist, true);
       }
 
       if (nearestMajor && majorEl) {
@@ -1466,6 +1470,36 @@ function updateAreaContext(lat, lng) {
       var majorBand = getDistanceBand(nearestMajor.miles);
       renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' centre', nearestMajor.miles, true);
     }
+  }
+}
+
+var _areaContextRequestId = 0;
+
+function updateAreaContext(lat, lng) {
+  var ctx = document.getElementById('areaContext');
+  var townEl = document.getElementById('townCentreLine');
+  var majorEl = document.getElementById('majorCityLine');
+  var trainEl = document.getElementById('trainStationLine');
+  var trainEl2 = document.getElementById('trainStationLine2');
+  if (!ctx) return;
+
+  var requestId = ++_areaContextRequestId;
+
+  if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
+  if (majorEl) { majorEl.style.display = 'none'; majorEl.innerHTML = ''; majorEl.className = 'distance-row'; }
+  if (trainEl) { trainEl.style.display = 'none'; trainEl.innerHTML = ''; trainEl.className = 'distance-row'; }
+  if (trainEl2) { trainEl2.style.display = 'none'; trainEl2.innerHTML = ''; trainEl2.className = 'distance-row'; }
+
+  if (propertyTown) {
+    renderTownAndMajorCity(lat, lng, propertyTown, townEl, majorEl);
+  } else {
+    reverseGeocodeTown(lat, lng, function(town) {
+      if (requestId !== _areaContextRequestId) return;
+      if (town && !propertyTown) {
+        propertyTown = town;
+      }
+      renderTownAndMajorCity(lat, lng, town, townEl, majorEl);
+    });
   }
 
   loadTrainStations(function(stations) {
