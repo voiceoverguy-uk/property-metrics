@@ -859,6 +859,21 @@ header .subtitle {
   color: #999;
 }
 
+.epc-link-line {
+  font-size: 0.82rem;
+  margin: 2px 0 0 0;
+}
+.epc-link-line a {
+  color: #1a7a5a;
+  text-decoration: none;
+}
+.epc-link-line a:hover {
+  text-decoration: underline;
+}
+body.dark .epc-link-line a {
+  color: #4ec9a0;
+}
+
 .distance-row {
   font-size: 0.85rem;
   line-height: 1.5;

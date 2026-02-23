@@ -1435,7 +1435,6 @@ function updateAreaContext(lat, lng) {
   var majorEl = document.getElementById('majorCityLine');
   var trainEl = document.getElementById('trainStationLine');
   var trainEl2 = document.getElementById('trainStationLine2');
-  var epcEl = document.getElementById('epcLinkLine');
   if (!ctx) return;
 
   if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
@@ -1483,13 +1482,6 @@ function updateAreaContext(lat, lng) {
       trainEl2.style.display = '';
     }
   });
-
-  if (epcEl) {
-    var postcode = suggestedPostcode || '';
-    var pcHint = postcode ? ' (postcode: ' + escHtml(postcode) + ')' : '';
-    epcEl.innerHTML = '<a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer">EPC: Check rating on GOV.UK</a>' +
-      pcHint + ' <span class="epc-note">(opens official EPC register)</span>';
-  }
 
   ctx.style.display = '';
 }
@@ -2571,12 +2563,17 @@ function renderResults(result) {
   summaryParts.push(escHtml(buyerLabel));
   const dealSummaryLine = summaryParts.join(' · ');
 
+  const epcPostcode = suggestedPostcode || '';
+  const epcHint = epcPostcode ? ' (postcode: ' + escHtml(epcPostcode) + ')' : '';
+  const epcLinkHtml = '<p class="epc-link-line no-export"><a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer">EPC: Check rating on GOV.UK</a>' + epcHint + ' <span class="epc-note">(opens official EPC register)</span></p>';
+
   const html = `
     <div class="results-content">
       <div class="results-header-row scroll-target" id="deal-analysis">
         <div>
           <h2>Deal Analysis</h2>
           ${dealSummaryLine ? `<p class="address-line">${dealSummaryLine}</p>` : ''}
+          ${epcLinkHtml}
         </div>
         <div class="results-header-buttons">
           <button type="button" class="btn-share" onclick="shareDeal(this)">Share</button>
