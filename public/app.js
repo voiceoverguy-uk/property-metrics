@@ -2563,9 +2563,7 @@ function renderResults(result) {
   summaryParts.push(escHtml(buyerLabel));
   const dealSummaryLine = summaryParts.join(' · ');
 
-  const epcPostcode = suggestedPostcode || '';
-  const epcHint = epcPostcode ? ' (postcode: ' + escHtml(epcPostcode) + ')' : '';
-  const epcLinkHtml = '<p class="epc-link-line no-export"><a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer">EPC: Check rating on GOV.UK</a>' + epcHint + ' <span class="epc-note">(opens official EPC register)</span></p>';
+  const epcLinkHtml = '<p class="epc-link-line no-export"><a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer">EPC: Check rating on GOV.UK</a> <span class="epc-note">(opens official EPC register)</span></p>';
 
   const html = `
     <div class="results-content">
