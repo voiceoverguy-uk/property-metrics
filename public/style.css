@@ -859,9 +859,46 @@ header .subtitle {
   color: #999;
 }
 
+.distance-row {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.distance-row.band-walkable {
+  color: #1a7a3a;
+}
+
+.distance-row.band-shortdrive {
+  color: #b8860b;
+}
+
+.distance-row.band-commute {
+  color: #2563a8;
+}
+
+.distance-row.band-regional {
+  color: #888;
+}
+
 body.dark .area-context {
   background: #2a2a2a;
   color: #aaa;
+}
+
+body.dark .distance-row.band-walkable {
+  color: #2ecc71;
+}
+
+body.dark .distance-row.band-shortdrive {
+  color: #f0c040;
+}
+
+body.dark .distance-row.band-commute {
+  color: #5ba3e6;
+}
+
+body.dark .distance-row.band-regional {
+  color: #999;
 }
 
 body.dark .area-context a {

@@ -1142,6 +1142,7 @@ function setupAutocomplete(placesLib) {
         }
         let postcode = '';
         if (place.addressComponents) {
+          propertyTown = extractPropertyTown(place.addressComponents, 'new');
           for (const comp of place.addressComponents) {
             if (comp.types && comp.types.includes('postal_code')) {
               postcode = comp.longText || comp.shortText || '';
@@ -1262,6 +1263,7 @@ function setupClassicAutocomplete(addressInput, dropdown) {
     }
     let postcode = '';
     if (place.address_components) {
+      propertyTown = extractPropertyTown(place.address_components, 'classic');
       for (const comp of place.address_components) {
         if (comp.types && comp.types.includes('postal_code')) {
           postcode = comp.long_name || comp.short_name || '';
@@ -1298,6 +1300,9 @@ var CITY_CENTRES = [
   { name: "Oxford", lat: 51.7520, lng: -1.2577 }
 ];
 
+var propertyTown = '';
+var townCentreCache = {};
+
 function haversineDistanceMiles(lat1, lng1, lat2, lng2) {
   var R = 3958.8;
   var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -1318,15 +1323,96 @@ function findNearestCity(lat, lng) {
   return nearest ? { name: nearest.name, miles: Math.round(minDist * 10) / 10 } : null;
 }
 
+function getDistanceBand(miles) {
+  if (miles <= 1) return { label: 'Walkable', icon: '\uD83D\uDFE2', className: 'band-walkable' };
+  if (miles <= 3) return { label: 'Short drive', icon: '\uD83D\uDFE1', className: 'band-shortdrive' };
+  if (miles <= 10) return { label: 'Commute', icon: '\uD83D\uDD35', className: 'band-commute' };
+  return { label: 'Regional', icon: '\u26AA', className: 'band-regional' };
+}
+
+function formatDistanceMiles(miles) {
+  if (miles < 0.1) return '<0.1 miles';
+  return (Math.round(miles * 10) / 10) + ' miles';
+}
+
+function extractPropertyTown(components, fieldName) {
+  if (!components || !components.length) return '';
+  var priorities = ['postal_town', 'locality', 'administrative_area_level_2'];
+  for (var p = 0; p < priorities.length; p++) {
+    for (var i = 0; i < components.length; i++) {
+      var comp = components[i];
+      var types = comp.types || [];
+      if (types.includes(priorities[p])) {
+        return comp[fieldName === 'new' ? 'longText' : 'long_name'] || comp[fieldName === 'new' ? 'shortText' : 'short_name'] || '';
+      }
+    }
+  }
+  return '';
+}
+
+function geocodeTownCentre(townName, callback) {
+  if (!townName) { callback(null); return; }
+  var key = townName.toLowerCase().trim();
+  if (townCentreCache[key]) { callback(townCentreCache[key]); return; }
+
+  if (typeof google === 'undefined' || !google.maps || !google.maps.Geocoder) {
+    callback(null);
+    return;
+  }
+
+  var geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ address: townName + ' town centre, UK', region: 'gb' }, function(results, status) {
+    if (status === 'OK' && results && results.length > 0) {
+      var loc = results[0].geometry.location;
+      var data = { lat: loc.lat(), lng: loc.lng() };
+      townCentreCache[key] = data;
+      callback(data);
+    } else {
+      callback(null);
+    }
+  });
+}
+
+function renderDistanceRow(el, label, icon, bandClass, centreName, miles) {
+  el.className = 'distance-row ' + bandClass;
+  el.innerHTML = icon + ' ' + escHtml(label) + ': ' + escHtml(centreName) + ' \u2014 ' + formatDistanceMiles(miles) + ' (straight-line)';
+  el.style.display = '';
+}
+
 function updateAreaContext(lat, lng) {
   var ctx = document.getElementById('areaContext');
-  var cityEl = document.getElementById('nearestCityLine');
+  var townEl = document.getElementById('townCentreLine');
+  var majorEl = document.getElementById('majorCityLine');
   var epcEl = document.getElementById('epcLinkLine');
   if (!ctx) return;
 
-  var nearest = findNearestCity(lat, lng);
-  if (nearest && cityEl) {
-    cityEl.textContent = 'Nearest city centre: ' + nearest.name + ' \u2014 ' + nearest.miles + ' miles (straight-line)';
+  if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
+  if (majorEl) { majorEl.style.display = 'none'; majorEl.innerHTML = ''; majorEl.className = 'distance-row'; }
+
+  var nearestMajor = findNearestCity(lat, lng);
+  var townNorm = propertyTown.toLowerCase().trim();
+
+  if (propertyTown) {
+    geocodeTownCentre(propertyTown, function(centre) {
+      if (centre && townEl) {
+        var townDist = haversineDistanceMiles(lat, lng, centre.lat, centre.lng);
+        var band = getDistanceBand(townDist);
+        renderDistanceRow(townEl, band.label, band.icon, band.className, propertyTown + ' town centre', townDist);
+      }
+
+      if (nearestMajor && majorEl) {
+        var majorNorm = nearestMajor.name.toLowerCase().trim();
+        if (majorNorm !== townNorm) {
+          var majorBand = getDistanceBand(nearestMajor.miles);
+          renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' city centre', nearestMajor.miles);
+        }
+      }
+    });
+  } else {
+    if (nearestMajor && majorEl) {
+      var majorBand = getDistanceBand(nearestMajor.miles);
+      renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' city centre', nearestMajor.miles);
+    }
   }
 
   if (epcEl) {
