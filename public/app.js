@@ -1411,18 +1411,21 @@ function loadTrainStations(callback) {
     });
 }
 
-function findNearestStation(lat, lng, stations) {
-  if (!stations || !stations.length) return null;
-  var best = null;
-  var bestDist = Infinity;
+function findNearestStations(lat, lng, stations) {
+  if (!stations || !stations.length) return [];
+  var results = [];
   for (var i = 0; i < stations.length; i++) {
-    var d = haversineDistanceMiles(lat, lng, stations[i].lat, stations[i].lng);
-    if (d < bestDist) {
-      bestDist = d;
-      best = stations[i];
+    results.push({ name: stations[i].name, miles: haversineDistanceMiles(lat, lng, stations[i].lat, stations[i].lng) });
+  }
+  results.sort(function(a, b) { return a.miles - b.miles; });
+  var out = [results[0]];
+  if (results.length > 1) {
+    var second = results[1];
+    if (second.miles <= 1.0 || second.miles <= results[0].miles + 0.3) {
+      out.push(second);
     }
   }
-  return best ? { name: best.name, miles: bestDist } : null;
+  return out;
 }
 
 function updateAreaContext(lat, lng) {
@@ -1430,12 +1433,14 @@ function updateAreaContext(lat, lng) {
   var townEl = document.getElementById('townCentreLine');
   var majorEl = document.getElementById('majorCityLine');
   var trainEl = document.getElementById('trainStationLine');
+  var trainEl2 = document.getElementById('trainStationLine2');
   var epcEl = document.getElementById('epcLinkLine');
   if (!ctx) return;
 
   if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
   if (majorEl) { majorEl.style.display = 'none'; majorEl.innerHTML = ''; majorEl.className = 'distance-row'; }
   if (trainEl) { trainEl.style.display = 'none'; trainEl.innerHTML = ''; trainEl.className = 'distance-row'; }
+  if (trainEl2) { trainEl2.style.display = 'none'; trainEl2.innerHTML = ''; trainEl2.className = 'distance-row'; }
 
   var nearestMajor = findNearestCity(lat, lng);
   var townNorm = propertyTown.toLowerCase().trim();
@@ -1465,11 +1470,16 @@ function updateAreaContext(lat, lng) {
 
   loadTrainStations(function(stations) {
     if (!stations || !trainEl) return;
-    var nearest = findNearestStation(lat, lng, stations);
-    if (nearest) {
+    var nearby = findNearestStations(lat, lng, stations);
+    if (nearby.length > 0) {
       trainEl.className = 'distance-row';
-      trainEl.innerHTML = '\uD83D\uDE86 Nearest train station &middot; ' + escHtml(nearest.name) + ' &mdash; ' + formatDistanceMiles(nearest.miles) + ' (straight-line)';
+      trainEl.innerHTML = '\uD83D\uDE86 Nearest station &middot; ' + escHtml(nearby[0].name) + ' &mdash; ' + formatDistanceMiles(nearby[0].miles) + ' (straight-line)';
       trainEl.style.display = '';
+    }
+    if (nearby.length > 1 && trainEl2) {
+      trainEl2.className = 'distance-row';
+      trainEl2.innerHTML = '\uD83D\uDE86 Also nearby &middot; ' + escHtml(nearby[1].name) + ' &mdash; ' + formatDistanceMiles(nearby[1].miles) + ' (straight-line)';
+      trainEl2.style.display = '';
     }
   });
 
