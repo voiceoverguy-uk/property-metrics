@@ -1141,6 +1141,7 @@ function setupAutocomplete(placesLib) {
           showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
         }
         let postcode = '';
+        propertyTown = '';
         if (place.addressComponents) {
           propertyTown = extractPropertyTown(place.addressComponents, 'new');
           for (const comp of place.addressComponents) {
@@ -1262,6 +1263,7 @@ function setupClassicAutocomplete(addressInput, dropdown) {
       showMap(selectedLocation.lat, selectedLocation.lng, selectedLocation.address);
     }
     let postcode = '';
+    propertyTown = '';
     if (place.address_components) {
       propertyTown = extractPropertyTown(place.address_components, 'classic');
       for (const comp of place.address_components) {
@@ -1343,7 +1345,13 @@ function extractPropertyTown(components, fieldName) {
       var comp = components[i];
       var types = comp.types || [];
       if (types.includes(priorities[p])) {
-        return comp[fieldName === 'new' ? 'longText' : 'long_name'] || comp[fieldName === 'new' ? 'shortText' : 'short_name'] || '';
+        var val = '';
+        if (fieldName === 'new') {
+          val = comp.longText || comp.shortText || comp.long_name || comp.short_name || '';
+        } else {
+          val = comp.long_name || comp.short_name || comp.longText || comp.shortText || '';
+        }
+        if (val) return val;
       }
     }
   }
