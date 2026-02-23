@@ -1,0 +1,113 @@
+PROJECT: RentalMetrics — Postcode suggestion + “Add to reference” helper
+
+GOAL
+When a user types an address that isn’t a full postcode (e.g. “Cross Flatts Grove, Beeston, Leeds”), suggest a likely UK postcode and let them add it into the Deal Reference with one tap — without overwriting what they typed.
+
+IMPORTANT
+- Keep this subtle and optional (helper, not a “feature wall”).
+- If we can’t confidently find a postcode, show nothing (no warnings/errors).
+- Do NOT increase Google API usage unnecessarily (debounce + only call when input looks like an address).
+
+------------------------------------------------------------
+1) UI / UX (small + tidy)
+------------------------------------------------------------
+Add a subtle helper line UNDER the Address / Postcode input:
+
+Suggested postcode: LS11 7BW   [Add]
+
+Rules:
+- Only display if we have a confident postcode match.
+- If no match: render nothing (no empty container, no layout jump).
+- Styling: small text, muted grey, aligns with existing design, with a small “Add” button.
+- Must work on mobile and desktop.
+
+The [Add] button:
+- Appends “ — <POSTCODE>” into the Deal Reference BEFORE the final “— BTL” suffix.
+- Example:
+  Deal Reference: “Cross Flatts Grove — BTL”
+  Click Add -> “Cross Flatts Grove — LS11 7BW — BTL”
+
+Safety rules:
+- Do NOT add if the reference already contains a UK postcode.
+- Do NOT add duplicates if user taps twice.
+- Do NOT overwrite the address input at any time.
+
+------------------------------------------------------------
+2) Postcode lookup (Google)
+------------------------------------------------------------
+Implementation preference:
+A) If Google Places Autocomplete is already present in the project, use that result.
+B) Otherwise use Google Geocoding API for the typed address.
+
+Process:
+- Debounce calls (e.g. 600–800ms after typing stops).
+- Only trigger lookup if:
+  - address input length >= 8 characters
+  - and it does NOT already look like a UK postcode
+- Parse address components and extract postal_code.
+- Store it in state, e.g. suggestedPostcode (string) and suggestedPostcodeSourceConfidence (boolean/score if available).
+
+Confidence:
+- If Geocoding returns multiple results, choose the best match (top result).
+- Only show the suggestion if postal_code exists and looks like a valid UK postcode format.
+
+UK postcode validation:
+- Implement a simple UK postcode regex check for extracted postal code and for “already in reference” detection.
+
+------------------------------------------------------------
+3) Deal Reference insertion logic
+------------------------------------------------------------
+When user taps [Add]:
+- Read current Deal Reference
+- If it contains a UK postcode already: do nothing
+- Else insert suggested postcode before the “— BTL” suffix (or “– BTL” / “- BTL” — handle common dash variants)
+- If no BTL suffix exists, append at the end as “ — <POSTCODE>”
+- Keep spacing consistent:
+  Use “ — ” (space em-dash space) for insertion to match existing style
+
+------------------------------------------------------------
+4) Non-annoying behaviour (no jitter)
+------------------------------------------------------------
+- Create the helper element once in HTML (or once in JS) and toggle visibility/content.
+- Do NOT re-inject via innerHTML on every render (avoid layout jitter).
+- No console errors if API fails — fail silently.
+
+------------------------------------------------------------
+5) Acceptance checks
+------------------------------------------------------------
+Test cases to confirm:
+
+A) Address typed (no postcode):
+- Input: “Cross Flatts Grove, Beeston, Leeds”
+- Shows: “Suggested postcode: LS11 7BW [Add]”
+- Clicking [Add] updates Deal Reference to include postcode before “— BTL”
+
+B) Address already includes postcode:
+- Input contains “LS11 7BW”
+- No suggestion line displayed
+
+C) Deal Reference already includes postcode:
+- Reference: “Cross Flatts Grove — LS11 7BW — BTL”
+- Clicking [Add] does nothing (no duplicates)
+
+D) Tapping [Add] twice:
+- Postcode only appears once
+
+E) No match / low confidence / API failure:
+- UI shows nothing, app continues normally
+
+------------------------------------------------------------
+6) Files / where to implement
+------------------------------------------------------------
+- Update index.html (or template) to include the helper line placeholder under Address/Postcode.
+- Update app.js to:
+  - debounce address input listener
+  - call geocode/autocomplete
+  - store suggestedPostcode
+  - handle Add button click
+- Update style.css for subtle helper styling.
+
+DONE WHEN:
+- Suggestion appears only when useful
+- Adds postcode safely into reference
+- No jitter, no repeated DOM injection, no noisy errors

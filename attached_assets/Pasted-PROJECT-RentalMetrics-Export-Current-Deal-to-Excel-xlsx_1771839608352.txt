@@ -1,0 +1,159 @@
+PROJECT: RentalMetrics — Export Current Deal to Excel (.xlsx)
+
+GOAL
+Add an "Export to Excel" button beside "Save as PDF" that downloads a properly structured .xlsx file of the current analysed deal.
+
+This should export ONE sheet only (for now).
+
+IMPORTANT
+- Do not modify or break existing PDF export.
+- Do not re-trigger calculations.
+- Use the existing analysed deal state (do NOT scrape the DOM).
+- Fully client-side export (no backend required).
+
+------------------------------------------------------------
+1) UI
+------------------------------------------------------------
+Add a new button in the Deal Analysis button row:
+
+Label: Export to Excel
+
+Rules:
+- Same visual height as Share / Save as PDF
+- Same border radius + spacing
+- Responsive on mobile
+- Disabled (or does nothing) if no analysed deal exists
+
+Position:
+Next to "Save as PDF"
+
+------------------------------------------------------------
+2) Library
+------------------------------------------------------------
+Use SheetJS (xlsx).
+
+If project uses npm:
+  npm install xlsx
+
+If no package manager:
+  Use CDN version of SheetJS.
+
+------------------------------------------------------------
+3) Export Function
+------------------------------------------------------------
+Create a function:
+
+exportDealToExcel()
+
+This function must:
+
+- Pull from the same internal deal state object used for:
+  - Deal Snapshot
+  - Deal Analysis
+  - PDF export
+
+- Generate a workbook (.xlsx)
+- Create one worksheet named:
+
+  "Deal Summary"
+
+------------------------------------------------------------
+4) Sheet Structure (Single Sheet Only)
+------------------------------------------------------------
+
+Format:
+Two columns only
+
+Column A: Label
+Column B: Value
+
+Rows in this order:
+
+SECTION: Meta
+- Deal Reference
+- Address / Postcode
+- Buyer Type
+- Purchase Type (Cash / Mortgage)
+- Date Exported
+
+SECTION: Purchase & Upfront
+- Asking Price (£)
+- Deposit (£) (if mortgage)
+- Mortgage Amount (£) (if mortgage)
+- SDLT (£)
+- Additional Costs Total (£)
+- Upfront Total (£)
+
+SECTION: Monthly
+- Expected Monthly Rent (£/mo)
+- Letting Agent Fee (%)
+- Letting Agent Fee (£/mo)
+- Total Recurring Monthly Costs (£/mo)
+- Mortgage Payment (£/mo) (if mortgage)
+- Monthly Cashflow (£/mo)
+
+SECTION: Yield & Rating
+- Net Yield (Asset) %
+- Cash-on-Cash %
+- Target Yield %
+- Target Offer Price (£)
+- Required Rent to Hit Target (£)
+- Grade (A–F)
+- Grade Description
+- Delta vs Target (e.g. "+0.45% above your 6.00% target")
+
+SECTION: Location (if available)
+- Centre Distance (miles, straight-line)
+- Nearest Station(s)
+
+------------------------------------------------------------
+5) Formatting Rules
+------------------------------------------------------------
+
+- Column A should be bold.
+- Sensible column widths.
+- Keep numeric values numeric where possible.
+- Currency values can either:
+  - Be numeric without £ symbol
+  OR
+  - Be exported as formatted strings (be consistent).
+
+- No empty spacer rows between sections.
+- Keep compact and clean.
+
+------------------------------------------------------------
+6) File Naming
+------------------------------------------------------------
+
+File name format:
+
+RentalMetrics-Deal-<DealReference>-YYYY-MM-DD.xlsx
+
+If DealReference empty:
+
+RentalMetrics-Deal-YYYY-MM-DD.xlsx
+
+Sanitize file name (no slashes or invalid characters).
+
+------------------------------------------------------------
+7) Safety / Edge Cases
+------------------------------------------------------------
+
+- If no analysed deal exists, do not export.
+- Do not crash if optional fields are empty.
+- Must work for both:
+  - Cash purchase
+  - Mortgage purchase
+
+------------------------------------------------------------
+8) Acceptance Checks
+------------------------------------------------------------
+
+- Button appears in UI.
+- File downloads correctly.
+- Excel opens without warnings.
+- Values match on-screen numbers.
+- PDF export still works.
+
+DELIVERABLE
+Implement button + export function cleanly and confirm it works on desktop + mobile.
