@@ -604,6 +604,20 @@ header .subtitle {
   margin-top: 10px;
 }
 
+.offer-box.offer-beats-target {
+  background: #f0faf3;
+  border-color: #1a9a4a;
+}
+
+.offer-box.offer-beats-target .offer-price {
+  color: #1a9a4a;
+}
+
+.offer-note-success {
+  color: #1a9a4a !important;
+  font-weight: 600;
+}
+
 .offer-box.not-achievable {
   background: #fafafa;
   border-color: #ccc;
@@ -3542,6 +3556,19 @@ body.dark .offer-box .offer-label {
 
 body.dark .offer-box .offer-note {
   color: #a0a0b0;
+}
+
+body.dark .offer-box.offer-beats-target {
+  background: rgba(26,154,74,0.1);
+  border-color: #1a9a4a;
+}
+
+body.dark .offer-box.offer-beats-target .offer-price {
+  color: #2ecc71;
+}
+
+body.dark .offer-note-success {
+  color: #2ecc71 !important;
 }
 
 body.dark .offer-box.not-achievable {

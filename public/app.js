@@ -2245,14 +2245,26 @@ function renderScenario(data, label, targetYield, mortgage) {
   const offer = data.targetOffer;
   const isSimple = currentMode === 'simple';
 
+  const askingPrice = data.breakdown ? data.breakdown.price : 0;
   let offerHtml;
   if (offer && offer.achievable) {
-    offerHtml = `
-      <div class="offer-box">
-        <div class="offer-label">Target Offer Price for ${fmtPct(targetYield)} Yield</div>
-        <div class="offer-price">${fmt(offer.offerPrice)}</div>
-        <div class="offer-note">To hit ${fmtPct(targetYield)} yield you'd need to pay around ${fmt(offer.offerPrice)}</div>
-      </div>`;
+    const cappedAtAsking = offer.offerPrice > askingPrice && askingPrice > 0;
+    const displayOffer = askingPrice > 0 ? Math.min(offer.offerPrice, askingPrice) : offer.offerPrice;
+    if (cappedAtAsking) {
+      offerHtml = `
+        <div class="offer-box offer-beats-target">
+          <div class="offer-label">Target Offer Price</div>
+          <div class="offer-price">${fmt(displayOffer)}</div>
+          <div class="offer-note offer-note-success">You already beat your ${fmtPct(targetYield)} target at the asking price \u2014 no discount needed.</div>
+        </div>`;
+    } else {
+      offerHtml = `
+        <div class="offer-box">
+          <div class="offer-label">Target Offer Price for ${fmtPct(targetYield)} Yield</div>
+          <div class="offer-price">${fmt(displayOffer)}</div>
+          <div class="offer-note">To hit ${fmtPct(targetYield)} yield you'd need to pay around ${fmt(displayOffer)}</div>
+        </div>`;
+    }
   } else {
     offerHtml = `
       <div class="offer-box not-achievable">
@@ -2356,7 +2368,7 @@ function renderScenario(data, label, targetYield, mortgage) {
 
     ${!isSimple ? `
     <div class="result-section">
-      <h3>Target Offer Price <span class="tooltip" data-tip="Based on Net Yield (Asset), excluding mortgage.">?</span></h3>
+      <h3>Target Offer Price <span class="tooltip" data-tip="Based on Net Yield (Asset), excluding mortgage. This figure is capped at the asking price — we won't suggest paying above it.">?</span></h3>
       ${offerHtml}
     </div>` : ''}
   `;
@@ -3296,12 +3308,20 @@ function printReport() {
 
     if (!isSimplePdf) {
       const offer = scenarioData.targetOffer;
+      const pdfAskingPrice = scenarioData.breakdown ? scenarioData.breakdown.price : 0;
       if (offer && offer.achievable) {
-        h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): ' + fmt(offer.offerPrice), { bold: true });
+        const pdfCapped = offer.offerPrice > pdfAskingPrice && pdfAskingPrice > 0;
+        const pdfDisplayOffer = pdfAskingPrice > 0 ? Math.min(offer.offerPrice, pdfAskingPrice) : offer.offerPrice;
+        if (pdfCapped) {
+          h.textLine('Target Offer Price: ' + fmt(pdfDisplayOffer), { bold: true });
+          h.textLine('You already beat your ' + fmtPct(parseFloat(targetYield)) + ' target at the asking price — no discount needed.', { size: 8, color: '#1a9a4a' });
+        } else {
+          h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): ' + fmt(pdfDisplayOffer), { bold: true });
+        }
       } else {
         h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): Not achievable with current inputs', { bold: true });
       }
-      h.textLine('Based on Net Yield (Asset), excluding mortgage.', { size: 8, color: '#666666' });
+      h.textLine('Based on Net Yield (Asset), excluding mortgage. Capped at asking price.', { size: 8, color: '#666666' });
 
       h.gap(4);
       h.textLine('Capital growth projection available in the interactive tool.', { italic: true, size: 8, color: '#666666' });
