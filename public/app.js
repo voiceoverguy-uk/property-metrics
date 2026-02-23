@@ -2079,7 +2079,7 @@ function renderDealRating(netYield, targetYield) {
       <div class="deal-rating-circle" style="background:${rating.color};">${rating.grade}</div>
       <div class="deal-rating-info">
         <div class="deal-rating-label" style="color:${rating.color};">Grade: ${rating.grade} &ndash; ${rating.label} <span class="tooltip" data-tip="Grades are determined by fixed Net Yield (Asset) bands: A = 8%+, B = 7–7.99%, C = 6–6.99%, D = 5–5.99%, E = 4–4.99%, F = below 4%.">?</span></div>
-        <div class="deal-rating-detail">Based on Net Yield (Asset)</div>
+        <div class="deal-rating-detail">Primary metric: Net Yield (Asset)</div>
         ${targetHtml}
         <div class="yield-warning no-export" style="display:${parseFloat(netYield) > YIELD_WARN_THRESHOLD ? '' : 'none'};">⚠ Yield looks unusually high — double-check rent, price, and costs.</div>
       </div>
@@ -3152,7 +3152,7 @@ function pdfHelper(pdf, margins) {
     pdf.text(detail, margins.left + 26, y + 10);
     pdf.setFontSize(7);
     pdf.setTextColor(150, 150, 150);
-    pdf.text('Rating based on Net Yield (Asset) only.', margins.left + 26, y + 14);
+    pdf.text('Primary metric: Net Yield (Asset)', margins.left + 26, y + 14);
     y += 24;
   }
 
@@ -4406,7 +4406,7 @@ function renderCompareTable(highlightDealId) {
           <div class="compare-card-title">
             <div class="compare-card-address">${displayName}</div>
             <div class="compare-card-label">${entry.rating.label} ${bestBadge} ${stressBadge}</div>
-            <div class="compare-card-rating-note">Rating based on Net Yield (Asset) only.</div>
+            <div class="compare-card-rating-note">Primary metric: Net Yield (Asset)</div>
           </div>
         </div>
         <div class="compare-section-label">Key Metrics</div>
