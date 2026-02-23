@@ -4059,7 +4059,9 @@ function renderHistory() {
       var validIds = new Set(history.map(function(e) { return e.id; }));
       selectedHistoryIds.forEach(function(id) { if (!validIds.has(id)) selectedHistoryIds.delete(id); });
       var selCount = selectedHistoryIds.size;
-      selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="selectAllHistory()">Select all</button><button type="button" class="btn-sel-action" onclick="selectNoneHistory()">Select none</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
+      var allSelected = selCount === history.length;
+      var btnLabel = allSelected ? 'Clear' : 'Select all';
+      selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="toggleSelectAllHistory()">' + btnLabel + '</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
     }
   }
 
@@ -4194,24 +4196,24 @@ function toggleHistorySelection(id, checked) {
   var selControls = document.getElementById('historySelectionControls');
   if (selControls) {
     var selCount = selectedHistoryIds.size;
-    selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="selectAllHistory()">Select all</button><button type="button" class="btn-sel-action" onclick="selectNoneHistory()">Select none</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
+    var allSelected = selCount === getHistory().length;
+    var btnLabel = allSelected ? 'Clear' : 'Select all';
+    selControls.innerHTML = '<span class="sel-controls"><button type="button" class="btn-sel-action" onclick="toggleSelectAllHistory()">' + btnLabel + '</button></span><span class="sel-count">' + (selCount > 0 ? 'Selected: ' + selCount : 'Tip: Tick deals to compare specific ones') + '</span>';
   }
 }
 window.toggleHistorySelection = toggleHistorySelection;
 
-function selectAllHistory() {
+function toggleSelectAllHistory() {
   var history = getHistory();
-  selectedHistoryIds.clear();
-  history.forEach(function(e) { selectedHistoryIds.add(e.id); });
+  if (selectedHistoryIds.size === history.length) {
+    selectedHistoryIds.clear();
+  } else {
+    selectedHistoryIds.clear();
+    history.forEach(function(e) { selectedHistoryIds.add(e.id); });
+  }
   renderHistory();
 }
-window.selectAllHistory = selectAllHistory;
-
-function selectNoneHistory() {
-  selectedHistoryIds.clear();
-  renderHistory();
-}
-window.selectNoneHistory = selectNoneHistory;
+window.toggleSelectAllHistory = toggleSelectAllHistory;
 
 function showComparePrompt() {
   var existing = document.getElementById('comparePromptOverlay');
