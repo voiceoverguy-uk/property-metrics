@@ -1381,21 +1381,61 @@ function geocodeTownCentre(townName, callback) {
   });
 }
 
-function renderDistanceRow(el, label, icon, bandClass, centreName, miles) {
+function renderDistanceRow(el, label, icon, bandClass, centreName, miles, showTooltip) {
   el.className = 'distance-row ' + bandClass;
-  el.innerHTML = icon + ' ' + escHtml(label) + ': ' + escHtml(centreName) + ' \u2014 ' + formatDistanceMiles(miles) + ' (straight-line)';
+  var tip = showTooltip ? ' <span class="tooltip" data-tip="Distance band is based on straight-line mileage (not driving time).">?</span>' : '';
+  el.innerHTML = icon + ' ' + escHtml(label) + tip + ' &middot; ' + escHtml(centreName) + ' &mdash; ' + formatDistanceMiles(miles) + ' (straight-line)';
   el.style.display = '';
+}
+
+var ukTrainStations = null;
+var ukTrainStationsLoading = false;
+
+function loadTrainStations(callback) {
+  if (ukTrainStations) { callback(ukTrainStations); return; }
+  if (ukTrainStationsLoading) {
+    setTimeout(function() { loadTrainStations(callback); }, 200);
+    return;
+  }
+  ukTrainStationsLoading = true;
+  fetch('/data/uk-train-stations.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      ukTrainStations = data;
+      ukTrainStationsLoading = false;
+      callback(data);
+    })
+    .catch(function() {
+      ukTrainStationsLoading = false;
+      callback(null);
+    });
+}
+
+function findNearestStation(lat, lng, stations) {
+  if (!stations || !stations.length) return null;
+  var best = null;
+  var bestDist = Infinity;
+  for (var i = 0; i < stations.length; i++) {
+    var d = haversineDistanceMiles(lat, lng, stations[i].lat, stations[i].lng);
+    if (d < bestDist) {
+      bestDist = d;
+      best = stations[i];
+    }
+  }
+  return best ? { name: best.name, miles: bestDist } : null;
 }
 
 function updateAreaContext(lat, lng) {
   var ctx = document.getElementById('areaContext');
   var townEl = document.getElementById('townCentreLine');
   var majorEl = document.getElementById('majorCityLine');
+  var trainEl = document.getElementById('trainStationLine');
   var epcEl = document.getElementById('epcLinkLine');
   if (!ctx) return;
 
   if (townEl) { townEl.style.display = 'none'; townEl.innerHTML = ''; townEl.className = 'distance-row'; }
   if (majorEl) { majorEl.style.display = 'none'; majorEl.innerHTML = ''; majorEl.className = 'distance-row'; }
+  if (trainEl) { trainEl.style.display = 'none'; trainEl.innerHTML = ''; trainEl.className = 'distance-row'; }
 
   var nearestMajor = findNearestCity(lat, lng);
   var townNorm = propertyTown.toLowerCase().trim();
@@ -1405,23 +1445,33 @@ function updateAreaContext(lat, lng) {
       if (centre && townEl) {
         var townDist = haversineDistanceMiles(lat, lng, centre.lat, centre.lng);
         var band = getDistanceBand(townDist);
-        renderDistanceRow(townEl, band.label, band.icon, band.className, propertyTown + ' town centre', townDist);
+        renderDistanceRow(townEl, band.label, band.icon, band.className, propertyTown + ' centre', townDist, true);
       }
 
       if (nearestMajor && majorEl) {
         var majorNorm = nearestMajor.name.toLowerCase().trim();
         if (majorNorm !== townNorm) {
           var majorBand = getDistanceBand(nearestMajor.miles);
-          renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' city centre', nearestMajor.miles);
+          renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' centre', nearestMajor.miles, true);
         }
       }
     });
   } else {
     if (nearestMajor && majorEl) {
       var majorBand = getDistanceBand(nearestMajor.miles);
-      renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' city centre', nearestMajor.miles);
+      renderDistanceRow(majorEl, majorBand.label, majorBand.icon, majorBand.className, nearestMajor.name + ' centre', nearestMajor.miles, true);
     }
   }
+
+  loadTrainStations(function(stations) {
+    if (!stations || !trainEl) return;
+    var nearest = findNearestStation(lat, lng, stations);
+    if (nearest) {
+      trainEl.className = 'distance-row';
+      trainEl.innerHTML = '\uD83D\uDE86 Nearest train station &middot; ' + escHtml(nearest.name) + ' &mdash; ' + formatDistanceMiles(nearest.miles) + ' (straight-line)';
+      trainEl.style.display = '';
+    }
+  });
 
   if (epcEl) {
     var postcode = suggestedPostcode || '';
