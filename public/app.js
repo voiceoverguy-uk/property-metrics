@@ -2066,13 +2066,13 @@ function renderDealRating(netYield, targetYield) {
   const diff = netYield - targetYield;
   const absDiff = Math.abs(diff).toFixed(2);
   let targetHtml = '';
-  const targetLink = `<a href="#targetYield" class="target-yield-link" onclick="event.preventDefault();scrollToYieldAdjustments();">${fmtPct(targetYield)} target</a>`;
+  const targetLink = `<a href="#targetYield" class="target-yield-link" onclick="event.preventDefault();scrollToYieldAdjustments();">${fmtPct(targetYield)} target yield</a>`;
   if (Math.abs(diff) < 0.005) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> On your ${targetLink}</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> Meets ${targetLink}</div>`;
   } else if (diff > 0) {
-    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> +${absDiff}% above your ${targetLink}</div>`;
+    targetHtml = `<div class="deal-rating-target target-pass"><span class="target-icon">✔</span> +${absDiff}% above ${targetLink}</div>`;
   } else {
-    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> &minus;${absDiff}% below your ${targetLink}</div>`;
+    targetHtml = `<div class="deal-rating-target target-fail"><span class="target-icon">✖</span> &minus;${absDiff}% below ${targetLink}</div>`;
   }
   return `
     <div class="deal-rating">
@@ -2436,7 +2436,7 @@ function renderScenario(data, label, targetYield, mortgage) {
         <div class="offer-box offer-beats-target">
           <div class="offer-label">Target Offer Price</div>
           <div class="offer-price">${fmt(displayOffer)}</div>
-          <div class="offer-note offer-note-success">You already beat your ${fmtPct(targetYield)} target at the asking price \u2014 no discount needed.</div>
+          <div class="offer-note offer-note-success">Already beats ${fmtPct(targetYield)} target yield at the asking price \u2014 no discount needed.</div>
         </div>`;
     } else {
       offerHtml = `
@@ -3500,7 +3500,7 @@ function printReport() {
         const pdfDisplayOffer = pdfAskingPrice > 0 ? Math.min(offer.offerPrice, pdfAskingPrice) : offer.offerPrice;
         if (pdfCapped) {
           h.textLine('Target Offer Price: ' + fmt(pdfDisplayOffer), { bold: true });
-          h.textLine('You already beat your ' + fmtPct(parseFloat(targetYield)) + ' target at the asking price — no discount needed.', { size: 8, color: '#1a9a4a' });
+          h.textLine('Already beats ' + fmtPct(parseFloat(targetYield)) + ' target yield at the asking price — no discount needed.', { size: 8, color: '#1a9a4a' });
         } else {
           h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): ' + fmt(pdfDisplayOffer), { bold: true });
         }
@@ -3618,7 +3618,7 @@ function exportDealToExcel() {
   rows.push(['Grade', rating.grade + ' \u2013 ' + rating.label]);
   var delta = data.netYield - targetYield;
   var deltaSign = delta >= 0 ? '+' : '';
-  rows.push(['Delta vs Target', deltaSign + (Math.round(delta * 100) / 100) + '% vs your ' + targetYield.toFixed(2) + '% target']);
+  rows.push(['Delta vs Target', deltaSign + (Math.round(delta * 100) / 100) + '% vs ' + targetYield.toFixed(2) + '% target yield']);
 
   if (propertyTown) {
     rows.push(['Property Town', propertyTown]);
