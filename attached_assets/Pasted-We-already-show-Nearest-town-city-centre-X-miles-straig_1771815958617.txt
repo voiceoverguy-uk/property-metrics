@@ -1,0 +1,63 @@
+We already show “Nearest (town/city) centre — X miles (straight-line)” under the map. Please enhance this section with the following changes, keeping it FREE (no Google Places API / no paid endpoints):
+
+1) Tighten the wording + formatting
+
+Change the line to this exact style:
+
+🟡 Short drive · Wakefield centre — 1.5 miles (straight-line)
+
+Rules:
+	•	Use the yellow dot emoji at the start.
+	•	Use a middle dot separator · between the label and the location name.
+	•	Replace “city centre” / “town centre” wording with “[Place] centre” to avoid debates.
+	•	Keep “(straight-line)” at the end.
+
+2) Add a small tooltip explaining the distance type
+
+Add a small ? tooltip icon next to the “Short drive” label (or at the end of the line) with tooltip text:
+
+“Distance band is based on straight-line mileage (not driving time).”
+
+Must work on:
+	•	Hover (desktop)
+	•	Tap (mobile)
+
+Match the existing tooltip styling used elsewhere in the app.
+
+3) Add “Nearest train station” (FREE approach)
+
+Under the centre-distance line, add a second line:
+
+🚆 Nearest train station · [Station Name] — X miles (straight-line)
+
+Constraints:
+	•	Do NOT use Google Places API.
+	•	Use only what we already have available for free (geocoding results + our existing map/geo logic).
+	•	Use a small built-in dataset/list of UK train stations (name + lat/lng) OR a limited regional subset (e.g., England/Wales) stored locally in the project.
+	•	Find the nearest station to the property lat/lng using Haversine distance.
+	•	Display the closest result with miles to 1 decimal place.
+
+UX/behaviour:
+	•	Only show this line once we have valid property coordinates.
+	•	If no station dataset is available or no match is found, hide the line silently (no error message).
+	•	Keep styling consistent with the existing “Nearest centre” line (same container, subtle, clean).
+
+4) Keep exports clean
+
+This section should appear on-screen, but:
+	•	Must not break PDF layout.
+	•	If we’re currently using .no-export / body.is-exporting, follow the same export rules so it behaves consistently.
+
+5) Files
+
+Implement cleanly in the existing structure:
+	•	Update JS logic where the centre-distance is calculated/rendered.
+	•	Add a new local data file if needed, e.g. /public/data/uk-train-stations.json (or similar).
+	•	Add minimal CSS if required.
+
+After implementing, test with at least 3 addresses:
+	•	A city centre property
+	•	A suburban property
+	•	A rural property
+
+Confirm the output shows both lines and tooltip works on mobile + desktop.
