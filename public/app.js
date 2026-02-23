@@ -1419,11 +1419,12 @@ function findNearestStations(lat, lng, stations) {
   }
   results.sort(function(a, b) { return a.miles - b.miles; });
   var out = [results[0]];
-  if (results.length > 1) {
-    var second = results[1];
-    if (second.miles <= 1.0 || second.miles <= results[0].miles + 0.3) {
-      out.push(second);
+  for (var j = 1; j < results.length; j++) {
+    if (results[j].name === out[0].name) continue;
+    if (results[j].miles <= 1.0 || results[j].miles <= out[0].miles + 0.3) {
+      out.push(results[j]);
     }
+    break;
   }
   return out;
 }
