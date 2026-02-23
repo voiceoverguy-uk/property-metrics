@@ -3304,8 +3304,9 @@ function printReport() {
     h.title('Property Deal Report');
     h.subtitle('Generated: ' + timestamp);
     h.gap(2);
-    h.textLine(sanitizePdfText(address), { size: 11, bold: true, align: 'center' });
-    if (dealRef) h.textLine(sanitizePdfText(dealRef), { size: 10, bold: true, align: 'center' });
+    const buyerLabel = getBuyerTypeLabel(buyerType) || 'Investor';
+    const pdfDealLine = dealRef ? dealRef : (address !== 'Not specified' ? address + ' \u2013 ' + buyerLabel : buyerLabel);
+    h.textLine(sanitizePdfText(pdfDealLine), { size: 11, bold: true, align: 'center' });
     h.gap(2);
     pdf.setDrawColor(...h.hexToRgb('#B11217'));
     pdf.setLineWidth(0.8);
