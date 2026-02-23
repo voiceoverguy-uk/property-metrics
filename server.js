@@ -16,7 +16,7 @@ const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x6
 
 const routeMeta = {
   '/': {
-    pageTitle: 'RentalMetrics | Free UK Property Deal Analyser & Yield Calculator',
+    pageTitle: 'RentalMetrics | UK Buy-to-Let Deal & Yield Calculator',
     metaDesc: 'Free UK buy-to-let toolkit: analyse deals, calculate rental yield, estimate SDLT and stress test mortgage scenarios. Everything you need for smarter property investment.',
     canonical: 'https://rentalmetrics.co.uk/',
     ogTitle: 'RentalMetrics | Free UK Property Deal Analyser',

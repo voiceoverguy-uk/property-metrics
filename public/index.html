@@ -7,6 +7,7 @@
   <meta name="description" content="%%META_DESC%%">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="%%CANONICAL%%">
+  <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/rental-metrics-icon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/rental-metrics-icon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/rental-metrics-icon-192.png">
@@ -46,7 +47,12 @@
         "@id": "https://rentalmetrics.co.uk/#website",
         "name": "RentalMetrics",
         "url": "https://rentalmetrics.co.uk/",
-        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" }
+        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://rentalmetrics.co.uk/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
       },
       {
         "@type": ["SoftwareApplication", "WebApplication"],
