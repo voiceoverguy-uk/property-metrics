@@ -1,0 +1,118 @@
+Town Centre Distance + “Walkable / Short drive / Commute” bands
+
+Goal: Improve the “Nearest city centre” feature so it’s actually useful to investors.
+
+What to build
+	1.	Replace the current “Nearest city centre: Leeds — X miles” line with a smarter “Town centre” line based on the property’s actual town/city (derived from the address/postcode).
+	2.	Add a distance band label + icon:
+
+	•	🟢 Walkable (0–1 mile)
+	•	🟡 Short drive (1–3 miles)
+	•	🔵 Commute (3–10 miles)
+	•	⚪ Regional (10+ miles)
+
+Show it like:
+🟢 Walkable: Wakefield town centre — 0.8 miles (straight-line)
+	3.	Optionally show a second line underneath for a “Major city” reference only if different from the town:
+🔵 Commute: Leeds city centre — 8.4 miles
+
+Important constraints
+	•	Do NOT use Google Places API (avoid extra billing).
+	•	Use only existing Google Geocoding usage already in the project.
+	•	Keep it “free-tier friendly”.
+
+⸻
+
+Implementation approach (do it this way)
+
+A) Identify the property’s town/city name (locality)
+
+When the user enters an address/postcode and we already geocode it for the map, extract the best available town name from the geocode response:
+Priority order from address_components:
+	1.	postal_town
+	2.	locality
+	3.	administrative_area_level_2
+
+Store this as propertyTown.
+
+B) Geocode the town centre (text query)
+
+Use Geocoding API (not Places) to geocode:
+	•	"<propertyTown> town centre, UK"
+
+Get the centre lat/lng.
+
+C) Calculate straight-line distance (miles, 1 decimal)
+
+Compute haversine distance between:
+	•	property lat/lng
+	•	town centre lat/lng
+
+Format:
+	•	“0.8 miles (straight-line)”
+	•	If under 0.1 miles, show “<0.1 miles”.
+
+D) Add distance band + icon + subtle colour styling
+
+Create a helper function:
+
+band rules
+	•	<= 1 → Walkable (green)
+	•	>1 && <= 3 → Short drive (amber)
+	•	>3 && <= 10 → Commute (blue)
+	•	>10 → Regional (grey)
+
+Return { label, icon, className }
+
+Display:
+<div class="distance-row band-walkable">🟢 Walkable: Wakefield town centre — 0.8 miles (straight-line)</div>
+
+E) Optional second line: Major city reference
+
+Keep the current “nearest major city centre” feature, but adjust it:
+	•	Only show it if major city name differs from propertyTown
+	•	Label it “Major city” and apply the same banding logic
+
+Example:
+🔵 Commute: Leeds city centre — 8.4 miles
+
+F) UI placement
+
+Put these under the map, in the same grey info panel where EPC link sits.
+Keep it compact, not a new big section.
+
+G) Performance / caching
+	•	Cache townCentreLatLng in memory keyed by propertyTown so we don’t geocode “Wakefield town centre” repeatedly.
+	•	Only recompute if the user changes address/postcode.
+
+H) Error handling
+
+If propertyTown can’t be determined or town centre geocode fails:
+	•	Fall back to the existing major city line only
+	•	Do not show broken UI.
+
+⸻
+
+Styling (match existing RentalMetrics look)
+
+Add CSS classes:
+	•	.band-walkable (green text/icon subtle)
+	•	.band-shortdrive (amber)
+	•	.band-commute (blue)
+	•	.band-regional (grey)
+
+No big colours, just tasteful “hint” styling.
+
+⸻
+
+Deliverable
+
+When done, the info panel under the map should show:
+	•	🟢 Walkable: Wakefield town centre — 0.8 miles (straight-line)
+	•	🔵 Commute: Leeds city centre — 8.4 miles (straight-line) (optional)
+	•	EPC: Check rating on GOV.UK (existing)
+
+Test with:
+	•	Wakefield WF2 address
+	•	Leeds LS11 address
+	•	A small town where Leeds is the major city nearby
