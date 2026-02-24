@@ -3713,15 +3713,6 @@ document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
     lastSdltData = data;
     lastSdltPrice = price;
     renderSDLTStandaloneResults(data, price);
-    setTimeout(() => {
-      const buyerTypeEl = document.querySelector('.buyer-type-group');
-      if (buyerTypeEl) {
-        scrollToWithOffset(buyerTypeEl);
-      } else {
-        var tgt = resultsPanel.querySelector('.results-header-row') || resultsPanel;
-        scrollToWithOffset(tgt);
-      }
-    }, 100);
   } catch (err) {
     setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
   }
@@ -3949,6 +3940,7 @@ function applyHistoryEntry(entry) {
   restoreMapFromHistory(entry);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderSnapshot();
   runCalculation();
   checkStartAgainVisibility();
 }
