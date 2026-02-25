@@ -582,11 +582,15 @@ function setMode(mode, pushHistory) {
     document.body.classList.add('simple-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
     document.getElementById('targetYield').value = '6';
+    selectedBuyerType = 'investor';
+    document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
     document.getElementById('targetYield').value = '7';
+    selectedBuyerType = 'investor';
+    document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   }
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
@@ -3878,10 +3882,17 @@ function applyHistoryEntry(entry) {
   }
 
   if (entry.buyerType) {
-    selectedBuyerType = entry.buyerType;
-    document.querySelectorAll('.buyer-type-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.buyer === entry.buyerType);
-    });
+    if (currentMode === 'sdlt') {
+      selectedBuyerType = entry.buyerType;
+      document.querySelectorAll('.buyer-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.buyer === entry.buyerType);
+      });
+    } else {
+      selectedBuyerType = 'investor';
+      document.querySelectorAll('.buyer-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.buyer === 'investor');
+      });
+    }
   }
 
   if (entry.mode === 'simple' && entry.simpleCostItems && entry.simpleCostItems.length > 0) {

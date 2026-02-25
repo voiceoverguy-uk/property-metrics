@@ -1991,6 +1991,11 @@ body.sdlt-mode #dealForm .buyer-type-group {
   order: 0;
 }
 
+body.deal-mode #dealForm .buyer-type-group,
+body.simple-mode #dealForm .buyer-type-group {
+  display: none !important;
+}
+
 body.sdlt-mode #dealForm .form-divider {
   display: none !important;
 }
