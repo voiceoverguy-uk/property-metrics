@@ -1,0 +1,43 @@
+REPLIT PROMPT (copy/paste)
+
+Goal
+Add one new FAQ item to the Deal Calculator landing page:
+- Question: “Who built this tool?”
+- Answer: investor credibility + “continues to evolve…” line
+Also ensure the FAQPage JSON-LD is updated so schema validation still shows the full FAQ list correctly.
+
+Scope / Requirements
+1) UI: Add a new accordion FAQ item after the existing 3 FAQs:
+   - What is cash-on-cash return?
+   - How do mortgage stress tests affect buy-to-let deals?
+   - Should refurbishment costs be included?
+   - NEW: Who built this tool?
+
+2) Content (use exactly this copy)
+   Q: Who built this tool?
+   A: This tool was built by a long-term UK property investor based in West Yorkshire. After years of analysing deals in spreadsheets and refining personal models, the idea was simple — create a cleaner, faster online version that anyone could use to evaluate a buy-to-let properly without wrestling with Excel formulas. It continues to evolve based on real-world deal analysis and feedback from other UK investors.
+
+3) Schema: FAQPage JSON-LD
+   - Find where the FAQPage structured data is generated (likely in server.js meta rendering or routeMeta schema block).
+   - Add the new Question/Answer into mainEntity as an additional Question entry.
+   - Keep @type values correct:
+     - Question with name
+     - acceptedAnswer of type Answer with text
+   - Ensure schema validator still shows 0 errors and 0 warnings.
+
+4) Don’t break anything
+   - No layout shifts
+   - No console errors
+   - Works for both / and /deal-analyser routes (Deal Calculator mode)
+   - SDLT Calculator route should NOT show this FAQ (unless it already shares the same landing section—if it does, keep existing behaviour consistent)
+
+Implementation Notes
+- You likely have an FAQ data structure (e.g. modeFaqs.analyser) and then render the accordion from it.
+  If so: just append a new object to the array.
+- If the FAQ schema is built from the same array, it will auto-update; if not, update the schema list manually.
+- After changes: run the schema validator test again and confirm FAQPage now includes 4 questions.
+
+Deliverable
+- One new FAQ item visible in the UI
+- FAQPage schema includes the new question
+- Validation remains clean (0 errors / 0 warnings)
