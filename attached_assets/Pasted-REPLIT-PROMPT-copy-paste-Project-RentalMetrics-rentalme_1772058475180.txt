@@ -1,0 +1,60 @@
+REPLIT PROMPT (copy/paste)
+
+Project: RentalMetrics (rentalmetrics.co.uk)
+
+Goal:
+Update ONLY the marketing/landing copy on the Deal Calculator page to sound more “investor-grade”.
+Do NOT change any calculations, logic, routing, schema structure, layout, spacing, or CSS.
+This is a copy refresh only.
+
+Scope:
+- Deal Calculator / Deal Analyser landing / underfold section copy
+- “Deep dive…” heading + intro paragraph
+- 3 cards: “What this calculator covers”, “Who it’s for”, “Why not just use Excel?”
+- Optional: tighten the Privacy/Disclaimer wording if those strings are in the same underfold copy area
+
+Hard rules:
+- Do NOT rename buttons, modes, or URLs
+- Do NOT touch SDLT Calculator route
+- Do NOT adjust FAQ data structure (only wording if needed)
+- No visual changes. Only text replacements.
+
+────────────────────────────────────────
+COPY UPDATES (replace existing text with the following)
+────────────────────────────────────────
+
+1) Replace the underfold H2 heading:
+OLD: “Deep dive your next buy-to-let deal”
+NEW: “Model your next buy-to-let deal properly”
+
+2) Replace the underfold intro paragraph (the paragraph directly under that H2):
+NEW PARAGRAPH:
+“This tool goes beyond a basic yield check. It calculates your full acquisition cost — including SDLT and fees — stress-tests your mortgage against rising rates, and shows cash-on-cash return so you know what your actual cash investment is earning. Built for UK landlords and completely free — just enter the numbers and let the model do the work.”
+
+3) Update the card: “Who it’s for” (keep the title the same, just replace bullet text)
+NEW BULLETS:
+• Landlords using mortgages
+• Investors comparing multiple deals
+• Buyers checking rent covers rising rates
+• Anyone who wants structured analysis without spreadsheet risk
+
+4) Update the card: “Why not just use Excel?” (replace paragraph text)
+NEW PARAGRAPH:
+“Spreadsheets are flexible — but one wrong formula can distort your entire analysis. This tool applies consistent UK SDLT rules, automates mortgage stress testing, and gives you a standardised deal rating every time — so you can compare properties properly without worrying about formula errors.”
+
+5) OPTIONAL (only if there is a Privacy line in the same underfold section and it currently mentions tracking):
+Replace the privacy wording with:
+“All calculations run locally in your browser. RentalMetrics does not track you or collect personal data. No property details, addresses, or financial figures are transmitted.”
+
+If you cannot find an exact match, do not guess. Leave it unchanged.
+
+────────────────────────────────────────
+Implementation notes
+────────────────────────────────────────
+- Make changes in the source of truth for this landing/underfold copy (likely index.html or app.js template strings).
+- Keep punctuation exactly (en dash/em dash) so it reads well.
+- After edits: refresh the page and confirm no layout shift and no console errors.
+- Confirm the SDLT Calculator page is unchanged.
+
+Output:
+Reply with the files changed and confirm “copy-only update” completed.
