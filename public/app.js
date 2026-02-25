@@ -582,6 +582,7 @@ function setMode(mode, pushHistory) {
     document.body.classList.add('simple-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
     document.getElementById('targetYield').value = '6';
+    // Buyer Type locked to Investor in Simple Analyser (BTL-only tool)
     selectedBuyerType = 'investor';
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
@@ -589,6 +590,7 @@ function setMode(mode, pushHistory) {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
     document.getElementById('targetYield').value = '7';
+    // Buyer Type locked to Investor in Deal Analyser (BTL-only tool)
     selectedBuyerType = 'investor';
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
     setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
@@ -972,14 +974,17 @@ document.querySelectorAll('.maint-mode-btn').forEach(btn => {
   });
 });
 
+// Buyer Type is only user-selectable in SDLT Calculator Only mode.
+// Deal Analyser and Simple Analyser lock to Investor / Additional Property.
 let selectedBuyerType = 'investor';
 
 document.querySelectorAll('.buyer-type-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (currentMode !== 'sdlt') return;
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedBuyerType = btn.dataset.buyer;
-    if (currentMode === 'sdlt' && lastSdltData && lastSdltPrice) {
+    if (lastSdltData && lastSdltPrice) {
       renderSDLTStandaloneResults(lastSdltData, lastSdltPrice);
     }
   });
