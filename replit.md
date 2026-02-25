@@ -1,7 +1,7 @@
-# RentalMetrics – UK Property Deal & Yield Calculator
+# RentalMetrics – UK Buy-to-Let Deal Calculator & Modelling Tool
 
 ## Overview
-RentalMetrics is a web-based UK property investment deal calculator for England & Northern Ireland (rentalmetrics.co.uk). Its primary purpose is to empower investors and first-time buyers by calculating essential financial metrics for property deals. Key capabilities include calculating Stamp Duty Land Tax (SDLT), total acquisition costs, gross and net yields, and target offer prices. The tool also features a mortgage calculator, a deal rating system, interactive charts, dark mode, comparison history, and a standalone SDLT calculator mode. The project aims to provide UK buy-to-let maths without the headache, offering a comprehensive yet user-friendly platform for property investment analysis.
+RentalMetrics is a web-based UK buy-to-let deal calculator and modelling tool for England & Northern Ireland (rentalmetrics.co.uk). Its primary purpose is to empower investors and first-time buyers by calculating essential financial metrics for property deals. Key capabilities include calculating Stamp Duty Land Tax (SDLT), total acquisition costs, gross and net yields, and target offer prices. The tool also features a mortgage calculator, a deal rating system, interactive charts, dark mode, comparison history, and a standalone SDLT calculator mode. The project aims to provide UK buy-to-let maths without the headache, offering a comprehensive yet user-friendly platform for property investment analysis.
 
 ## User Preferences
 - Currency: GBP with £ and commas
@@ -18,7 +18,7 @@ RentalMetrics is a web-based UK property investment deal calculator for England 
 
 ### UI/UX Decisions
 - **Branding**: RentalMetrics branding uses primary red (#d42027, #B11217) and charcoal (#1a1a1a).
-- **Header**: Single-row layout with logo and tagline on the left, pill-style mode tabs (Deal Calculator, SDLT Calculator) and dark mode toggle on the right. Tabs centred on desktop. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
+- **Header**: Single-row layout with logo and tagline ("UK Buy-to-Let Deal Calculator & Modelling Tool") on the left, pill-style mode tabs (Deal Calculator, SDLT Calculator) and dark mode toggle on the right. Tabs centred on desktop. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
 - **Mode Toggle**: Two modes only: "Deal Calculator" (full analysis, target 7%) and "SDLT Calculator" (price + SDLT). Legacy `/simple-analyser` URL gracefully maps to Deal Calculator.
 - **Dark Mode**: Toggleable with localStorage persistence.
 - **Tooltips**: JS-driven tooltip system with 270px max-width bubbles, positioned above (flips below if near viewport top), arrow indicator, fade/scale animation (150ms), hover (desktop) and tap (mobile) support. Dark mode aware.

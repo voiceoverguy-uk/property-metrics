@@ -17,15 +17,15 @@ const OG_IMAGE = 'https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x6
 const routeMeta = {
   '/': {
     pageTitle: 'RentalMetrics | UK Buy-to-Let Deal & Yield Calculator',
-    metaDesc: 'Free UK buy-to-let toolkit: analyse deals, calculate rental yield, estimate SDLT and stress test mortgage scenarios. Everything you need for smarter property investment.',
+    metaDesc: 'Free UK buy-to-let deal calculator and modelling tool. Analyse rental yield, stress test mortgages, model costs and project returns in seconds.',
     canonical: 'https://rentalmetrics.co.uk/',
-    ogTitle: 'RentalMetrics | UK Buy-to-Let Deal Calculator',
-    ogDesc: 'Free UK buy-to-let toolkit: analyse deals, calculate rental yield, estimate SDLT and stress test mortgage scenarios.',
+    ogTitle: 'RentalMetrics | UK Buy-to-Let Deal Calculator & Modelling Tool',
+    ogDesc: 'Free UK buy-to-let deal calculator and modelling tool. Analyse rental yield, stress test mortgages and project returns.',
     ogUrl: 'https://rentalmetrics.co.uk/',
   },
   '/deal-analyser': {
     pageTitle: 'RentalMetrics | Buy-to-Let Deal Calculator UK',
-    metaDesc: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return, mortgage modelling and full acquisition cost breakdown. Free online tool.',
+    metaDesc: 'Free UK buy-to-let deal calculator and modelling tool. Analyse rental yield, stress test mortgages, model costs and project returns in seconds.',
     canonical: 'https://rentalmetrics.co.uk/deal-analyser',
     ogTitle: 'Buy-to-Let Deal Calculator (UK) | RentalMetrics',
     ogDesc: 'Stress test rent vs mortgage, model costs and cash-on-cash return, and see if a deal meets your target yield. Free tool.',

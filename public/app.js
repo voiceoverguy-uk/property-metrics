@@ -1,4 +1,4 @@
-const APP_VERSION = '3.6';
+const APP_VERSION = '4.1';
 const APP_VERSION_DATE = 'February 2026';
 
 const RENT_WARN_THRESHOLD = 5000;
@@ -475,9 +475,9 @@ const modeToRoute = { 'analyser': '/', 'sdlt': '/sdlt-calculator' };
 const modeMeta = {
   analyser: {
     title: 'RentalMetrics | Buy-to-Let Deal Calculator UK',
-    description: 'Analyse UK buy-to-let deals with stress testing, cash-on-cash return and full acquisition cost breakdown. Free online tool.',
+    description: 'Free UK buy-to-let deal calculator and modelling tool. Analyse rental yield, stress test mortgages, model costs and project returns in seconds.',
     h1: 'Buy-to-Let Deal Calculator (UK)',
-    subheading: 'Analyse your buy-to-let deal in seconds \u2014 or go deeper. Enter price and rent for instant yield. Add costs, voids and mortgage stress testing for full modelling.'
+    subheading: 'Analyse your buy-to-let deal in seconds \u2014 or go deeper. Enter price and rent for instant yield, then layer in costs, voids and mortgage stress testing for full modelling.'
   },
   sdlt: {
     title: 'Stamp Duty Calculator UK | Free SDLT Tool',
