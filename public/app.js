@@ -567,7 +567,7 @@ function setMode(mode, pushHistory) {
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
     document.getElementById('monthlyRent').removeAttribute('required');
-    setResultsPanelContent('<div class="results-placeholder"><p>Enter the figures to see a live SDLT calculation.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter the figures to see a live SDLT calculation.</p></div>');
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
@@ -575,7 +575,7 @@ function setMode(mode, pushHistory) {
     // Buyer Type locked to Investor (BTL-only tool)
     selectedBuyerType = 'investor';
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
-    setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   }
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   lastAnalysedTargetYield = null;
@@ -2742,7 +2742,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   document.getElementById('showStressTest').checked = false;
   document.getElementById('stressTestInput').style.display = 'none';
   loadAgentFeePreference();
-  setResultsPanelContent('<div class="results-placeholder"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
+  setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   document.getElementById('savePdfBtn').style.display = 'none';
   document.getElementById('startAgainBtn').style.display = 'none';
@@ -3531,7 +3531,7 @@ function renderLiveSDLT() {
   if (currentMode !== 'sdlt') return;
   var price = getCurrencyFieldValue('price');
   if (!price || price <= 0) {
-    setResultsPanelContent('<div class="results-placeholder"><p>Enter the figures to see a live SDLT calculation.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter the figures to see a live SDLT calculation.</p></div>');
     return;
   }
   var buyerType = getSelectedBuyerType();
