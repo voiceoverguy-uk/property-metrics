@@ -3806,6 +3806,10 @@ function setHistorySort(mode) {
     latestBtn.classList.toggle('active', mode === 'latest');
     bestBtn.classList.toggle('active', mode === 'best');
   }
+  var rankLabel = document.querySelector('.rank-toggle-label');
+  var rankCheckbox = document.getElementById('showRanksToggle');
+  if (rankLabel) rankLabel.style.display = mode === 'best' ? '' : 'none';
+  if (rankCheckbox && mode === 'latest') rankCheckbox.checked = false;
   renderHistory();
 }
 window.setHistorySort = setHistorySort;
@@ -3836,6 +3840,10 @@ function renderHistory() {
     latestBtn.classList.toggle('active', sortMode === 'latest');
     bestBtn.classList.toggle('active', sortMode === 'best');
   }
+  var rankLabel = document.querySelector('.rank-toggle-label');
+  var rankCheckbox = document.getElementById('showRanksToggle');
+  if (rankLabel) rankLabel.style.display = sortMode === 'best' ? '' : 'none';
+  if (rankCheckbox && sortMode === 'latest') rankCheckbox.checked = false;
 
   if (section) {
     const h2 = section.querySelector('h2');
