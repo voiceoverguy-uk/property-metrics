@@ -2549,6 +2549,13 @@ async function runCalculation() {
     hasAnalysedOnce = true;
     checkReanalyseVisibility();
     renderResults(result);
+    var snapCard = document.querySelector('.snapshot-card');
+    if (snapCard) {
+      snapCard.classList.remove('snapshot-card-pulse');
+      void snapCard.offsetWidth;
+      snapCard.classList.add('snapshot-card-pulse');
+      setTimeout(function() { snapCard.classList.remove('snapshot-card-pulse'); }, 500);
+    }
     if (currentMode === 'analyser') {
       addToHistory(result);
     }
@@ -2780,6 +2787,42 @@ function loadPdfLogo() {
   });
 }
 
+var _pdfWatermarkCache = null;
+function loadPdfWatermark() {
+  if (_pdfWatermarkCache) return Promise.resolve(_pdfWatermarkCache);
+  return new Promise(function(resolve) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      var c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      _pdfWatermarkCache = c.toDataURL('image/png');
+      resolve(_pdfWatermarkCache);
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = '/rental-metrics-icon-placeholder.png';
+  });
+}
+
+function addPdfWatermark(pdf, watermarkData) {
+  if (!watermarkData) return;
+  try {
+    var pageW = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var wmSize = Math.min(pageW, pageH) * 0.55;
+    var wmX = (pageW - wmSize) / 2;
+    var wmY = (pageH - wmSize) / 2;
+    var gs = new pdf.GState({ opacity: 0.07 });
+    pdf.saveGraphicsState();
+    pdf.setGState(gs);
+    pdf.addImage(watermarkData, 'PNG', wmX, wmY, wmSize, wmSize);
+    pdf.restoreGraphicsState();
+  } catch (e) {}
+}
+
 
 function sanitizePdfText(val) {
   if (!val) return '';
@@ -2812,11 +2855,15 @@ function pdfHelper(pdf, margins) {
   const pageH = pdf.internal.pageSize.getHeight();
   const contentW = pageW - margins.left - margins.right;
   let y = margins.top;
+  let _watermark = null;
+
+  function setWatermark(data) { _watermark = data; }
 
   function checkPage(needed) {
     if (y + needed > pageH - margins.bottom) {
       pdf.addPage();
       y = margins.top;
+      if (_watermark) addPdfWatermark(pdf, _watermark);
     }
   }
 
@@ -3111,7 +3158,7 @@ function pdfHelper(pdf, margins) {
   function getY() { return y; }
   function setY(val) { y = val; }
 
-  return { title, subtitle, heading, subheading, textLine, table, dealRating, yieldGauge, yieldCards, separator, disclaimer, gap, checkPage, getY, setY, contentW, pageW, pageH, margins, hexToRgb };
+  return { title, subtitle, heading, subheading, textLine, table, dealRating, yieldGauge, yieldCards, separator, disclaimer, gap, checkPage, getY, setY, contentW, pageW, pageH, margins, hexToRgb, setWatermark };
 }
 
 function printReport() {
@@ -3166,10 +3213,14 @@ function printReport() {
     const rating = getDealRating(displayData.netYield);
 
     const pdfMargins = { top: 15, bottom: 15, left: 15, right: 15 };
-    loadPdfLogo().then(function(logoData) {
+    Promise.all([loadPdfLogo(), loadPdfWatermark()]).then(function(assets) {
+    var logoData = assets[0], watermarkData = assets[1];
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const h = pdfHelper(pdf, pdfMargins);
+
+    addPdfWatermark(pdf, watermarkData);
+    h.setWatermark(watermarkData);
 
     if (logoData) {
       var pageW = pdf.internal.pageSize.getWidth();
@@ -4493,10 +4544,14 @@ function downloadComparePdf() {
     const sortLabel = sortBy === 'rating' ? 'Deal Rating' : sortBy === 'netYield' ? 'Net Yield (Asset)' : sortBy === 'cashOnCash' ? 'Cash-on-Cash' : sortBy === 'cashflow' ? 'Monthly Cashflow' : sortBy === 'price' ? 'Price' : 'Rent';
 
     const cmpMargins = { top: 15, bottom: 15, left: 10, right: 10 };
-    loadPdfLogo().then(function(logoData) {
+    Promise.all([loadPdfLogo(), loadPdfWatermark()]).then(function(assets) {
+    var logoData = assets[0], watermarkData = assets[1];
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('l', 'mm', 'a4');
     const h = pdfHelper(pdf, cmpMargins);
+
+    addPdfWatermark(pdf, watermarkData);
+    h.setWatermark(watermarkData);
 
     if (logoData) {
       var pageW = pdf.internal.pageSize.getWidth();

@@ -4674,6 +4674,16 @@ body.dark .mortgage-type-label {
   padding: 18px 20px;
 }
 
+.snapshot-card-pulse {
+  animation: snapshotPulse 0.4s ease-out;
+}
+
+@keyframes snapshotPulse {
+  0% { box-shadow: 0 0 0 0 rgba(212, 32, 39, 0.3); }
+  50% { box-shadow: 0 0 12px 4px rgba(212, 32, 39, 0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 32, 39, 0); }
+}
+
 .snapshot-card-warning {
   background: #fffcf0;
 }
