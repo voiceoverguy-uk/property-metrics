@@ -1,0 +1,70 @@
+Replit prompt (copy/paste)
+
+Goal
+We want to simplify the product navigation and reduce user confusion by removing “Simple Analyser” mode entirely.
+Going forward the site has ONLY two modes:
+1) Deal Calculator (the current Deal Analyser)
+2) SDLT Calculator Only (unchanged)
+
+We are NOT criticising existing work — the Deal Analyser already supports “simple” usage by leaving advanced fields blank. This change is purely to streamline the UI and routing.
+
+What to change (high level)
+A) Remove the “Simple Analyser” tab/button from the UI.
+B) Remove the “simple-mode” route/state so users can’t access it.
+C) Ensure any old links / stored state / history entries that reference simple-mode are gracefully redirected to Deal Calculator.
+D) Update the hero heading + description on Deal Calculator to explain it can be quick OR detailed (Option B copy below).
+E) Keep SDLT Calculator Only exactly as-is.
+
+Copy requirements (Option B)
+Update the Deal page header section to:
+
+H1:
+Buy-to-Let Deal Calculator (UK)
+
+Subheading:
+Analyse your buy-to-let deal in seconds — or go deeper. Enter price and rent for instant yield. Add costs, voids and mortgage stress testing for full modelling.
+
+Implementation details (please follow)
+1) UI / Navigation
+- Remove the “Simple Analyser” button/tab completely from the top nav.
+- Ensure the remaining tabs are:
+  - Deal Calculator (default / primary)
+  - SDLT Calculator Only
+- If there is any label “Deal Analyser”, rename it to “Deal Calculator”.
+
+2) Mode handling / Routing
+- Remove any code paths for “simple” mode:
+  - any setMode("simple") / body class "simple-mode" / isSimpleMode flags, etc.
+- The default landing mode should be Deal Calculator.
+
+3) Backwards compatibility (important)
+- If localStorage, query params, or saved history items contain a mode of "simple" (or equivalent),
+  then:
+  - silently map it to "deal" (Deal Calculator)
+  - do not throw errors
+  - do not show warnings
+- If there is a URL route like /simple-analyser (or similar), redirect it to /deal-analyser (or your current deal route).
+- If there is a “Simple” item in any internal menu or logic, remove it.
+
+4) Keep the functionality
+- Do NOT remove any fields/sections from the Deal Calculator.
+- The “simple experience” is achieved by users leaving optional sections blank.
+- Snapshot should still update live as inputs are entered.
+
+5) Files & checks
+- Make the minimum necessary edits across:
+  - public/index.html (or wherever nav lives)
+  - public/app.js (mode switching, history restore, routing)
+  - public/style.css (remove/harden any simple-mode styling)
+  - replit.md (update documentation if it mentions Simple Analyser)
+- After changes:
+  - Verify Deal Calculator loads and functions normally
+  - Verify SDLT Calculator Only still works
+  - Verify no console errors
+  - Verify any old “simple” state gracefully opens Deal Calculator
+
+Deliverable
+Implement the above, test quickly in desktop + mobile widths, and confirm:
+- Only 2 choices remain (Deal Calculator / SDLT Calculator)
+- Old “simple” references redirect safely to Deal Calculator
+- Copy is updated to Option B
