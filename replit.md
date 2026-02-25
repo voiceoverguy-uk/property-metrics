@@ -18,12 +18,12 @@ RentalMetrics is a web-based UK property investment deal calculator for England 
 
 ### UI/UX Decisions
 - **Branding**: RentalMetrics branding uses primary red (#d42027, #B11217) and charcoal (#1a1a1a).
-- **Header**: Single-row layout with logo and tagline on the left, pill-style mode tabs (Deal Calculator, SDLT Calculator Only) and dark mode toggle on the right. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
-- **Mode Toggle**: Two modes only: "Deal Calculator" (full analysis, target 7%) and "SDLT Calculator Only" (price + SDLT). Legacy `/simple-analyser` URL gracefully maps to Deal Calculator.
+- **Header**: Single-row layout with logo and tagline on the left, pill-style mode tabs (Deal Calculator, SDLT Calculator) and dark mode toggle on the right. Tabs centred on desktop. Light grey background with a 2px red underline, sticky with blur/shadow on scroll.
+- **Mode Toggle**: Two modes only: "Deal Calculator" (full analysis, target 7%) and "SDLT Calculator" (price + SDLT). Legacy `/simple-analyser` URL gracefully maps to Deal Calculator.
 - **Dark Mode**: Toggleable with localStorage persistence.
 - **Tooltips**: JS-driven tooltip system with 270px max-width bubbles, positioned above (flips below if near viewport top), arrow indicator, fade/scale animation (150ms), hover (desktop) and tap (mobile) support. Dark mode aware.
 - **Form Fields**: Utilize placeholders for user guidance. Letting Agent Fee (%) with VAT toggle sits directly under Expected Monthly Rent. Additional Costs section comes before Recurring Monthly Costs, which comes before Yield Adjustments.
-- **Buyer Type**: Hidden in Deal Calculator mode (locked to Investor/Additional Property via CSS `display:none !important` and JS guard). Only visible in SDLT Calculator Only mode where users can switch between Main Residence, Investor, and First-Time Buyer.
+- **Buyer Type**: Hidden in Deal Calculator mode (locked to Investor/Additional Property via CSS `display:none !important` and JS guard). Only visible in SDLT Calculator mode where users can switch between Main Residence, Investor, and First-Time Buyer.
 - **Results Display**: Single scenario display (Investor), not side-by-side. Mortgage calculations are based on cash invested (deposit + SDLT + fees + costs) when a mortgage is active.
 - **Comparison Feature**: "Compare Deals" overlay in the history section, ranking deals by rating/yield with gold/silver/bronze badges for top deals. Checkboxes on history rows allow selecting specific deals to compare. Selection controls (Select all/Select none) with count. "Compare Deals" with 0 selected shows confirmation prompt ("Select Deals for Comparison"); with deals selected opens filtered comparison. Comparison modal has "Export XLSX" button alongside PDF download.
 - **PDF Export**: Clean print layout for generating PDF reports.

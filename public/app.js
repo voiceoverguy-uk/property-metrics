@@ -229,7 +229,7 @@ function updateDealRefPlaceholder() {
   const dealRefInput = document.getElementById('dealReference');
   if (!dealRefInput) return;
   const short = getShortAddress();
-  dealRefInput.placeholder = short ? `${short} \u2013 BTL` : 'e.g. house with mortgage';
+  dealRefInput.placeholder = short ? `${short} \u2013 BTL` : 'e.g. LS1 - BTL';
 }
 
 function setupDealRefAutocomplete() {
@@ -949,8 +949,8 @@ document.querySelectorAll('.maint-mode-btn').forEach(btn => {
   });
 });
 
-// Buyer Type is only user-selectable in SDLT Calculator Only mode.
-// Deal Analyser and Simple Analyser lock to Investor / Additional Property.
+// Buyer Type is only user-selectable in SDLT Calculator mode.
+// Deal Calculator locks to Investor / Additional Property.
 let selectedBuyerType = 'investor';
 
 document.querySelectorAll('.buyer-type-btn').forEach(btn => {
@@ -1159,6 +1159,7 @@ function setupAutocomplete(placesLib) {
           sessionToken,
           region: 'gb',
           language: 'en-GB',
+          includedRegionCodes: ['gb'],
         };
 
         const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
