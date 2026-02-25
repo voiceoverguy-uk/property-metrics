@@ -3900,7 +3900,7 @@ async function applyHistoryEntry(entry) {
   restoreMapFromHistory(entry);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  renderSnapshot();
+  if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   try {
     await runCalculation();
   } catch (e) {
