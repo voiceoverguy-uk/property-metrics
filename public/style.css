@@ -132,6 +132,10 @@ header .subtitle {
   align-items: start;
 }
 
+body.sdlt-mode .layout {
+  align-items: stretch;
+}
+
 .input-panel {
   background: #fff;
   border-radius: 14px;
