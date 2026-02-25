@@ -427,8 +427,14 @@ body.sdlt-mode .layout {
 .placeholder-icon {
   width: 64px;
   height: 64px;
-  opacity: 0.15;
+  opacity: 0;
   margin-bottom: 12px;
+  animation: placeholderFadeIn 0.8s ease-in forwards;
+}
+
+@keyframes placeholderFadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 0.15; transform: scale(1); }
 }
 
 .results-content h2 {

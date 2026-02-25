@@ -568,6 +568,7 @@ function setMode(mode, pushHistory) {
     document.body.classList.add('sdlt-mode');
     document.getElementById('monthlyRent').removeAttribute('required');
     setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter the figures to see a live SDLT calculation.</p></div>');
+    setTimeout(function() { renderLiveSDLT(); }, 50);
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
