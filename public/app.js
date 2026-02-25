@@ -567,7 +567,7 @@ function setMode(mode, pushHistory) {
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
     document.getElementById('monthlyRent').removeAttribute('required');
-    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter the figures to see a live SDLT calculation.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter price to see live SDLT.</p></div>');
     setTimeout(function() { renderLiveSDLT(); }, 50);
   } else {
     document.body.classList.add('deal-mode');
@@ -3532,7 +3532,7 @@ function renderLiveSDLT() {
   if (currentMode !== 'sdlt') return;
   var price = getCurrencyFieldValue('price');
   if (!price || price <= 0) {
-    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter the figures to see a live SDLT calculation.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter price to see live SDLT.</p></div>');
     return;
   }
   var buyerType = getSelectedBuyerType();
