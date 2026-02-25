@@ -4662,6 +4662,20 @@ function toggleRanks() {
   }
 }
 window.toggleRanks = toggleRanks;
+
+function shareSite(e) {
+  if (e) e.preventDefault();
+  var url = 'https://rentalmetrics.co.uk';
+  if (navigator.share) {
+    navigator.share({ title: 'RentalMetrics', text: 'Free UK buy-to-let deal calculator and modelling tool', url: url }).catch(function() {});
+  } else {
+    navigator.clipboard.writeText(url).then(function() {
+      var link = e && e.target;
+      if (link) { var orig = link.textContent; link.textContent = 'Link copied!'; setTimeout(function() { link.textContent = orig; }, 2000); }
+    }).catch(function() { window.open(url, '_blank'); });
+  }
+}
+window.shareSite = shareSite;
 window.openCompare = openCompare;
 window.closeCompare = closeCompare;
 window.renderCompareTable = renderCompareTable;

@@ -4398,6 +4398,23 @@ body.deal-mode .deal-underfold {
   padding: 0 4px;
 }
 
+.share-encouragement {
+  font-size: 0.92rem;
+  color: #777;
+  text-align: center;
+  margin: 18px 0 8px;
+}
+
+.share-encouragement a {
+  color: #d42027;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.share-encouragement a:hover {
+  text-decoration: underline;
+}
+
 .sdlt-cta {
   font-size: 0.95rem;
   color: #555;
@@ -4479,6 +4496,7 @@ body.dark .landing-resources { background: #2a2a2a; }
 body.dark .landing-resources h3 { color: #e0e0e0; }
 body.dark .landing-resource-title { color: #ccc; }
 body.dark .sdlt-explanation { color: #aaa; }
+body.dark .share-encouragement { color: #888; }
 body.dark .sdlt-cta { color: #aaa; }
 body.dark .landing-toggle-btn { color: #d42027; border-color: #d42027; }
 body.dark .landing-toggle-btn:hover { background: #d42027; color: #fff; }
