@@ -6,6 +6,7 @@ const YIELD_WARN_THRESHOLD = 20;
 
 var lastAnalysedTargetYield = null;
 var hasAnalysedOnce = false;
+var _loadingFromHistory = false;
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2556,7 +2557,7 @@ async function runCalculation() {
       snapCard.classList.add('snapshot-card-pulse');
       setTimeout(function() { snapCard.classList.remove('snapshot-card-pulse'); }, 500);
     }
-    if (currentMode === 'analyser') {
+    if (currentMode === 'analyser' && !_loadingFromHistory) {
       addToHistory(result);
     }
     if (window.innerWidth <= 860) {
@@ -3673,8 +3674,14 @@ function addToHistory(result) {
     annualCashFlow: (result.investor.effectiveAnnualRent || result.investor.annualRent) - (getRunningCostItemsTotal() || 0) * 12 - getLettingAgentFeeMonthly() * 12 - getMaintenanceAnnual(),
     hasMortgage: selectedPurchaseType === 'mortgage',
     depositAmount: getDepositAmount(),
+    depositInputMode: depositInputMode,
+    depositRaw: document.getElementById('depositAmount').dataset.rawValue || document.getElementById('depositAmount').value || '',
+    interestRateVal: document.getElementById('interestRate').value || '',
+    mortgageTermVal: document.getElementById('mortgageTerm').value || '25',
+    stressTestRateVal: document.getElementById('stressTestRate').value || '7',
     solicitorFees: 0,
     refurbCosts: getCostItemsTotal(),
+    analyserCostItems: costItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 })),
     simpleCostItems: [],
     voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
     runningCosts: getRunningCostItemsTotal(),
@@ -3738,7 +3745,8 @@ function clearHistory() {
   renderHistory();
 }
 
-function applyHistoryEntry(entry) {
+async function applyHistoryEntry(entry) {
+  _loadingFromHistory = true;
   if (entry.mode && (entry.mode === 'simple' || entry.mode === 'analyser')) {
     setMode(entry.mode);
   }
@@ -3802,7 +3810,11 @@ function applyHistoryEntry(entry) {
     }
   }
 
-  if (entry.mode === 'simple' && entry.simpleCostItems && entry.simpleCostItems.length > 0) {
+  if (entry.analyserCostItems && entry.analyserCostItems.length > 0) {
+    costItems = entry.analyserCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
+    while (costItems.length < 3) costItems.push({ label: '', amount: 0 });
+    renderCostItems();
+  } else if (entry.mode === 'simple' && entry.simpleCostItems && entry.simpleCostItems.length > 0) {
     costItems = entry.simpleCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
     while (costItems.length < 3) costItems.push({ label: '', amount: 0 });
     renderCostItems();
@@ -3852,11 +3864,50 @@ function applyHistoryEntry(entry) {
     if (mtBtn) mtBtn.classList.add('active');
   }
 
+  if (entry.depositInputMode) {
+    depositInputMode = entry.depositInputMode;
+    document.querySelectorAll('.deposit-mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.depositMode === entry.depositInputMode);
+    });
+    var depInput = document.getElementById('depositAmount');
+    depInput.placeholder = entry.depositInputMode === 'pct' ? 'e.g. 25' : 'e.g. £40,000';
+    syncDepositInputType();
+  }
+  if (entry.depositRaw !== undefined && entry.depositRaw !== '') {
+    var depInput2 = document.getElementById('depositAmount');
+    depInput2.dataset.rawValue = entry.depositRaw;
+    depInput2.value = depositInputMode === 'pounds' ? formatCurrencyDisplay(entry.depositRaw) : entry.depositRaw;
+  } else if (entry.depositAmount !== undefined && entry.depositAmount > 0) {
+    var depInput3 = document.getElementById('depositAmount');
+    depInput3.dataset.rawValue = entry.depositAmount;
+    depInput3.value = depositInputMode === 'pounds' ? formatCurrencyDisplay(entry.depositAmount) : entry.depositAmount;
+  }
+  if (typeof updateDepositHelperText === 'function') updateDepositHelperText();
+  if (entry.interestRateVal !== undefined && entry.interestRateVal !== '') {
+    document.getElementById('interestRate').value = entry.interestRateVal;
+  } else if (entry.mortgageInterestRate) {
+    document.getElementById('interestRate').value = entry.mortgageInterestRate;
+  }
+  if (entry.mortgageTermVal !== undefined) {
+    document.getElementById('mortgageTerm').value = entry.mortgageTermVal;
+  }
+  if (entry.stressTestRateVal !== undefined) {
+    document.getElementById('stressTestRate').value = entry.stressTestRateVal;
+  } else if (entry.mortgageStressRate) {
+    document.getElementById('stressTestRate').value = entry.mortgageStressRate;
+  }
+
   restoreMapFromHistory(entry);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderSnapshot();
-  runCalculation();
+  try {
+    await runCalculation();
+  } catch (e) {
+    console.error('History load calculation failed:', e);
+  } finally {
+    _loadingFromHistory = false;
+  }
   checkStartAgainVisibility();
 }
 
