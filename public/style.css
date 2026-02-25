@@ -1961,10 +1961,6 @@ input.is-warning {
   display: none !important;
 }
 
-.simple-only {
-  display: none !important;
-}
-
 body.sdlt-mode .sdlt-only {
   display: block !important;
 }
@@ -1991,20 +1987,11 @@ body.sdlt-mode #dealForm .buyer-type-group {
   order: 0;
 }
 
-body.deal-mode #dealForm .buyer-type-group,
-body.simple-mode #dealForm .buyer-type-group {
+body.deal-mode #dealForm .buyer-type-group {
   display: none !important;
 }
 
 body.sdlt-mode #dealForm .form-divider {
-  display: none !important;
-}
-
-body.simple-mode .simple-only {
-  display: block !important;
-}
-
-body.simple-mode .full-only {
   display: none !important;
 }
 
@@ -4153,9 +4140,6 @@ body.dark .cg-projection-period { color: #999; }
   display: none;
   padding: 48px 0 32px;
 }
-body.simple-mode .landing-underfold:not(.sdlt-underfold):not(.deal-underfold) {
-  display: block;
-}
 body.deal-mode .landing-underfold:not(.deal-underfold) {
   display: none;
 }
@@ -4523,10 +4507,6 @@ body.dark .landing-toggle-btn:hover { background: #d42027; color: #fff; }
 
 .toggle-switch-sm input:checked + .toggle-slider:before {
   transform: translateX(16px);
-}
-
-body.simple-mode .deal-only-field {
-  display: none !important;
 }
 
 .deposit-input-wrapper {

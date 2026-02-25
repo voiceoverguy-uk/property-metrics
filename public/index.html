@@ -57,11 +57,11 @@
       {
         "@type": ["SoftwareApplication", "WebApplication"],
         "@id": "https://rentalmetrics.co.uk/#app",
-        "name": "RentalMetrics – UK Buy-to-Let Yield Calculator",
+        "name": "RentalMetrics – UK Buy-to-Let Deal Calculator",
         "url": "https://rentalmetrics.co.uk/",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web",
-        "description": "Free UK property deal analyser for England & Northern Ireland. Calculate SDLT, gross and net yield, cash-on-cash return, mortgage stress tests, deal ratings and export PDF reports.",
+        "description": "Free UK property deal calculator for England & Northern Ireland. Calculate SDLT, gross and net yield, cash-on-cash return, mortgage stress tests, deal ratings and export PDF reports.",
         "featureList": [
           "SDLT (Stamp Duty) calculator for investor, first-time buyer and additional property",
           "Gross and net rental yield analysis",
@@ -97,8 +97,7 @@
       </a>
       <div class="header-nav">
         <div class="mode-toggle">
-          <button type="button" class="mode-btn active" data-mode="simple">Simple Analyser</button>
-          <button type="button" class="mode-btn" data-mode="analyser">Deal Analyser</button>
+          <button type="button" class="mode-btn active" data-mode="analyser">Deal Calculator</button>
           <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator Only</button>
         </div>
         <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
@@ -197,30 +196,6 @@
             </div>
           </div>
 
-          <div class="analyser-only simple-only">
-            <h3>
-              Additional Costs
-              <span class="tooltip" data-tip="Add costs such as solicitor fees, refurb, surveys, etc.">?</span>
-            </h3>
-            <div id="simpleCostItemsList"></div>
-            <div class="cost-total-row">
-              <span>Total Additional Costs:</span>
-              <span id="simpleCostItemsTotal">&pound;0</span>
-            </div>
-          </div>
-
-          <div class="analyser-only simple-only">
-            <h3>
-              Recurring Monthly Costs
-              <span class="tooltip" data-tip="Itemise your ongoing monthly costs (insurance, ground rent, service charge, etc).">?</span>
-            </h3>
-            <div id="simpleRunningCostItemsList"></div>
-            <button type="button" id="addSimpleRunningCostItem" class="btn-add-item">+ Add Recurring Cost</button>
-            <div class="cost-total-row">
-              <span>Total Recurring Monthly Costs:</span>
-              <span id="simpleRunningCostItemsTotal">&pound;0/mo</span>
-            </div>
-          </div>
 
           <h3 class="analyser-only full-only">
             Additional Costs
@@ -495,7 +470,7 @@
             </details>
           </div>
 
-          <p class="sdlt-cta">Use the <a href="/deal-analyser">Buy-to-Let Deal Analyser</a> for full stress testing.</p>
+          <p class="sdlt-cta">Use the <a href="/deal-analyser">Buy-to-Let Deal Calculator</a> for full stress testing.</p>
         </div>
 
         <div class="landing-resources">
@@ -520,15 +495,15 @@
 
     <section class="landing-underfold deal-underfold" id="dealUnderfold">
       <div class="container">
-        <button type="button" class="landing-toggle-btn" id="dealToggleBtn" aria-expanded="false" aria-controls="dealContent">Show analyser help</button>
+        <button type="button" class="landing-toggle-btn" id="dealToggleBtn" aria-expanded="false" aria-controls="dealContent">Show calculator help</button>
 
         <div class="landing-content" id="dealContent">
           <h2>Deep dive your next buy-to-let deal</h2>
-          <p class="landing-intro">This analyser goes well beyond a basic yield check. It calculates your full acquisition cost including SDLT and fees, stress-tests your mortgage against rate rises, and shows cash-on-cash return so you know what your actual deposit is earning. Built for UK landlords and completely free &mdash; just enter the numbers and let the tool do the heavy lifting.</p>
+          <p class="landing-intro">This calculator goes well beyond a basic yield check. It calculates your full acquisition cost including SDLT and fees, stress-tests your mortgage against rate rises, and shows cash-on-cash return so you know what your actual deposit is earning. Built for UK landlords and completely free &mdash; just enter the numbers and let the tool do the heavy lifting.</p>
 
           <div class="landing-cards landing-cards-three">
             <div class="landing-card">
-              <h3>What this analyser calculates</h3>
+              <h3>What this calculator covers</h3>
               <ul>
                 <li>Total acquisition cost (incl. SDLT &amp; fees)</li>
                 <li>Gross and net yield</li>
@@ -613,7 +588,7 @@
             <p class="sdlt-explanation">Stamp Duty is charged in tax bands, similar to income tax. You only pay each rate on the portion of the price that falls within that band &mdash; not on the entire purchase price. If you already own a property and are buying an additional one, a surcharge is added on top of each band. SDLT rates are set by the government and may change at future budgets.</p>
           </div>
 
-          <p class="sdlt-cta">Want full rental yield and stress testing? Try the <a href="/deal-analyser">Deal Analyser</a>.</p>
+          <p class="sdlt-cta">Want full rental yield and stress testing? Try the <a href="/deal-analyser">Deal Calculator</a>.</p>
         </div>
 
         <div class="landing-resources">
