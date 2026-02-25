@@ -1,4 +1,4 @@
-const APP_VERSION = '4.1';
+const APP_VERSION = '4.5';
 const APP_VERSION_DATE = 'February 2026';
 
 const RENT_WARN_THRESHOLD = 5000;
@@ -567,7 +567,7 @@ function setMode(mode, pushHistory) {
   if (mode === 'sdlt') {
     document.body.classList.add('sdlt-mode');
     document.getElementById('monthlyRent').removeAttribute('required');
-    setResultsPanelContent('<div class="results-placeholder"><p>Enter a price and click <strong>Calculate SDLT</strong> to see results.</p></div>');
+    setResultsPanelContent('<div class="results-placeholder"><p>Enter the figures to see a live SDLT calculation.</p></div>');
   } else {
     document.body.classList.add('deal-mode');
     document.getElementById('monthlyRent').setAttribute('required', '');
@@ -834,6 +834,31 @@ function calcSDLTClient(price, buyerType) {
   return applyBands(price, [{ t: 125000, r: 0 }, { t: 250000, r: 0.02 }, { t: 925000, r: 0.05 }, { t: 1500000, r: 0.10 }, { t: Infinity, r: 0.12 }]);
 }
 
+function calcSDLTClientFull(price, buyerType) {
+  if (!price || price <= 0) return { total: 0, breakdown: { bands: [] } };
+  var bandDefs;
+  if (buyerType === 'ftb' && price <= 500000) {
+    bandDefs = [{ t: 300000, r: 0 }, { t: 500000, r: 0.05 }];
+  } else if (buyerType === 'investor' || buyerType === 'additional') {
+    bandDefs = [{ t: 125000, r: 0.05 }, { t: 250000, r: 0.07 }, { t: 925000, r: 0.10 }, { t: 1500000, r: 0.15 }, { t: Infinity, r: 0.17 }];
+  } else {
+    bandDefs = [{ t: 125000, r: 0 }, { t: 250000, r: 0.02 }, { t: 925000, r: 0.05 }, { t: 1500000, r: 0.10 }, { t: Infinity, r: 0.12 }];
+  }
+  var bands = [], total = 0, prev = 0;
+  for (var i = 0; i < bandDefs.length; i++) {
+    var b = bandDefs[i];
+    if (price <= prev) break;
+    var taxable = Math.min(price, b.t) - prev;
+    if (taxable > 0) {
+      var tax = Math.round(taxable * b.r);
+      total += tax;
+      bands.push({ from: prev, to: Math.min(price, b.t), rate: b.r, tax: tax });
+    }
+    prev = b.t;
+  }
+  return { total: total, breakdown: { bands: bands } };
+}
+
 function computeSnapshot() {
   const price = getCurrencyFieldValue('price');
   const monthlyRent = getCurrencyFieldValue('monthlyRent');
@@ -960,9 +985,7 @@ document.querySelectorAll('.buyer-type-btn').forEach(btn => {
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedBuyerType = btn.dataset.buyer;
-    if (lastSdltData && lastSdltPrice) {
-      renderSDLTStandaloneResults(lastSdltData, lastSdltPrice);
-    }
+    renderLiveSDLT();
   });
 });
 
@@ -3504,26 +3527,57 @@ function renderSDLTStandaloneResults(data, price) {
   setResultsPanelContent(html);
 }
 
-document.getElementById('sdltCalcBtn').addEventListener('click', async () => {
-  const price = getCurrencyFieldValue('price');
+function renderLiveSDLT() {
+  if (currentMode !== 'sdlt') return;
+  var price = getCurrencyFieldValue('price');
   if (!price || price <= 0) {
-    alert('Please enter a valid asking price.');
+    setResultsPanelContent('<div class="results-placeholder"><p>Enter the figures to see a live SDLT calculation.</p></div>');
     return;
   }
-  setResultsPanelContent('<div class="results-placeholder"><p>Calculating...</p></div>');
-  try {
-    const res = await fetch(`/api/sdlt?price=${encodeURIComponent(price)}`);
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'SDLT calculation failed');
-    }
-    const data = await res.json();
-    lastSdltData = data;
-    lastSdltPrice = price;
-    renderSDLTStandaloneResults(data, price);
-  } catch (err) {
-    setResultsPanelContent(`<div class="results-placeholder"><p style="color:#B11217;">Error: ${err.message}</p></div>`);
+  var buyerType = getSelectedBuyerType();
+  var sdltType = buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main');
+  var result = calcSDLTClientFull(price, sdltType);
+  var address = document.getElementById('address').value || 'Property';
+  var sdltLabel = getBuyerTypeLabel(buyerType);
+
+  var bandHtml = '';
+  if (result.breakdown.bands.length > 0) {
+    bandHtml = renderSDLTTable(result.breakdown);
+  } else {
+    bandHtml = '<p style="font-size:0.85rem;color:#777;">No SDLT due</p>';
   }
+
+  var html = '<div class="results-content">' +
+    '<div class="results-header-row">' +
+      '<div>' +
+        '<h2>SDLT Calculation</h2>' +
+        '<p class="sdlt-rates-note">Rates based on current GOV.UK guidance (England &amp; Northern Ireland).</p>' +
+        '<p class="address-line">' + escHtml(address) + ' \u2014 ' + fmt(price) + '</p>' +
+      '</div>' +
+      '<div class="results-header-buttons">' +
+        '<button type="button" class="btn-share" onclick="shareSDLT(this)">Share</button>' +
+        '<button type="button" class="btn-collapse-results" onclick="toggleResultsCollapse(this)" title="Collapse results">&#9650;</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="results-body">' +
+      '<div class="result-section">' +
+        '<h3>SDLT \u2014 ' + escHtml(sdltLabel) + '</h3>' +
+        bandHtml +
+        '<div class="result-row total"><span class="label">Total SDLT</span><span class="value">' + fmt(result.total) + '</span></div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  lastSdltPrice = price;
+  setResultsPanelContent(html);
+}
+
+document.getElementById('price').addEventListener('input', function() {
+  if (currentMode === 'sdlt') renderLiveSDLT();
+});
+
+document.getElementById('sdltCalcBtn').addEventListener('click', function() {
+  renderLiveSDLT();
 });
 
 var selectedHistoryIds = new Set();
