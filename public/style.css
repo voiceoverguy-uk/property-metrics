@@ -2581,6 +2581,12 @@ body.dark .rank-badge {
     padding: 18px;
     border-radius: 10px;
     min-height: 200px;
+    overflow-x: hidden;
+  }
+
+  .results-content {
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .layout {
@@ -2652,6 +2658,13 @@ body.dark .rank-badge {
   .results-header-buttons {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .sdlt-band-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .offer-box .offer-price {
