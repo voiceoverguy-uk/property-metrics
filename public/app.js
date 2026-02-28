@@ -1,4 +1,4 @@
-const APP_VERSION = '4.5';
+const APP_VERSION = '4.8';
 const APP_VERSION_DATE = 'February 2026';
 
 const RENT_WARN_THRESHOLD = 5000;
