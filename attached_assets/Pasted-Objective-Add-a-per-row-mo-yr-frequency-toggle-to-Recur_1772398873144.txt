@@ -1,0 +1,125 @@
+Objective
+Add a per-row /mo /yr frequency toggle to Recurring Monthly Costs so users can enter amounts in monthly or yearly terms. Internally all calculations remain monthly. Frequency is preserved in history, URL sharing, and exports (PDF + XLSX).
+
+Keep the implementation minimal and consistent with the current code style (no major refactors).
+
+Tasks
+
+T001: Data model — add freq to recurring cost items
+Blocked By: []
+Files: public/app.js
+
+Details
+- Change runningCostItems shape from { label, amount } to { label, amount, freq }
+- freq is 'mo' | 'yr', default 'mo'
+- Update:
+  - default item seed
+  - addRunningCostItem click handler to include freq: 'mo'
+  - startAgain reset to include freq: 'mo'
+
+Acceptance
+- All new items default to /mo
+- No console errors
+
+T002: Calculations — convert yearly amounts to monthly for totals
+Blocked By: [T001]
+Files: public/app.js
+
+Details
+- Update getRunningCostItemsTotal():
+  - if freq === 'yr': use amount / 12
+  - else: use amount
+- This should automatically flow to all downstream calculations (snapshot, net cashflow, etc.)
+
+Acceptance
+- A £1200/yr item contributes £100/mo to total
+- Total display remains £X/mo
+
+T003: UI — render /mo /yr toggle per recurring row
+Blocked By: [T001]
+Files: public/app.js, public/style.css
+
+Details
+- In renderRunningCostItems(), add a compact two-button toggle beside the amount input:
+  - /mo (active by default)
+  - /yr
+- Wire click handler:
+  - updates runningCostItems[index].freq
+  - applies conversion logic (see T004)
+  - updates totals immediately
+- Add CSS for .freq-toggle and buttons:
+  - small pill toggle
+  - consistent with existing toggles
+  - must not overflow on mobile; sit neatly next to amount input
+
+Acceptance
+- Each row shows a working toggle
+- Styling matches site
+- No mobile overflow
+
+T004: Conversion behaviour when toggling frequency
+Blocked By: [T003]
+Files: public/app.js
+
+Details
+When user toggles, convert the input value so it represents the same real-world cost:
+
+- /mo -> /yr: newAmount = oldAmount * 12
+- /yr -> /mo: newAmount = oldAmount / 12
+
+Rules:
+- Only convert if current input is a valid number
+- If empty/invalid: just switch freq and leave value unchanged
+- Rounding:
+  - When switching to /mo: round to 2dp
+  - When switching to /yr: round to 0dp if effectively whole, otherwise 2dp
+- Update any data-raw-value and formatted display logic already in use
+- Ensure totals update immediately
+
+Acceptance
+- Enter 227 on /mo → toggle to /yr → shows 2724
+- Toggle back to /mo → shows 227
+- Totals update correctly
+
+T005: History + URL sharing — save and restore freq
+Blocked By: [T001]
+Files: public/app.js
+
+Details
+History:
+- In addToHistory(): include freq when persisting running cost items
+- In applyHistoryEntry(): restore freq, defaulting to 'mo' if missing (legacy entries)
+
+URL sharing:
+- In shareDeal / rcitems param JSON: include a short f property for freq ('mo'|'yr')
+- In URL load parsing: restore f, default 'mo'
+
+Acceptance
+- History preserves freq
+- Old history entries without freq default to /mo
+- Shared URLs preserve freq and restore correctly
+
+T006: PDF + XLSX exports — show unit per item
+Blocked By: [T002, T005]
+Files: public/app.js
+
+Details
+- Results breakdown: show each running cost as £X / mo or £X / yr
+- PDF (printReport): include unit per line (e.g. Landlord Insurance — £227/yr)
+- XLSX (exportDealToExcel): include unit either as:
+  - an extra column, OR
+  - appended to the line label/value (simplest acceptable)
+- Deal Snapshot breakdown: show units per running cost line
+
+Acceptance
+- PDF shows correct units per item
+- XLSX includes units clearly
+- Snapshot breakdown shows units per running cost
+
+Notes / Constraints
+- Do not add quarterly option
+- Default is monthly
+- Keep changes minimal; avoid refactoring unrelated areas
+- Legacy: if a saved item has no freq, assume 'mo'
+- Formatting: keep currency display consistent with existing site formatting
+- No console errors
