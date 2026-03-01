@@ -733,6 +733,36 @@ body.sdlt-mode .layout {
   box-shadow: 0 0 0 3px rgba(177,18,23,0.1);
 }
 
+.freq-toggle {
+  display: flex;
+  flex-shrink: 0;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.freq-btn {
+  padding: 4px 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: none;
+  background: #f8f8f8;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.freq-btn.active {
+  background: #B11217;
+  color: #fff;
+}
+
+.freq-btn:not(.active):hover {
+  background: #eee;
+  color: #555;
+}
+
 .btn-remove-item {
   width: 28px;
   height: 28px;
@@ -3577,6 +3607,25 @@ body.dark .btn-add-item:hover {
   border-color: #B11217;
   background: rgba(177,18,23,0.1);
   color: #B11217;
+}
+
+body.dark .freq-toggle {
+  border-color: #2a2a4a;
+}
+
+body.dark .freq-btn {
+  background: #1a1a2e;
+  color: #888;
+}
+
+body.dark .freq-btn.active {
+  background: #B11217;
+  color: #fff;
+}
+
+body.dark .freq-btn:not(.active):hover {
+  background: #2a2a4a;
+  color: #ccc;
 }
 
 body.dark .btn-remove-item {

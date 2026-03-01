@@ -1,5 +1,5 @@
-const APP_VERSION = '4.8';
-const APP_VERSION_DATE = 'February 2026';
+const APP_VERSION = '4.9';
+const APP_VERSION_DATE = 'March 2026';
 
 const RENT_WARN_THRESHOLD = 5000;
 const YIELD_WARN_THRESHOLD = 20;
@@ -74,7 +74,7 @@ function toggleResultsCollapse(btn) {
 window.toggleResultsCollapse = toggleResultsCollapse;
 
 let costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
-let runningCostItems = [{ label: '', amount: 0 }];
+let runningCostItems = [{ label: '', amount: 0, freq: 'mo' }];
 let map = null;
 let marker = null;
 let selectedLocation = null;
@@ -1810,7 +1810,10 @@ const runningCostItemsTotalEl = document.getElementById('runningCostItemsTotal')
 const addRunningCostItemBtn = document.getElementById('addRunningCostItem');
 
 function getRunningCostItemsTotal() {
-  return runningCostItems.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+  return runningCostItems.reduce((sum, item) => {
+    const amt = parseFloat(item.amount) || 0;
+    return sum + (item.freq === 'yr' ? amt / 12 : amt);
+  }, 0);
 }
 
 function renderRunningCostItems() {
@@ -1820,9 +1823,14 @@ function renderRunningCostItems() {
     row.className = 'cost-item-row';
     const placeholders = ['e.g. Landlord Insurance', 'e.g. Service Charge', 'e.g. Ground Rent', 'e.g. Boiler Cover', 'e.g. Buildings Insurance', 'e.g. Maintenance Allowance', 'e.g. Letting Agent Fee', 'e.g. Rent Guarantee Insurance', 'e.g. Communal Cleaning', 'e.g. Property Management'];
     const placeholder = placeholders[index] || 'e.g. Monthly cost';
+    const freq = item.freq || 'mo';
     row.innerHTML = `
       <input type="text" class="cost-item-label" value="${escHtml(item.label)}" placeholder="${placeholder}" data-index="${index}">
       <input type="text" class="cost-item-amount" inputmode="numeric" value="${item.amount ? formatCurrencyDisplay(item.amount) : ''}" data-raw-value="${item.amount || ''}" placeholder="\u00a30" data-index="${index}">
+      <div class="freq-toggle" data-index="${index}">
+        <button type="button" class="freq-btn${freq === 'mo' ? ' active' : ''}" data-freq="mo" data-index="${index}">/mo</button>
+        <button type="button" class="freq-btn${freq === 'yr' ? ' active' : ''}" data-freq="yr" data-index="${index}">/yr</button>
+      </div>
       <button type="button" class="btn-remove-item" data-index="${index}" title="Remove">&times;</button>
     `;
     runningCostItemsList.appendChild(row);
@@ -1837,6 +1845,37 @@ function renderRunningCostItems() {
 
   runningCostItemsList.querySelectorAll('.cost-item-amount').forEach(input => {
     applyCurrencyToRunningCostAmount(input);
+  });
+
+  runningCostItemsList.querySelectorAll('.freq-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.target.dataset.index);
+      const newFreq = e.target.dataset.freq;
+      const oldFreq = runningCostItems[idx].freq || 'mo';
+      if (newFreq === oldFreq) return;
+      const amountInput = runningCostItemsList.querySelector(`.cost-item-amount[data-index="${idx}"]`);
+      const rawVal = parseFloat(amountInput ? (amountInput.dataset.rawValue || amountInput.value) : 0);
+      if (rawVal && !isNaN(rawVal) && rawVal > 0) {
+        let converted;
+        if (newFreq === 'yr') {
+          converted = rawVal * 12;
+          converted = Math.round(converted * 100) / 100;
+          if (converted === Math.floor(converted)) converted = Math.round(converted);
+        } else {
+          converted = Math.round((rawVal / 12) * 100) / 100;
+        }
+        runningCostItems[idx].amount = converted;
+        if (amountInput) {
+          amountInput.dataset.rawValue = converted;
+          amountInput.value = formatCurrencyDisplay(converted);
+        }
+      }
+      runningCostItems[idx].freq = newFreq;
+      const toggle = e.target.closest('.freq-toggle');
+      toggle.querySelectorAll('.freq-btn').forEach(b => b.classList.toggle('active', b.dataset.freq === newFreq));
+      updateRunningCostTotal();
+      if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
+    });
   });
 
   runningCostItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
@@ -1854,7 +1893,7 @@ function updateRunningCostTotal() {
 }
 
 addRunningCostItemBtn.addEventListener('click', () => {
-  runningCostItems.push({ label: '', amount: 0 });
+  runningCostItems.push({ label: '', amount: 0, freq: 'mo' });
   renderRunningCostItems();
   const labels = runningCostItemsList.querySelectorAll('.cost-item-label');
   if (labels.length > 0) labels[labels.length - 1].focus();
@@ -1921,7 +1960,7 @@ function renderRunningCostsBreakdown() {
     html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
     if (runningItems.length > 0) {
       runningItems.forEach(item => {
-        html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Running cost')}</span><span class="value">${fmt(item.amount)}/mo</span></div>`;
+        html += `<div class="result-row"><span class="label">${escHtml(item.label || 'Running cost')}</span><span class="value">${fmt(item.amount)}/${item.freq || 'mo'}</span></div>`;
       });
     }
     if (agentPct > 0) {
@@ -2700,7 +2739,7 @@ document.getElementById('startAgainBtn').addEventListener('click', () => {
   form.reset();
   costItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }, { label: '', amount: 0 }];
   renderCostItems();
-  runningCostItems = [{ label: '', amount: 0 }, { label: '', amount: 0 }];
+  runningCostItems = [{ label: '', amount: 0, freq: 'mo' }, { label: '', amount: 0, freq: 'mo' }];
   renderRunningCostItems();
   CURRENCY_FIELDS.forEach(id => {
     const input = document.getElementById(id);
@@ -3249,7 +3288,7 @@ function printReport() {
     {
       inputRows.push({ cells: ['Void Allowance', voidPct + '%'] });
       const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
-      activeRunning.forEach(i => inputRows.push({ cells: [i.label || 'Running cost', fmt(i.amount) + '/mo'] }));
+      activeRunning.forEach(i => inputRows.push({ cells: [i.label || 'Running cost', fmt(i.amount) + '/' + (i.freq || 'mo')] }));
       if (runningCosts > 0) {
         inputRows.push({ cells: ['Total Monthly Running Costs', fmt(runningCosts) + '/mo'], bold: true });
       }
@@ -3481,6 +3520,10 @@ function exportDealToExcel() {
   rows.push(['Expected Monthly Rent (£/mo)', monthlyRent]);
   rows.push(['Letting Agent Fee (%)', lettingPct]);
   rows.push(['Letting Agent Fee (£/mo)', Math.round(lettingMonthly * 100) / 100]);
+  const activeRunningXlsx = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+  activeRunningXlsx.forEach(i => {
+    rows.push([(i.label || 'Running cost') + ' (£/' + (i.freq || 'mo') + ')', Math.round((parseFloat(i.amount) || 0) * 100) / 100]);
+  });
   rows.push(['Total Recurring Monthly Costs (£/mo)', Math.round(runningCosts * 100) / 100]);
   if (mortgage) {
     rows.push(['Mortgage Payment (£/mo)', Math.round(mortgage.monthlyPayment * 100) / 100]);
@@ -3685,7 +3728,7 @@ function addToHistory(result) {
     simpleCostItems: [],
     voidPct: parseFloat(document.getElementById('voidAllowance').value) || 0,
     runningCosts: getRunningCostItemsTotal(),
-    runningCostItems: runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0 })),
+    runningCostItems: runningCostItems.map(i => ({ label: i.label, amount: parseFloat(i.amount) || 0, freq: i.freq || 'mo' })),
     mortgageType: mortgageType,
     lettingAgentPct: getLettingAgentPct(),
     lettingAgentVat: document.getElementById('lettingAgentVat').checked,
@@ -3768,10 +3811,10 @@ async function applyHistoryEntry(entry) {
   }
 
   if (entry.runningCostItems && entry.runningCostItems.length > 0) {
-    runningCostItems = entry.runningCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
+    runningCostItems = entry.runningCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0, freq: i.freq || 'mo' }));
     renderRunningCostItems();
   } else if (entry.runningCosts !== undefined && entry.runningCosts > 0) {
-    runningCostItems = [{ label: '', amount: entry.runningCosts }, { label: '', amount: 0 }];
+    runningCostItems = [{ label: '', amount: entry.runningCosts, freq: 'mo' }, { label: '', amount: 0, freq: 'mo' }];
     renderRunningCostItems();
   }
 
@@ -4863,7 +4906,7 @@ function shareDeal(btnEl) {
   const params = new URLSearchParams();
   const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
   if (activeRunning.length > 0) {
-    params.set('rcitems', JSON.stringify(activeRunning.map(i => ({ l: i.label, a: i.amount }))));
+    params.set('rcitems', JSON.stringify(activeRunning.map(i => ({ l: i.label, a: i.amount, f: i.freq || 'mo' }))));
   }
   if (price) params.set('price', price);
   if (rent) params.set('rent', rent);
@@ -5037,15 +5080,15 @@ function checkUrlParams() {
     try {
       const items = JSON.parse(params.get('rcitems'));
       if (Array.isArray(items) && items.length > 0) {
-        runningCostItems = items.map(i => ({ label: i.l || '', amount: parseFloat(i.a) || 0 }));
-        while (runningCostItems.length < 2) runningCostItems.push({ label: '', amount: 0 });
+        runningCostItems = items.map(i => ({ label: i.l || '', amount: parseFloat(i.a) || 0, freq: i.f || 'mo' }));
+        while (runningCostItems.length < 2) runningCostItems.push({ label: '', amount: 0, freq: 'mo' });
         renderRunningCostItems();
       }
     } catch (e) {}
   } else if (params.has('running')) {
     const running = parseFloat(params.get('running'));
     if (running > 0) {
-      runningCostItems = [{ label: '', amount: running }, { label: '', amount: 0 }];
+      runningCostItems = [{ label: '', amount: running, freq: 'mo' }, { label: '', amount: 0, freq: 'mo' }];
       renderRunningCostItems();
     }
   }
@@ -5366,7 +5409,16 @@ checkUrlParams();
     breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>Rent</span><span>${fmt(b.effectiveMonthlyRent)}/mo</span></div>`;
     if (b.lettingAgentFee > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Agent Fee${b.lettingAgentPct ? ' (' + b.lettingAgentPct + '%)' : ''}</span><span>-${fmt(b.lettingAgentFee)}/mo</span></div>`;
-    if (b.baseRunningCosts > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Running Costs</span><span>-${fmt(b.baseRunningCosts)}/mo</span></div>`;
+    if (b.baseRunningCosts > 0) {
+      const snapRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
+      if (snapRunning.length > 0) {
+        snapRunning.forEach(item => {
+          breakdownHtml += `<div class="snapshot-breakdown-row"><span>${escHtml(item.label || 'Running cost')}</span><span>-${fmt(item.amount)}/${item.freq || 'mo'}</span></div>`;
+        });
+      } else {
+        breakdownHtml += `<div class="snapshot-breakdown-row"><span>Running Costs</span><span>-${fmt(b.baseRunningCosts)}/mo</span></div>`;
+      }
+    }
     if (b.maintenanceMonthly > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Maintenance</span><span>-${fmt(Math.round(b.maintenanceMonthly))}/mo</span></div>`;
     if (b.mortgagePayment > 0) breakdownHtml += `<div class="snapshot-breakdown-row"><span>Mortgage${b.interestRate ? ' (' + b.interestRate + '%)' : ''}</span><span>-${fmt(Math.round(b.mortgagePayment))}/mo</span></div>`;
 
