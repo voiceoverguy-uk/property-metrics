@@ -1956,7 +1956,7 @@ function renderRunningCostsBreakdown() {
 
   let html = '';
   if (baseRunning > 0 || agentPct > 0 || maintenanceAnnual > 0 || mortgageMonthly > 0) {
-    html += '<div class="result-section"><h3>Recurring Monthly Costs</h3>';
+    html += '<div class="result-section"><h3>Recurring Costs</h3>';
     html += `<div class="result-row"><span class="label">Monthly Rent</span><span class="value">${fmt(monthlyRent)}/mo</span></div>`;
     if (runningItems.length > 0) {
       runningItems.forEach(item => {
@@ -3290,7 +3290,7 @@ function printReport() {
       const activeRunning = runningCostItems.filter(i => (parseFloat(i.amount) || 0) > 0);
       activeRunning.forEach(i => inputRows.push({ cells: [i.label || 'Running cost', fmt(i.amount) + '/' + (i.freq || 'mo')] }));
       if (runningCosts > 0) {
-        inputRows.push({ cells: ['Total Monthly Running Costs', fmt(runningCosts) + '/mo'], bold: true });
+        inputRows.push({ cells: ['Total Recurring Costs (Monthly)', fmt(runningCosts) + '/mo'], bold: true });
       }
       const lettingAgentPct = getLettingAgentPct();
       if (lettingAgentPct > 0) {
@@ -3524,7 +3524,7 @@ function exportDealToExcel() {
   activeRunningXlsx.forEach(i => {
     rows.push([(i.label || 'Running cost') + ' (£/' + (i.freq || 'mo') + ')', Math.round((parseFloat(i.amount) || 0) * 100) / 100]);
   });
-  rows.push(['Total Recurring Monthly Costs (£/mo)', Math.round(runningCosts * 100) / 100]);
+  rows.push(['Total Recurring Costs (Monthly) (£/mo)', Math.round(runningCosts * 100) / 100]);
   if (mortgage) {
     rows.push(['Mortgage Payment (£/mo)', Math.round(mortgage.monthlyPayment * 100) / 100]);
     rows.push(['Monthly Cashflow (£/mo)', Math.round(mortgage.monthlyCashFlow * 100) / 100]);
