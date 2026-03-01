@@ -2804,12 +2804,19 @@ body.dark .rank-badge {
   }
 
   .cost-item-row {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 5px;
   }
 
-  .cost-item-row .cost-item-label,
+  .cost-item-row .cost-item-label {
+    font-size: 16px;
+    min-width: 0;
+  }
+
   .cost-item-row .cost-item-amount {
     font-size: 16px;
+    width: 65px;
+    padding: 8px 6px;
   }
 
   .autocomplete-dropdown.cost-autocomplete {
