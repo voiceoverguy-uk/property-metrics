@@ -2362,18 +2362,24 @@ window.recalcRefinance = function() {
 function renderScenario(data, label, targetYield, mortgage) {
   const displayData = data;
   const offer = data.targetOffer;
+  const requiredRent = data.requiredRent;
 
   const askingPrice = data.breakdown ? data.breakdown.price : 0;
   let offerHtml;
   if (offer && offer.achievable) {
     const cappedAtAsking = offer.offerPrice > askingPrice && askingPrice > 0;
     const displayOffer = askingPrice > 0 ? Math.min(offer.offerPrice, askingPrice) : offer.offerPrice;
+    let requiredRentNote = '';
+    if (requiredRent && requiredRent.achievable && askingPrice > 0) {
+      requiredRentNote = `<div class="offer-note offer-note-required-rent">Or, rent should be ${fmt(requiredRent.monthlyRent)}/month to achieve ${fmtPct(targetYield)} yield at this price</div>`;
+    }
     if (cappedAtAsking) {
       offerHtml = `
         <div class="offer-box offer-beats-target">
           <div class="offer-label">Target Offer Price</div>
           <div class="offer-price">${fmt(displayOffer)}</div>
           <div class="offer-note offer-note-success">Already beats ${fmtPct(targetYield)} target yield at the asking price \u2014 no discount needed.</div>
+          ${requiredRentNote}
         </div>`;
     } else {
       offerHtml = `
@@ -2381,14 +2387,20 @@ function renderScenario(data, label, targetYield, mortgage) {
           <div class="offer-label">Target Offer Price for ${fmtPct(targetYield)} Yield</div>
           <div class="offer-price">${fmt(displayOffer)}</div>
           <div class="offer-note">To hit ${fmtPct(targetYield)} yield you'd need to pay around ${fmt(displayOffer)}</div>
+          ${requiredRentNote}
         </div>`;
     }
   } else {
+    let requiredRentNote = '';
+    if (requiredRent && requiredRent.achievable && askingPrice > 0) {
+      requiredRentNote = `<div class="offer-note offer-note-required-rent">Or, rent should be ${fmt(requiredRent.monthlyRent)}/month to achieve ${fmtPct(targetYield)} yield at this price</div>`;
+    }
     offerHtml = `
       <div class="offer-box not-achievable">
         <div class="offer-label">Target Offer Price for ${fmtPct(targetYield)} Yield</div>
         <div class="offer-price">Not achievable with current inputs</div>
         <div class="offer-note">Try adjusting rent, costs, or target yield</div>
+        ${requiredRentNote}
       </div>`;
   }
 
@@ -3432,6 +3444,7 @@ function printReport() {
 
     {
       const offer = scenarioData.targetOffer;
+      const pdfRequiredRent = scenarioData.requiredRent;
       const pdfAskingPrice = scenarioData.breakdown ? scenarioData.breakdown.price : 0;
       if (offer && offer.achievable) {
         const pdfCapped = offer.offerPrice > pdfAskingPrice && pdfAskingPrice > 0;
@@ -3444,6 +3457,9 @@ function printReport() {
         }
       } else {
         h.textLine('Target Offer Price (for ' + fmtPct(parseFloat(targetYield)) + ' Net Yield): Not achievable with current inputs', { bold: true });
+      }
+      if (pdfRequiredRent && pdfRequiredRent.achievable && pdfAskingPrice > 0) {
+        h.textLine('Or, rent should be ' + fmt(pdfRequiredRent.monthlyRent) + '/month to achieve ' + fmtPct(parseFloat(targetYield)) + ' yield at this price', { size: 8, color: '#555555' });
       }
       h.textLine('Based on Net Yield (Asset), excluding mortgage. Capped at asking price.', { size: 8, color: '#666666' });
 
@@ -3555,6 +3571,9 @@ function exportDealToExcel() {
   rows.push(['Target Yield (%)', targetYield]);
   if (data.targetOffer) {
     rows.push(['Target Offer Price (£)', data.targetOffer.offerPrice || 0]);
+  }
+  if (data.requiredRent && data.requiredRent.achievable && price > 0) {
+    rows.push(['Required Monthly Rent for Target Yield (£/mo)', data.requiredRent.monthlyRent]);
   }
   rows.push(['Grade', rating.grade + ' \u2013 ' + rating.label]);
   var delta = data.netYield - targetYield;

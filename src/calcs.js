@@ -83,4 +83,29 @@ function calculateTargetOfferPrice(params) {
   return { offerPrice, achievable: offerPrice > 0 };
 }
 
-module.exports = { calculateDeal, calculateTargetOfferPrice };
+function calculateRequiredRent(params) {
+  const {
+    price,
+    targetYield = 7.0,
+    voidPct = 0,
+    runningCosts = 0,
+  } = params;
+
+  if (!price || price <= 0 || targetYield <= 0 || voidPct >= 100) {
+    return { monthlyRent: 0, achievable: false };
+  }
+
+  const denominator = 12 * (1 - voidPct / 100);
+  if (denominator <= 0) {
+    return { monthlyRent: 0, achievable: false };
+  }
+
+  const monthlyRent = ((targetYield / 100 * price) + runningCosts * 12) / denominator;
+  if (!isFinite(monthlyRent) || monthlyRent <= 0) {
+    return { monthlyRent: 0, achievable: false };
+  }
+
+  return { monthlyRent: Math.round(monthlyRent), achievable: true };
+}
+
+module.exports = { calculateDeal, calculateTargetOfferPrice, calculateRequiredRent };

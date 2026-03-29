@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { calculateDeal, calculateTargetOfferPrice } = require('./src/calcs');
+const { calculateDeal, calculateTargetOfferPrice, calculateRequiredRent } = require('./src/calcs');
 const { getSDLTBreakdown } = require('./src/sdlt');
 
 const app = express();
@@ -131,36 +131,45 @@ app.post('/api/calculate', (req, res) => {
       ? costItems.map(item => ({ label: String(item.label || ''), amount: Number(item.amount) || 0 }))
       : [];
 
+    const resolvedTargetYield = Number(targetYield) || 7.0;
+    const requiredRentParams = { price: params.price, targetYield: resolvedTargetYield, voidPct: params.voidPct, runningCosts: params.runningCosts };
+
     const investorResult = calculateDeal({ ...params, buyerType: 'additional' });
     investorResult.breakdown.costItems = parsedCostItems;
     const investorBreakdown = getSDLTBreakdown(params.price, 'additional');
-    const investorOffer = calculateTargetOfferPrice({ ...params, buyerType: 'additional', targetYield: Number(targetYield) || 7.0 });
+    const investorOffer = calculateTargetOfferPrice({ ...params, buyerType: 'additional', targetYield: resolvedTargetYield });
+    const investorRequiredRent = calculateRequiredRent(requiredRentParams);
 
     const ftbResult = calculateDeal({ ...params, buyerType: 'ftb' });
     ftbResult.breakdown.costItems = parsedCostItems;
     const ftbBreakdown = getSDLTBreakdown(params.price, 'ftb');
-    const ftbOffer = calculateTargetOfferPrice({ ...params, buyerType: 'ftb', targetYield: Number(targetYield) || 7.0 });
+    const ftbOffer = calculateTargetOfferPrice({ ...params, buyerType: 'ftb', targetYield: resolvedTargetYield });
+    const ftbRequiredRent = calculateRequiredRent(requiredRentParams);
 
     const mainResult = calculateDeal({ ...params, buyerType: 'standard' });
     mainResult.breakdown.costItems = parsedCostItems;
     const mainBreakdown = getSDLTBreakdown(params.price, 'standard');
-    const mainOffer = calculateTargetOfferPrice({ ...params, buyerType: 'standard', targetYield: Number(targetYield) || 7.0 });
+    const mainOffer = calculateTargetOfferPrice({ ...params, buyerType: 'standard', targetYield: resolvedTargetYield });
+    const mainRequiredRent = calculateRequiredRent(requiredRentParams);
 
     res.json({
       investor: {
         ...investorResult,
         sdltBreakdown: investorBreakdown,
         targetOffer: investorOffer,
+        requiredRent: investorRequiredRent,
       },
       ftb: {
         ...ftbResult,
         sdltBreakdown: ftbBreakdown,
         targetOffer: ftbOffer,
+        requiredRent: ftbRequiredRent,
       },
       main: {
         ...mainResult,
         sdltBreakdown: mainBreakdown,
         targetOffer: mainOffer,
+        requiredRent: mainRequiredRent,
       },
       targetYield: Number(targetYield) || 7.0,
     });

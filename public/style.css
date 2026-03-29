@@ -665,6 +665,12 @@ body.sdlt-mode .layout {
   font-weight: 600;
 }
 
+.offer-note-required-rent {
+  color: #666;
+  font-style: italic;
+  margin-top: 6px;
+}
+
 .offer-box.not-achievable {
   background: #fafafa;
   border-color: #ccc;
