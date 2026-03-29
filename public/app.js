@@ -5501,6 +5501,13 @@ checkUrlParams();
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Cash-on-Cash</span><span>${formatYieldDisplay(snap.cashOnCash, 2)}</span></div>`;
     }
 
+    const snapTargetYield = getCurrentTargetYield();
+    const snapRR = calcRequiredRentLocal();
+    if (snapRR.achievable && snap.missing.indexOf('price') === -1) {
+      breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
+      breakdownHtml += `<div class="snapshot-breakdown-row snapshot-required-rent-row"><span>Rent needed for ${fmtPct(snapTargetYield)} yield</span><span>${fmt(snapRR.monthlyRent)}/mo</span></div>`;
+    }
+
     snapshotRefs.breakdown.innerHTML = breakdownHtml;
     if (!breakdownOpen) snapshotRefs.details.removeAttribute('open');
     else snapshotRefs.details.setAttribute('open', '');
@@ -5542,16 +5549,6 @@ checkUrlParams();
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Cash-on-Cash <span class="tooltip" data-tip="Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.">?</span></span>
         <span class="snapshot-total-value ${cocClass}">${formatYieldDisplay(snap.cashOnCash, 1)}</span>
-      </div>`;
-    }
-
-    const snapTargetYield = getCurrentTargetYield();
-    const snapRR = calcRequiredRentLocal();
-    if (snapRR.achievable && snap.missing.indexOf('price') === -1) {
-      totalsHtml += `
-      <div class="snapshot-total-item snapshot-required-rent-item">
-        <span class="snapshot-total-label">Rent for ${fmtPct(snapTargetYield)} yield</span>
-        <span class="snapshot-total-value snapshot-required-rent-value">${fmt(snapRR.monthlyRent)}/mo</span>
       </div>`;
     }
 
