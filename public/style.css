@@ -451,6 +451,33 @@ body.sdlt-mode .layout {
   letter-spacing: 0.2px;
 }
 
+.sdlt-explanation {
+  margin-top: 14px;
+  padding: 10px 13px;
+  background: #f8f4f4;
+  border-left: 3px solid #B11217;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.8rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.sdlt-explanation p {
+  margin: 0 0 6px 0;
+}
+
+.sdlt-gov-link {
+  display: inline-block;
+  font-size: 0.77rem;
+  color: #B11217;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sdlt-gov-link:hover {
+  text-decoration: underline;
+}
+
 .results-content .address-line {
   font-size: 0.85rem;
   color: #777;
@@ -3706,6 +3733,16 @@ body.dark .results-placeholder {
 
 body.dark .sdlt-rates-note {
   color: #666;
+}
+
+body.dark .sdlt-explanation {
+  background: #1a0d0d;
+  color: #aaa;
+  border-left-color: #B11217;
+}
+
+body.dark .sdlt-gov-link {
+  color: #e05a5e;
 }
 
 body.dark .sdlt-calc-type {

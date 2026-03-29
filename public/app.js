@@ -1001,6 +1001,19 @@ function getBuyerTypeLabel(bt) {
   return 'Investor / Additional Property';
 }
 
+function getSDLTExplanation(buyerType) {
+  const govUrl = 'https://www.gov.uk/stamp-duty-land-tax/residential-property-rates';
+  let text = '';
+  if (buyerType === 'ftb') {
+    text = 'First-time buyers pay no SDLT on the first £300,000. Between £300,001 and £500,000, a 5% rate applies on that portion only. Properties above £500,000 do not qualify for first-time buyer relief \u2014 standard rates apply instead.';
+  } else if (buyerType === 'main') {
+    text = 'Standard residential rates apply. No SDLT on the first £125,000, then 2% on £125,001\u2013£250,000, 5% on £250,001\u2013£925,000, 10% on £925,001\u2013£1.5m, and 12% above that.';
+  } else {
+    text = 'Investors and additional property buyers pay a 5% surcharge on top of standard rates at every band. SDLT starts at 5% from £0 (there is no 0% band), rising to 7% on £125,001\u2013£250,000, and 10% on £250,001\u2013£925,000.';
+  }
+  return `<div class="sdlt-explanation"><p>${text}</p><a href="${govUrl}" target="_blank" rel="noopener noreferrer" class="sdlt-gov-link">Verify on GOV.UK &rarr;</a></div>`;
+}
+
 function getResultForBuyerType(result, bt) {
   if (bt === 'ftb') return result.ftb;
   if (bt === 'main') return result.main;
@@ -2399,6 +2412,7 @@ function renderScenario(data, label, targetYield, mortgage) {
         <span class="label">Total SDLT</span>
         <span class="value">${fmt(data.sdlt)}</span>
       </div>
+      ${getSDLTExplanation(getSelectedBuyerType())}
     </div>
 
     <div class="result-section">
@@ -3594,6 +3608,7 @@ function renderSDLTStandaloneResults(data, price) {
           <span class="label">Total SDLT</span>
           <span class="value">${fmt(info.total)}</span>
         </div>
+        ${getSDLTExplanation(buyerType)}
       </div>
     `;
   };
@@ -3660,6 +3675,7 @@ function renderLiveSDLT() {
         '<h3>SDLT \u2014 ' + escHtml(sdltLabel) + '</h3>' +
         bandHtml +
         '<div class="result-row total"><span class="label">Total SDLT</span><span class="value">' + fmt(result.total) + '</span></div>' +
+        getSDLTExplanation(buyerType) +
       '</div>' +
     '</div>' +
   '</div>';
