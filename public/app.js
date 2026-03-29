@@ -1903,6 +1903,36 @@ function renderRunningCostItems() {
 
 function updateRunningCostTotal() {
   runningCostItemsTotalEl.textContent = fmt(getRunningCostItemsTotal()) + '/mo';
+  updateLiveRequiredRentNote();
+}
+
+function calcRequiredRentLocal() {
+  const price = getCurrencyFieldValue('price');
+  const targetYield = parseFloat(document.getElementById('targetYield').value) || 0;
+  const voidPct = parseFloat(document.getElementById('voidAllowance').value) || 0;
+  const runningCosts = getRunningCostItemsTotal();
+  if (!price || price <= 0 || targetYield <= 0 || voidPct >= 100) return { monthlyRent: 0, achievable: false };
+  const denominator = 12 * (1 - voidPct / 100);
+  if (denominator <= 0) return { monthlyRent: 0, achievable: false };
+  const monthlyRent = ((targetYield / 100 * price) + runningCosts * 12) / denominator;
+  if (!isFinite(monthlyRent) || monthlyRent <= 0) return { monthlyRent: 0, achievable: false };
+  return { monthlyRent: Math.round(monthlyRent), achievable: true };
+}
+
+function updateLiveRequiredRentNote() {
+  try { if (!lastResult) return; } catch(e) { return; }
+  const price = getCurrencyFieldValue('price');
+  if (!price || price <= 0) return;
+  const targetYield = parseFloat(document.getElementById('targetYield').value) || 0;
+  const rr = calcRequiredRentLocal();
+  document.querySelectorAll('.offer-note-required-rent').forEach(function(el) {
+    if (rr.achievable) {
+      el.textContent = 'Or, rent should be ' + fmt(rr.monthlyRent) + '/month to achieve ' + fmtPct(targetYield) + ' yield at this price';
+      el.style.display = '';
+    } else {
+      el.style.display = 'none';
+    }
+  });
 }
 
 addRunningCostItemBtn.addEventListener('click', () => {
@@ -2754,7 +2784,10 @@ form.addEventListener('submit', (e) => {
 
 document.getElementById('targetYield').addEventListener('input', function() {
   checkReanalyseVisibility();
+  updateLiveRequiredRentNote();
 });
+
+document.getElementById('voidAllowance').addEventListener('input', updateLiveRequiredRentNote);
 
 ['price', 'monthlyRent', 'address'].forEach(function(id) {
   var el = document.getElementById(id);
@@ -3705,6 +3738,7 @@ function renderLiveSDLT() {
 
 document.getElementById('price').addEventListener('input', function() {
   if (currentMode === 'sdlt') renderLiveSDLT();
+  updateLiveRequiredRentNote();
 });
 
 document.getElementById('sdltCalcBtn').addEventListener('click', function() {
@@ -5508,6 +5542,16 @@ checkUrlParams();
       <div class="snapshot-total-item">
         <span class="snapshot-total-label">Cash-on-Cash <span class="tooltip" data-tip="Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.">?</span></span>
         <span class="snapshot-total-value ${cocClass}">${formatYieldDisplay(snap.cashOnCash, 1)}</span>
+      </div>`;
+    }
+
+    const snapTargetYield = getCurrentTargetYield();
+    const snapRR = calcRequiredRentLocal();
+    if (snapRR.achievable && snap.missing.indexOf('price') === -1) {
+      totalsHtml += `
+      <div class="snapshot-total-item snapshot-required-rent-item">
+        <span class="snapshot-total-label">Rent for ${fmtPct(snapTargetYield)} yield</span>
+        <span class="snapshot-total-value snapshot-required-rent-value">${fmt(snapRR.monthlyRent)}/mo</span>
       </div>`;
     }
 
