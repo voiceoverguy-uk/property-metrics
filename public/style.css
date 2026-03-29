@@ -457,7 +457,7 @@ body.sdlt-mode .layout {
   background: #f8f4f4;
   border-left: 3px solid #B11217;
   border-radius: 0 8px 8px 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #555;
   line-height: 1.5;
 }
@@ -468,7 +468,7 @@ body.sdlt-mode .layout {
 
 .sdlt-gov-link {
   display: inline-block;
-  font-size: 0.77rem;
+  font-size: 0.72rem;
   color: #B11217;
   text-decoration: none;
   font-weight: 600;
