@@ -4998,7 +4998,12 @@ body.dark .mortgage-type-label {
   color: #c0392b;
 }
 
-.snapshot-required-rent-row {
+.snapshot-required-rent-row-good {
+  color: #1a8c3a;
+  font-weight: 700;
+}
+
+.snapshot-required-rent-row-bad {
   color: #B11217;
   font-weight: 700;
 }
@@ -5291,7 +5296,11 @@ body.dark .snapshot-total-value {
   color: #eee;
 }
 
-body.dark .snapshot-required-rent-row {
+body.dark .snapshot-required-rent-row-good {
+  color: #2ecc71;
+}
+
+body.dark .snapshot-required-rent-row-bad {
   color: #e05a5e;
 }
 

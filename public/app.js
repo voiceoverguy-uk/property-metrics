@@ -5504,8 +5504,10 @@ checkUrlParams();
     const snapTargetYield = getCurrentTargetYield();
     const snapRR = calcRequiredRentLocal();
     if (snapRR.achievable && snap.missing.indexOf('price') === -1) {
+      const currentRent = getCurrencyFieldValue('monthlyRent') || 0;
+      const rrColorClass = currentRent >= snapRR.monthlyRent ? 'snapshot-required-rent-row-good' : 'snapshot-required-rent-row-bad';
       breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
-      breakdownHtml += `<div class="snapshot-breakdown-row snapshot-required-rent-row"><span>Rent needed for ${fmtPct(snapTargetYield)} yield</span><span>${fmt(snapRR.monthlyRent)}/mo</span></div>`;
+      breakdownHtml += `<div class="snapshot-breakdown-row ${rrColorClass}"><span>Rent needed for ${fmtPct(snapTargetYield)} yield</span><span>${fmt(snapRR.monthlyRent)}/mo</span></div>`;
     }
 
     snapshotRefs.breakdown.innerHTML = breakdownHtml;
