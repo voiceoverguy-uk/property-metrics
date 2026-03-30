@@ -5469,6 +5469,9 @@ checkUrlParams();
     }
 
     let breakdownHtml = '';
+    if (snapDealRef) {
+      breakdownHtml += `<div class="snapshot-breakdown-row snapshot-breakdown-ref"><span>${escHtml(snapDealRef)}</span></div>`;
+    }
     breakdownHtml += `<div class="snapshot-breakdown-row"><span>Purchase Price</span><span>${fmt(b.price)}</span></div>`;
     if (b.isMortgage) {
       breakdownHtml += `<div class="snapshot-breakdown-row"><span>Deposit</span><span>${fmt(b.deposit)}</span></div>`;
@@ -5506,8 +5509,7 @@ checkUrlParams();
     const snapTargetYield = getCurrentTargetYield();
     const snapRR = calcRequiredRentLocal();
     if (snapRR.achievable && snap.missing.indexOf('price') === -1) {
-      const currentRent = getCurrencyFieldValue('monthlyRent') || 0;
-      const rrColorClass = currentRent >= snapRR.monthlyRent ? 'snapshot-required-rent-row-good' : 'snapshot-required-rent-row-bad';
+      const rrColorClass = snap.netYield >= snapTargetYield ? 'snapshot-required-rent-row-good' : 'snapshot-required-rent-row-bad';
       breakdownHtml += `<div class="snapshot-breakdown-divider"></div>`;
       breakdownHtml += `<div class="snapshot-breakdown-row ${rrColorClass}"><span>Rent needed for ${fmtPct(snapTargetYield)} yield</span><span>${fmt(snapRR.monthlyRent)}/mo</span></div>`;
     }
