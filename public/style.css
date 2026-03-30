@@ -5007,12 +5007,12 @@ body.dark .mortgage-type-label {
   border-bottom: 1px solid #e5e5e5;
 }
 
-.snapshot-required-rent-row-good {
+.snapshot-breakdown-row.snapshot-required-rent-row-good {
   color: #1a8c3a;
   font-weight: 700;
 }
 
-.snapshot-required-rent-row-bad {
+.snapshot-breakdown-row.snapshot-required-rent-row-bad {
   color: #B11217;
   font-weight: 700;
 }
@@ -5310,11 +5310,11 @@ body.dark .snapshot-breakdown-ref {
   border-bottom-color: #333;
 }
 
-body.dark .snapshot-required-rent-row-good {
+body.dark .snapshot-breakdown-row.snapshot-required-rent-row-good {
   color: #2ecc71;
 }
 
-body.dark .snapshot-required-rent-row-bad {
+body.dark .snapshot-breakdown-row.snapshot-required-rent-row-bad {
   color: #e05a5e;
 }
 
