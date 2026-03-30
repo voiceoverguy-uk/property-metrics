@@ -5007,6 +5007,12 @@ body.dark .mortgage-type-label {
   border-bottom: 1px solid #e5e5e5;
 }
 
+@media (min-width: 992px) {
+  .snapshot-breakdown-ref {
+    display: none !important;
+  }
+}
+
 .snapshot-breakdown-row.snapshot-required-rent-row-good {
   color: #1a8c3a;
   font-weight: 700;
