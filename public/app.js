@@ -2787,6 +2787,7 @@ form.addEventListener('submit', (e) => {
 document.getElementById('targetYield').addEventListener('input', function() {
   checkReanalyseVisibility();
   updateLiveRequiredRentNote();
+  if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
 });
 
 document.getElementById('voidAllowance').addEventListener('input', updateLiveRequiredRentNote);
