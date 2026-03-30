@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>RentalMetrics – UK Buy-to-Let Calculator</title>
+  <meta name="description" content="Free UK buy-to-let deal calculator. Analyse rental yield, stamp duty, mortgage stress tests and more.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://rentalmetrics.co.uk/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/rental-metrics-icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/rental-metrics-icon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/rental-metrics-icon-192.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#d42027">
+  <meta property="og:site_name" content="RentalMetrics">
+  <meta property="og:title" content="RentalMetrics – UK Buy-to-Let Calculator">
+  <meta property="og:description" content="Free UK buy-to-let deal calculator and modelling tool.">
+  <meta property="og:url" content="https://rentalmetrics.co.uk/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x630-og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@voiceoverman">
+  <meta name="twitter:title" content="RentalMetrics – UK Buy-to-Let Calculator">
+  <meta name="twitter:description" content="Free UK buy-to-let deal calculator and modelling tool.">
+  <meta name="twitter:image" content="https://rentalmetrics.co.uk/rental-metrics-logo-primary-1200x630-og.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://rentalmetrics.co.uk/#organization",
+        "name": "RentalMetrics",
+        "url": "https://rentalmetrics.co.uk/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://rentalmetrics.co.uk/rental-metrics-icon-1024.png",
+          "width": 1024,
+          "height": 1024
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://rentalmetrics.co.uk/#website",
+        "name": "RentalMetrics",
+        "url": "https://rentalmetrics.co.uk/",
+        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://rentalmetrics.co.uk/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": ["SoftwareApplication", "WebApplication"],
+        "@id": "https://rentalmetrics.co.uk/#app",
+        "name": "RentalMetrics – UK Buy-to-Let Deal Calculator",
+        "url": "https://rentalmetrics.co.uk/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "description": "Free UK buy-to-let deal calculator and modelling tool for England & Northern Ireland. Analyse rental yield, stress test mortgages, model acquisition costs, project returns and export PDF reports.",
+        "featureList": [
+          "SDLT (Stamp Duty) calculator for investor, first-time buyer and additional property",
+          "Gross and net rental yield analysis",
+          "Cash-on-cash return calculation",
+          "Mortgage calculator with stress testing",
+          "Deal rating system (A+ to F grades)",
+          "Capital growth projection",
+          "Section 24 tax impact estimator",
+          "Refinance scenario modelling",
+          "Target offer price solver",
+          "Comparison history with deal ranking",
+          "PDF report export",
+          "Google Maps address lookup"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "GBP"
+        },
+        "publisher": { "@id": "https://rentalmetrics.co.uk/#organization" }
+      }
+    ]
+  }
+  </script>
+  <link rel="stylesheet" href="style.css?v=19">
+</head>
+<body>
+  <header id="siteHeader">
+    <div class="container header-inner">
+      <a href="https://rentalmetrics.co.uk/" class="header-brand">
+        <img src="/rental-metrics-logo-primary-600x60.png" alt="RentalMetrics" class="header-logo" srcset="/rental-metrics-logo-primary-600x60.png 600w, /rental-metrics-logo-primary-1200x120.png 1200w, /rental-metrics-logo-primary-2400x240.png 2400w" sizes="(max-width: 600px) 280px, 360px">
+        <p class="subtitle">UK Buy-to-Let Deal Calculator &amp; Modelling Tool</p>
+      </a>
+      <div class="header-nav">
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn active" data-mode="analyser">Deal Calculator</button>
+          <button type="button" class="mode-btn" data-mode="sdlt">SDLT Calculator</button>
+        </div>
+        <button type="button" id="darkModeToggle" class="dark-mode-toggle" title="Toggle dark mode">&#9790;</button>
+      </div>
+    </div>
+  </header>
+  <button type="button" id="darkModeToggleMobile" class="dark-mode-toggle-mobile" title="Toggle dark mode">&#9790;</button>
+
+  <div id="snapshotMobileBar" class="snapshot-mobile-bar">
+    <div class="snapshot-mobile-summary" id="snapshotMobileSummary">
+      <div class="snapshot-mobile-cols">
+        <span class="snapshot-mobile-item"><span class="snapshot-mobile-label">Upfront <span class="tooltip" id="snapshotMobileUpfrontTip" data-tip="">?</span></span> <span id="snapshotMobileUpfront">&pound;0</span></span>
+        <span class="snapshot-mobile-item"><span class="snapshot-mobile-label">Cashflow <span class="tooltip" data-tip="Monthly rent minus operating costs and mortgage.">?</span></span> <span id="snapshotMobileCashflow">&pound;0/mo</span></span>
+        <span class="snapshot-mobile-item" id="snapshotMobileReturnItem"><span class="snapshot-mobile-label" id="snapshotMobileReturnLabel">Net Yield</span> <span id="snapshotMobileYield">0%</span></span>
+      </div>
+      <button type="button" class="snapshot-mobile-toggle" id="snapshotMobileToggle" aria-expanded="false">Details</button>
+    </div>
+    <div class="snapshot-mobile-details" id="snapshotMobileDetails"></div>
+  </div>
+
+  <main class="container">
+    <div class="page-heading">
+      <h1 id="pageH1">Rental Yield Calculator UK</h1>
+      <p class="page-subheading" id="pageSubheading">Calculate gross and net rental yield, monthly cash flow and acquisition costs in seconds.</p>
+    </div>
+    <div class="layout">
+      <section class="input-panel">
+        <h2>Property Details</h2>
+        <form id="dealForm" autocomplete="off">
+          <div class="form-group buyer-type-group">
+            <label>
+              Buyer Type
+              <span class="tooltip" data-tip="Select your buyer type. Main Residence uses standard SDLT rates. First-Time Buyer applies relief where eligible. Investor / Additional Property adds the higher rates surcharge.">?</span>
+            </label>
+            <div class="buyer-type-toggle buyer-type-3">
+              <button type="button" class="buyer-type-btn" data-buyer="main">Main Residence</button>
+              <button type="button" class="buyer-type-btn active" data-buyer="investor">Investor</button>
+              <button type="button" class="buyer-type-btn" data-buyer="ftb">First-Time Buyer</button>
+            </div>
+          </div>
+
+          <hr class="form-divider">
+
+          <div class="form-group address-group">
+            <label for="address">
+              Address / Postcode
+              <span class="tooltip" data-tip="Enter the property address or postcode for reference.">?</span>
+            </label>
+            <input type="text" id="address" placeholder="e.g. LS1" autocomplete="nope">
+            <div id="postcodeSuggestion" class="postcode-suggestion no-export" style="display:none;">
+              <span class="postcode-suggestion-text"><span class="postcode-suggestion-label">Suggested postcode: </span><strong id="postcodeSuggestionValue"></strong></span>
+              <button type="button" id="postcodeAddBtn" class="postcode-add-btn">Add to reference</button>
+            </div>
+          </div>
+
+          <div class="form-group analyser-only">
+            <label for="dealReference">
+              Deal Reference
+              <span class="tooltip" data-tip="Give this deal a name to help identify it later, e.g. 'Main Street'.">?</span>
+            </label>
+            <input type="text" id="dealReference" placeholder="e.g. LS1 - BTL" maxlength="60">
+          </div>
+
+          <hr class="form-thin-divider analyser-only">
+
+          <div class="form-group price-group">
+            <label for="price">
+              Asking Price (&pound;)
+              <span class="tooltip" data-tip="The listed or agreed purchase price of the property.">?</span>
+            </label>
+            <input type="number" id="price" min="0" step="any" required placeholder="e.g. £200,000">
+          </div>
+
+          <div class="form-group analyser-only">
+            <label for="monthlyRent">
+              Expected Monthly Rent (&pound;)
+              <span class="tooltip" data-tip="The rent you expect to receive each month from tenants.">?</span>
+            </label>
+            <input type="number" id="monthlyRent" min="0" step="any" required placeholder="e.g. £900">
+            <div id="rentWarning" class="input-warning no-export" style="display:none;">⚠ Rent looks unusually high — check you entered monthly rent.</div>
+          </div>
+
+          <input type="hidden" id="solicitorFees" value="0">
+
+          <div class="form-group hide-in-sdlt">
+            <label for="lettingAgentFee">
+              Letting Agent Fee (%)
+              <span class="tooltip" data-tip="Percentage of monthly rent charged by your letting/management agent. Tick the box to add 20% VAT on top.">?</span>
+            </label>
+            <div class="letting-agent-row">
+              <input type="number" id="lettingAgentFee" min="0" max="100" step="any" placeholder="e.g. 10">
+              <label class="toggle-checkbox vat-checkbox">
+                <input type="checkbox" id="lettingAgentVat">
+                <span class="toggle-checkbox-label">+ 20% VAT</span>
+              </label>
+            </div>
+          </div>
+
+
+          <h3 class="analyser-only full-only">
+            Additional Costs
+            <span class="tooltip" data-tip="Add itemised upfront costs such as solicitor fees, electrics, decorating, refurb, surveys, etc.">?</span>
+          </h3>
+
+          <div id="costItemsList" class="analyser-only full-only"></div>
+          <button type="button" id="addCostItem" class="btn-add-item analyser-only full-only">+ Add Cost Item</button>
+          <div class="cost-total-row analyser-only full-only">
+            <span>Total Additional Costs:</span>
+            <span id="costItemsTotal">&pound;0</span>
+          </div>
+
+          <h3 class="analyser-only full-only">
+            Recurring Costs
+            <span class="tooltip" data-tip="Itemise your ongoing costs (insurance, ground rent, service charge, etc). Enter each as monthly or yearly. Letting agent fee and maintenance are handled separately.">?</span>
+          </h3>
+          <div id="runningCostItemsList" class="analyser-only full-only"></div>
+          <button type="button" id="addRunningCostItem" class="btn-add-item analyser-only full-only">+ Add Recurring Cost</button>
+          <div class="cost-total-row analyser-only full-only">
+            <span>Total Recurring Costs (Monthly):</span>
+            <span id="runningCostItemsTotal">&pound;0</span>
+          </div>
+
+          <div class="analyser-only full-only yield-adjustments-section scroll-target" id="yield-adjustments">
+            <h3 class="yield-adjustments-heading">Yield Adjustments</h3>
+
+            <div class="form-group">
+              <label for="targetYield">
+                Target Yield (%)
+                <span class="tooltip" data-tip="Your desired net yield. The tool will calculate the maximum offer price to achieve this yield.">?</span>
+              </label>
+              <div class="target-yield-row">
+                <input type="number" id="targetYield" min="0" max="50" step="any" value="7">
+                <button type="button" id="reanalyseBtn" class="reanalyse-btn" disabled onclick="reanalyseWithNewYield()">Re-analyse</button>
+              </div>
+            </div>
+
+            <details class="yield-advanced-details">
+              <summary class="yield-advanced-summary">Void &amp; Maintenance Allowances</summary>
+
+              <div class="form-group">
+                <label for="voidAllowance">
+                  Void Allowance (%)
+                  <span class="tooltip" data-tip="Allowance for empty periods between tenants. 5% means rent is reduced by 5% across the year.">?</span>
+                </label>
+                <input type="number" id="voidAllowance" min="0" max="100" step="any" placeholder="e.g. 5">
+              </div>
+
+              <div class="form-group">
+                <label>
+                  Maintenance Allowance
+                  <span class="tooltip" data-tip="Ongoing repairs and maintenance allowance. Many investors budget 5-10% of rent. Switch between percentage of rent or a fixed annual amount.">?</span>
+                </label>
+                <div class="maintenance-toggle">
+                  <button type="button" class="maint-mode-btn active" data-maint="pct">% of Rent</button>
+                  <button type="button" class="maint-mode-btn" data-maint="fixed">&pound; per Year</button>
+                </div>
+                <div id="maintPctInput">
+                  <input type="number" id="maintenancePct" min="0" max="100" step="any" placeholder="e.g. 8">
+                </div>
+                <div id="maintFixedInput" style="display:none;">
+                  <input type="number" id="maintenanceFixed" min="0" step="any" placeholder="e.g. £1,000">
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <hr class="form-section-divider analyser-only">
+          <div class="form-group analyser-only purchase-type-group">
+            <label>
+              Purchase Type
+              <span class="tooltip" data-tip="Select whether this is a cash purchase or a mortgage purchase. Mortgage adjusts yields based on your cash invested.">?</span>
+            </label>
+            <div class="purchase-type-toggle">
+              <button type="button" class="purchase-type-btn active" data-purchase="cash">Cash Purchase</button>
+              <button type="button" class="purchase-type-btn" data-purchase="mortgage">Mortgage</button>
+            </div>
+          </div>
+
+          <div id="mortgageInputs" class="mortgage-fields analyser-only" style="display:none;">
+            <div class="form-row">
+              <div class="form-group half-wide">
+                <label for="depositAmount">
+                  Deposit
+                  <span class="tooltip" data-tip="Enter deposit as a pound amount or percentage of purchase price.">?</span>
+                </label>
+                <div class="deposit-input-wrapper">
+                  <input type="number" id="depositAmount" min="0" step="any" placeholder="e.g. 25">
+                  <div class="deposit-mode-toggle">
+                    <button type="button" class="deposit-mode-btn" data-deposit-mode="pounds">&pound;</button>
+                    <button type="button" class="deposit-mode-btn active" data-deposit-mode="pct">%</button>
+                  </div>
+                </div>
+                <div class="deposit-helper-text" id="depositHelperText"></div>
+              </div>
+              <div class="form-group half-narrow">
+                <label for="interestRate">
+                  Rate (%)
+                  <span class="tooltip" data-tip="Annual mortgage interest rate.">?</span>
+                </label>
+                <input type="number" id="interestRate" min="0" max="30" step="any" placeholder="e.g. 4.5">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>
+                Mortgage Type
+                <span class="tooltip" data-tip="Interest Only payments are lower but don't reduce the loan. Repayment gradually pays off the full balance.">?</span>
+              </label>
+              <div class="mortgage-type-toggle">
+                <button type="button" class="mortgage-type-btn active" data-mortgage-type="interest-only">Interest Only</button>
+                <button type="button" class="mortgage-type-btn" data-mortgage-type="repayment">Repayment</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="mortgageTerm">
+                Mortgage Term (years)
+                <span class="tooltip" data-tip="The length of the mortgage in years.">?</span>
+              </label>
+              <input type="number" id="mortgageTerm" min="1" max="40" step="1" value="25">
+            </div>
+            <div class="form-group deal-only-field" id="stressTestGroup">
+              <div class="advanced-toggle-row">
+                <label>
+                  Stress Test Rate
+                  <span class="tooltip" data-tip="Checks affordability if interest rates rise. Lenders typically stress test at 6-7%.">?</span>
+                </label>
+                <label class="toggle-switch toggle-switch-sm">
+                  <input type="checkbox" id="showStressTest">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div id="stressTestInput" style="display:none;">
+                <input type="number" id="stressTestRate" min="0" max="30" step="any" value="7.0">
+              </div>
+            </div>
+            <button type="button" class="btn-mortgage-calc" id="mortgageCalcBtn">Calculate Mortgage</button>
+            <div class="borrowing-summary" id="borrowingSummary" style="display:none;">
+              <div class="borrowing-row">
+                <span class="borrowing-label" id="borrowingDepositLabel">Cash Deposit</span>
+                <span class="borrowing-value" id="borrowingDeposit">&pound;0</span>
+              </div>
+              <div class="borrowing-row">
+                <span class="borrowing-label">SDLT</span>
+                <span class="borrowing-value" id="borrowingSDLT">&pound;0</span>
+              </div>
+              <div class="borrowing-row borrowing-highlight">
+                <span class="borrowing-label">Mortgage Amount</span>
+                <span class="borrowing-value" id="borrowingMortgage">&pound;0</span>
+              </div>
+              <div class="borrowing-row borrowing-total">
+                <span class="borrowing-label">Total Funds Required</span>
+                <span class="borrowing-value" id="borrowingAmount">&pound;0</span>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-calculate analyser-only">Analyse Deal</button>
+          <button type="button" id="sdltCalcBtn" class="btn-calculate sdlt-only" style="display:none !important;">Calculate SDLT</button>
+          <button type="button" id="startAgainBtn" class="btn-start-again analyser-only" style="display:none;">Start Again</button>
+          <button type="button" id="savePdfBtn" class="btn-save-pdf analyser-only" style="display:none;" onclick="printReport()">Save as PDF</button>
+        </form>
+      </section>
+
+      <section class="results-panel" id="resultsPanel">
+        <div id="dealSnapshot" class="deal-snapshot"></div>
+        <div class="results-placeholder" id="resultsPlaceholder">
+          <img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon">
+          <p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="map-section" id="mapSection" style="display:none;">
+      <h2>Location</h2>
+      <div id="mapContainer"></div>
+      <a id="getDirectionsBtn" class="get-directions-btn" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">Get Directions</a>
+      <div class="area-context no-export" id="areaContext" style="display:none;">
+        <div id="townCentreLine" class="distance-row" style="display:none;"></div>
+        <div id="majorCityLine" class="distance-row" style="display:none;"></div>
+        <div id="trainStationLine" class="distance-row" style="display:none;"></div>
+        <div id="trainStationLine2" class="distance-row" style="display:none;"></div>
+      </div>
+    </section>
+
+    <section class="history-section analyser-only" id="historySection">
+      <h2>Comparison History</h2>
+      <div class="history-meta" id="historyMeta" style="display:none;">
+        <div class="history-meta-top">
+          <div class="history-sort-toggle">
+            <button type="button" class="history-sort-btn active" id="sortLatestBtn" onclick="setHistorySort('latest')">Latest</button>
+            <button type="button" class="history-sort-btn" id="sortBestBtn" onclick="setHistorySort('best')">Best Yield</button>
+          </div>
+          <label class="rank-toggle-label"><input type="checkbox" id="showRanksToggle" onchange="toggleRanks()"> Show rank badges</label>
+        </div>
+      </div>
+      <div id="historyList"></div>
+    </section>
+
+    <div id="compareOverlay" class="compare-overlay" style="display:none;">
+      <div class="compare-container">
+        <div class="compare-header">
+          <h2>Deal Comparison</h2>
+          <div class="compare-header-buttons">
+            <button type="button" class="btn-compare-xlsx" onclick="downloadCompareXlsx()">Export XLSX</button>
+            <button type="button" class="btn-compare-pdf" onclick="downloadComparePdf()">Download PDF</button>
+            <button type="button" class="compare-close" onclick="closeCompare()">&times;</button>
+          </div>
+        </div>
+        <div class="compare-sort">
+          <label>Sort by:</label>
+          <select id="compareSortBy" onchange="renderCompareTable()">
+            <option value="rating">Deal Rating</option>
+            <option value="netYield">Net Yield (Asset)</option>
+            <option value="cashOnCash">Cash-on-Cash</option>
+            <option value="cashflow">Monthly Cashflow</option>
+            <option value="price">Price (Low to High)</option>
+            <option value="rent">Rent (High to Low)</option>
+          </select>
+        </div>
+        <div id="compareBody"></div>
+      </div>
+    </div>
+
+    <div id="printReport" class="print-report"></div>
+
+    <section class="landing-underfold" id="landingUnderfold">
+      <div class="container">
+        <button type="button" class="landing-toggle-btn" id="landingToggleBtn" aria-expanded="false" aria-controls="landingContent">Show calculator help</button>
+
+        <div class="landing-content" id="landingContent">
+          <h2>UK buy-to-let maths, without the headache.</h2>
+          <p class="landing-intro">RentalMetrics gives you quick GBP estimates for rental yield, acquisition costs and monthly cash flow — all based on common UK assumptions. Just plug in a price and rent to see where a deal stands, no spreadsheet needed.</p>
+
+          <div class="landing-cards">
+            <div class="landing-card">
+              <h3>What you can calculate</h3>
+              <ul>
+                <li>Gross &amp; net rental yield</li>
+                <li>Monthly cash flow breakdown</li>
+                <li>Cash-on-cash return (leveraged)</li>
+                <li>Mortgage stress test</li>
+                <li>SDLT estimate (investor &amp; FTB)</li>
+                <li>Export results as PDF</li>
+              </ul>
+            </div>
+            <div class="landing-card">
+              <h3>How it works</h3>
+              <ol>
+                <li>Enter the asking price and expected monthly rent.</li>
+                <li>Add your costs — and a mortgage if you need one.</li>
+                <li>Get instant results, then export or share the deal.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="landing-faq">
+            <details class="faq-item">
+              <summary>What's the difference between gross and net yield?</summary>
+              <p>Gross yield divides the annual rent by the property price. Net yield goes further — it subtracts running costs like insurance, letting agent fees and maintenance from the rent, then divides by total acquisition cost including SDLT and solicitor fees. Net yield is the more realistic measure of return.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What costs should landlords include in "net yield"?</summary>
+              <p>Common costs include letting agent fees (plus VAT), landlord insurance, maintenance or repairs allowance, void periods where the property is empty, and ground rent or service charges on leasehold properties. The more costs you include, the more accurate your net yield figure will be.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What is a "stress test rate" and why does it matter?</summary>
+              <p>A stress test rate is a higher-than-actual interest rate used to check whether rent still covers mortgage payments if rates rise. UK lenders typically stress-test at 5.5–7%. If your deal stays cash-flow positive at the stress rate, it has a comfortable safety margin.</p>
+            </details>
+            <details class="faq-item">
+              <summary>What's considered a "good" rental yield in the UK?</summary>
+              <p>Most investors aim for a gross yield of 6% or above. Northern cities like Liverpool, Manchester and Leeds often hit 7–10%, while London typically sits around 3–5%. Always compare net yields after costs for a fair assessment across different areas and property types.</p>
+            </details>
+          </div>
+
+          <p class="sdlt-cta">Use the <a href="/deal-analyser">Buy-to-Let Deal Calculator</a> for full stress testing.</p>
+        </div>
+
+        <div class="landing-resources">
+          <h3>Recommended for UK Property Investors</h3>
+          <div class="landing-resource-row">
+            <img src="/meetup-leeds-property-group.png" alt="Leeds Property Investor Group" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Great place to meet other investors</span>
+              <a href="https://www.meetup.com/leeds-property-people/" target="_blank" rel="noopener noreferrer">Leeds Property Investor Group on Meetup</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/property-hub-podcast-logo.png" alt="The Property Hub Podcast" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">New to property? Start here</span>
+              <a href="https://podcast.propertyhub.net/" target="_blank" rel="noopener noreferrer">The Property Hub Podcast</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/heritage-estates-logo.png" alt="Heritage Estates" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Need a mortgage or insurance?</span>
+              <a href="https://heritageestates.co.uk" target="_blank" rel="noopener noreferrer">Heritage Estates — Mortgage &amp; Insurance Services</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-underfold deal-underfold" id="dealUnderfold">
+      <div class="container">
+        <button type="button" class="landing-toggle-btn" id="dealToggleBtn" aria-expanded="false" aria-controls="dealContent">Show calculator help</button>
+
+        <div class="landing-content" id="dealContent">
+          <h2>Model your next buy-to-let deal properly</h2>
+          <p class="landing-intro">This tool goes beyond a basic yield check. It calculates your full acquisition cost &mdash; including SDLT and fees &mdash; stress-tests your mortgage against rising rates, and shows cash-on-cash return so you know what your actual cash investment is earning. Built for UK landlords and completely free &mdash; just enter the numbers and let the model do the work.</p>
+
+          <div class="landing-cards landing-cards-three">
+            <div class="landing-card">
+              <h3>What this calculator covers</h3>
+              <ul>
+                <li>Total acquisition cost (incl. SDLT &amp; fees)</li>
+                <li>Gross and net yield</li>
+                <li>Cash-on-cash return</li>
+                <li>Mortgage stress test impact</li>
+                <li>Monthly surplus or shortfall</li>
+                <li>Deal rating vs target yield</li>
+              </ul>
+            </div>
+            <div class="landing-card">
+              <h3>Who it's for</h3>
+              <ul>
+                <li>Landlords using mortgages</li>
+                <li>Investors comparing multiple deals</li>
+                <li>Buyers checking rent covers rising rates</li>
+                <li>Anyone who wants structured analysis without spreadsheet risk</li>
+              </ul>
+            </div>
+            <div class="landing-card">
+              <h3>Why not just use Excel?</h3>
+              <p>Spreadsheets are flexible &mdash; but one wrong formula can distort your entire analysis. This tool applies consistent UK SDLT rules, automates mortgage stress testing, and gives you a standardised deal rating every time &mdash; so you can compare properties properly without worrying about formula errors.</p>
+            </div>
+          </div>
+
+          <div class="landing-faq">
+            <details class="faq-item">
+              <summary>What is cash-on-cash return?</summary>
+              <p>Cash-on-cash return measures the annual pre-tax cash flow you receive as a percentage of the total cash you invested &mdash; including your deposit, SDLT, solicitor fees and any refurbishment costs. It tells you how hard your actual money is working, which is especially useful when comparing leveraged deals where the mortgage covers part of the purchase price.</p>
+            </details>
+            <details class="faq-item">
+              <summary>How do mortgage stress tests affect buy-to-let deals?</summary>
+              <p>Lenders typically stress-test buy-to-let mortgages at 5.5&ndash;7% interest, regardless of the rate you actually pay. If the rental income doesn't cover the stressed payment by a comfortable margin (usually 125&ndash;145%), the lender may decline the loan. Running your own stress test here lets you spot problems before you apply and helps you set a realistic offer price.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Should refurbishment costs be included?</summary>
+              <p>Yes &mdash; if you plan to spend money on the property before letting it, those costs should be added to your total investment figure. This gives you an accurate cash-on-cash return and avoids overstating the deal's performance. You can add refurb costs under &ldquo;Additional Costs&rdquo; in the form above.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Who built this tool?</summary>
+              <p>This tool was built by a long-term UK property investor based in West Yorkshire. After years of analysing deals in spreadsheets and refining personal models, the idea was simple &mdash; create a cleaner, faster online version that anyone could use to evaluate a buy-to-let properly without wrestling with Excel formulas. It continues to evolve based on real-world deal analysis and feedback from other UK investors.</p>
+            </details>
+          </div>
+
+          <p class="share-encouragement">Found this useful? <a href="#" onclick="shareSite(event)">Share it</a> with another UK property investor.</p>
+
+          <p class="sdlt-cta">Just need SDLT? Use the <a href="/sdlt-calculator">Stamp Duty Calculator</a>.</p>
+        </div>
+
+        <div class="landing-resources">
+          <h3>Recommended for UK Property Investors</h3>
+          <div class="landing-resource-row">
+            <img src="/meetup-leeds-property-group.png" alt="Leeds Property Investor Group" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Great place to meet other investors</span>
+              <a href="https://www.meetup.com/leeds-property-people/" target="_blank" rel="noopener noreferrer">Leeds Property Investor Group on Meetup</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/property-hub-podcast-logo.png" alt="The Property Hub Podcast" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">New to property? Start here</span>
+              <a href="https://podcast.propertyhub.net/" target="_blank" rel="noopener noreferrer">The Property Hub Podcast</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/heritage-estates-logo.png" alt="Heritage Estates" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Need a mortgage or insurance?</span>
+              <a href="https://heritageestates.co.uk" target="_blank" rel="noopener noreferrer">Heritage Estates — Mortgage &amp; Insurance Services</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="landing-underfold sdlt-underfold" id="sdltUnderfold">
+      <div class="container">
+        <div class="landing-content sdlt-landing-content">
+          <h2>Free UK Stamp Duty (SDLT) Calculator</h2>
+          <p class="landing-intro">Calculate your Stamp Duty Land Tax instantly for any property price in England and Northern Ireland. This free calculator covers main residences, first-time buyers and investors using current HMRC rates &mdash; no sign-up required.</p>
+
+          <div class="landing-card sdlt-info-card">
+            <h3>What this calculator covers</h3>
+            <ul>
+              <li>Current England &amp; Northern Ireland SDLT bands</li>
+              <li>Main residence (standard rates)</li>
+              <li>First-time buyer relief</li>
+              <li>Investor / additional property surcharge</li>
+              <li>Instant results with full band breakdown</li>
+            </ul>
+          </div>
+
+          <div class="landing-card sdlt-info-card">
+            <h3>How is Stamp Duty calculated?</h3>
+            <p class="sdlt-explanation">Stamp Duty is charged in tax bands, similar to income tax. You only pay each rate on the portion of the price that falls within that band &mdash; not on the entire purchase price. If you already own a property and are buying an additional one, a surcharge is added on top of each band. SDLT rates are set by the government and may change at future budgets.</p>
+          </div>
+
+          <p class="sdlt-cta">Want full rental yield and stress testing? Try the <a href="/deal-analyser">Deal Calculator</a>.</p>
+        </div>
+
+        <div class="landing-resources">
+          <h3>Recommended for UK Property Investors</h3>
+          <div class="landing-resource-row">
+            <img src="/meetup-leeds-property-group.png" alt="Leeds Property Investor Group" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Great place to meet other investors</span>
+              <a href="https://www.meetup.com/leeds-property-people/" target="_blank" rel="noopener noreferrer">Leeds Property Investor Group on Meetup</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/property-hub-podcast-logo.png" alt="The Property Hub Podcast" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">New to property? Start here</span>
+              <a href="https://podcast.propertyhub.net/" target="_blank" rel="noopener noreferrer">The Property Hub Podcast</a>
+            </div>
+          </div>
+          <div class="landing-resource-row">
+            <img src="/heritage-estates-logo.png" alt="Heritage Estates" class="landing-resource-img" width="44" height="44">
+            <div class="landing-resource-text">
+              <span class="landing-resource-title">Need a mortgage or insurance?</span>
+              <a href="https://heritageestates.co.uk" target="_blank" rel="noopener noreferrer">Heritage Estates — Mortgage &amp; Insurance Services</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="disclaimer">
+      <p><strong>Disclaimer:</strong> Figures are estimates based on your inputs and common UK assumptions. They do not constitute financial advice. Always verify numbers with a qualified professional before committing to a purchase.</p>
+      <p><strong>Your Privacy:</strong> All calculations run locally in your browser. RentalMetrics does not track you or collect personal data. No property details, addresses, or financial figures are transmitted.</p>
+      <p id="appVersionFooter" style="margin-top:10px;font-size:0.85rem;opacity:0.7;"></p>
+    </footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="app.js?v=20"></script>
+</body>
+</html>

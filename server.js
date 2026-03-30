@@ -8,6 +8,25 @@ const app = express();
 const PORT = 5000;
 const CACHE_BUST = Date.now().toString(36);
 
+const ALLOWED_ORIGINS = [
+  'https://rentalmetrics.co.uk',
+  'capacitor://localhost',
+  'http://localhost',
+  'http://localhost:3000',
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use(express.json());
 
 const htmlTemplate = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');

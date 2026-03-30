@@ -1,0 +1,16 @@
+{
+  "appId": "co.uk.rentalmetrics.app",
+  "appName": "RentalMetrics",
+  "webDir": "mobile/www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

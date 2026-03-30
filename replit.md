@@ -20,7 +20,18 @@ The application uses client-side routing with `pushState` for SEO-friendly URLs,
 ### Features
 Key features include SDLT calculation for various scenarios, comprehensive yield calculations, a target offer price solver, itemised cost management, capital growth projections, and Section 24 tax impact analysis. The tool offers mortgage stress testing, void allowance consideration, and a deal reference input. Interactive charts (yield gauge, SDLT comparison) enhance data visualization. Currency formatting is automated, and a version system is in place. History includes sorting and ranking options. PDF and snapshot exports are supported with branded logos and text sanitization. A "Start Again" and "Re-analyse" button provide control over the calculation process. Recurring costs support per-row /mo or /yr frequency toggles; yearly amounts are internally converted to monthly for all calculations. Frequency is preserved in history, URL sharing, and PDF/XLSX exports.
 
+## Mobile App (Capacitor)
+
+The project is set up for native iOS and Android deployment via **Capacitor**:
+- `capacitor.config.json` — app config (Bundle ID: `co.uk.rentalmetrics.app`, webDir: `mobile/www`)
+- `scripts/build-mobile.sh` — copies `public/` → `mobile/www/` and fills template variables
+- `mobile/www/` — built web assets bundled into the native shell
+- API calls use `API_BASE` in `app.js`: empty string on web, `https://rentalmetrics.co.uk` in-app
+- CORS is enabled in `server.js` for `capacitor://localhost` and `http://localhost` origins
+- See `MOBILE_SETUP.md` for full instructions to build iOS/Android on a Mac
+
 ## External Dependencies
 - **Google Maps API**: Used for address autocomplete, map previews, and postcode extraction.
 - **Node.js**: Backend runtime environment.
 - **Express**: Web framework for the Node.js backend.
+- **Capacitor**: Wraps the web app for native iOS and Android deployment.
