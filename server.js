@@ -16,6 +16,15 @@ const ALLOWED_ORIGINS = [
 ];
 
 app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  if (host.startsWith('www.')) {
+    const canonical = 'https://' + host.replace(/^www\./, '') + req.url;
+    return res.redirect(301, canonical);
+  }
+  next();
+});
+
+app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
