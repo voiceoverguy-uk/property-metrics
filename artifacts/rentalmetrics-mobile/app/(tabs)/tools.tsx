@@ -63,7 +63,7 @@ export default function Tools() {
           {buyer === 'ftb' && n > 500000 ? <Banner tone="info" message="First-time buyer relief is not available above £500,000, so standard rates are used." /> : null}
           {buyer === 'additional' && n > 0 && n < 40000 ? <Banner tone="info" message="Additional property rates do not apply below £40,000." /> : null}
           <View>{result.bands.map((b, i) => <Row key={i} label={`${gbp(b.from)} to ${gbp(b.to)} at ${(b.rate * 100).toFixed(0)}%`} value={gbp(b.tax)} />)}</View>
-          <T variant="small" tone="muted">The total is rounded down to the nearest pound, following HMRC guidance (SDLTM00050). Estimates with fractional pounds can differ from the website, which rounds to the nearest pound.</T>
+          <T variant="small" tone="muted">The overall total is rounded down to the nearest pound, following HMRC guidance (SDLTM00050). The website follows the same rounding rule.</T>
         </Card>
       ) : null}
       <Card tone="soft">

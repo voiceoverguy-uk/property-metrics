@@ -12,7 +12,8 @@ function calculateDeal(params) {
     buyerType = 'additional',
   } = params;
 
-  const sdlt = calculateSDLT(price, buyerType);
+  // Rental investment estimates never qualify for first-time-buyer relief.
+  const sdlt = calculateSDLT(price, buyerType === 'ftb' ? 'standard' : buyerType);
   const totalCost = price + sdlt + solicitorFees + refurbCosts + otherCosts;
   const annualRent = monthlyRent * 12;
   const effectiveAnnualRent = annualRent * (1 - voidPct / 100);
@@ -20,6 +21,7 @@ function calculateDeal(params) {
 
   const netAnnualRent =
     effectiveAnnualRent - runningCosts * 12;
+  // Asset yield uses purchase price, excludes financing and acquisition fees.
   const netYield = price > 0 ? (netAnnualRent / price) * 100 : 0;
 
   return {

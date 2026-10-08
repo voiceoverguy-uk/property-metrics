@@ -499,8 +499,8 @@ const modeFaqs = {
   ],
   sdlt: [
     { q: 'What are the current SDLT rates in England?', a: 'For standard residential purchases the rates are 0% up to \u00a3125,000, 2% from \u00a3125,001 to \u00a3250,000, 5% from \u00a3250,001 to \u00a3925,000, 10% from \u00a3925,001 to \u00a31.5 million, and 12% above \u00a31.5 million. These bands apply in England and Northern Ireland. Scotland and Wales have their own separate land transaction taxes with different thresholds.' },
-    { q: 'What is the additional property SDLT surcharge?', a: 'Since April 2025, buyers purchasing an additional residential property in England or Northern Ireland pay a 5% surcharge on top of standard SDLT rates. This applies to buy-to-let investments and second homes. The surcharge is calculated on the entire purchase price and significantly increases the total tax bill on investment properties.' },
-    { q: 'Do first-time buyers pay less Stamp Duty?', a: 'Yes, first-time buyers in England and Northern Ireland benefit from SDLT relief. They pay 0% on the first \u00a3300,000 and 5% on the portion from \u00a3300,001 to \u00a3500,000. If the property costs more than \u00a3500,000, the relief is lost entirely and standard rates apply to the full price.' },
+    { q: 'What is the additional property SDLT surcharge?', a: 'Additional property purchases of £40,000 or more usually attract a 5% surcharge on top of standard SDLT rates. Below £40,000, the higher rates do not apply. Check the ownership and main-residence replacement rules with your conveyancer.' },
+    { q: 'Do first-time buyers pay less Stamp Duty?', a: 'Relief requires every buyer to be a qualifying first-time buyer and intend to occupy the property as their only or main residence; buy-to-let does not qualify. Eligible buyers pay 0% up to £300,000 and 5% on the portion up to £500,000. Above £500,000, standard rates apply to the full price.' },
     { q: 'Does SDLT apply in Scotland and Wales?', a: 'No, SDLT only applies in England and Northern Ireland. Scotland uses Land and Buildings Transaction Tax with different rate bands and thresholds. Wales uses Land Transaction Tax, also with its own structure. This calculator covers England and Northern Ireland only; separate tools are needed for Scottish and Welsh calculations.' }
   ]
 };
@@ -581,6 +581,7 @@ function setMode(mode, pushHistory) {
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.toggle('active', b.dataset.buyer === 'investor'));
     setResultsPanelContent('<div class="results-placeholder"><img src="/rental-metrics-icon-placeholder.png" alt="" class="placeholder-icon"><p>Enter property details and click <strong>Analyse Deal</strong> to see results.</p></div>');
   }
+  updateFTBEligibility();
   if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
   lastAnalysedTargetYield = null;
   hasAnalysedOnce = false;
@@ -817,7 +818,8 @@ function getDepositAmount() {
   return Math.min(rawVal, price || Infinity);
 }
 
-function calcSDLTClient(price, buyerType) {
+function calcSDLTClient(price, buyerType, eligibility) {
+  eligibility = eligibility || {};
   if (price <= 0) return 0;
   const applyBands = (p, bands) => {
     let tax = 0, prev = 0;
@@ -827,23 +829,24 @@ function calcSDLTClient(price, buyerType) {
       if (taxable > 0) tax += taxable * b.r;
       prev = b.t;
     }
-    return Math.round(tax);
+    return Math.floor(tax);
   };
-  if (buyerType === 'ftb' && price <= 500000) {
+  if (buyerType === 'ftb' && eligibility.allBuyersFirstTime === true && eligibility.mainResidence === true && price <= 500000) {
     return applyBands(price, [{ t: 300000, r: 0 }, { t: 500000, r: 0.05 }]);
   }
-  if (buyerType === 'investor' || buyerType === 'additional') {
+  if ((buyerType === 'investor' || buyerType === 'additional') && price >= 40000) {
     return applyBands(price, [{ t: 125000, r: 0.05 }, { t: 250000, r: 0.07 }, { t: 925000, r: 0.10 }, { t: 1500000, r: 0.15 }, { t: Infinity, r: 0.17 }]);
   }
   return applyBands(price, [{ t: 125000, r: 0 }, { t: 250000, r: 0.02 }, { t: 925000, r: 0.05 }, { t: 1500000, r: 0.10 }, { t: Infinity, r: 0.12 }]);
 }
 
-function calcSDLTClientFull(price, buyerType) {
+function calcSDLTClientFull(price, buyerType, eligibility) {
+  eligibility = eligibility || {};
   if (!price || price <= 0) return { total: 0, breakdown: { bands: [] } };
   var bandDefs;
-  if (buyerType === 'ftb' && price <= 500000) {
+  if (buyerType === 'ftb' && eligibility.allBuyersFirstTime === true && eligibility.mainResidence === true && price <= 500000) {
     bandDefs = [{ t: 300000, r: 0 }, { t: 500000, r: 0.05 }];
-  } else if (buyerType === 'investor' || buyerType === 'additional') {
+  } else if ((buyerType === 'investor' || buyerType === 'additional') && price >= 40000) {
     bandDefs = [{ t: 125000, r: 0.05 }, { t: 250000, r: 0.07 }, { t: 925000, r: 0.10 }, { t: 1500000, r: 0.15 }, { t: Infinity, r: 0.17 }];
   } else {
     bandDefs = [{ t: 125000, r: 0 }, { t: 250000, r: 0.02 }, { t: 925000, r: 0.05 }, { t: 1500000, r: 0.10 }, { t: Infinity, r: 0.12 }];
@@ -854,13 +857,13 @@ function calcSDLTClientFull(price, buyerType) {
     if (price <= prev) break;
     var taxable = Math.min(price, b.t) - prev;
     if (taxable > 0) {
-      var tax = Math.round(taxable * b.r);
+      var tax = taxable * b.r;
       total += tax;
       bands.push({ from: prev, to: Math.min(price, b.t), rate: b.r, tax: tax });
     }
     prev = b.t;
   }
-  return { total: total, breakdown: { bands: bands } };
+  return { total: Math.floor(total), breakdown: { bands: bands } };
 }
 
 function computeSnapshot() {
@@ -873,7 +876,7 @@ function computeSnapshot() {
   if (!price || price <= 0) missing.push('price');
   if (!monthlyRent || monthlyRent <= 0) missing.push('rent');
 
-  const sdlt = price > 0 ? calcSDLTClient(price, buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main')) : 0;
+  const sdlt = price > 0 ? calcSDLTClient(price, buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main'), buyerType === 'ftb' ? getFTBEligibility() : undefined) : 0;
   const additionalCosts = getCostItemsTotal();
 
   const isMortgage = selectedPurchaseType === 'mortgage';
@@ -989,13 +992,33 @@ document.querySelectorAll('.buyer-type-btn').forEach(btn => {
     document.querySelectorAll('.buyer-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedBuyerType = btn.dataset.buyer;
+    updateFTBEligibility();
     renderLiveSDLT();
   });
 });
 
 function getSelectedBuyerType() {
+  if (selectedBuyerType === 'ftb' && (currentMode !== 'sdlt' || !getFTBEligibility().allBuyersFirstTime || !getFTBEligibility().mainResidence)) return 'main';
   return selectedBuyerType;
 }
+
+function getFTBEligibility() {
+  return {
+    allBuyersFirstTime: document.getElementById('ftbAllBuyers').checked,
+    mainResidence: document.getElementById('ftbMainResidence').checked,
+  };
+}
+
+function updateFTBEligibility() {
+  document.getElementById('ftbEligibility').hidden = currentMode !== 'sdlt' || selectedBuyerType !== 'ftb';
+}
+
+['ftbAllBuyers', 'ftbMainResidence'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    renderLiveSDLT();
+    if (typeof window.updateSnapshot === 'function') window.updateSnapshot();
+  });
+});
 
 function getBuyerTypeLabel(bt) {
   if (bt === 'ftb') return 'First-Time Buyer';
@@ -1007,13 +1030,13 @@ function getSDLTExplanation(buyerType) {
   const govUrl = 'https://www.gov.uk/stamp-duty-land-tax/residential-property-rates';
   let text = '';
   if (buyerType === 'ftb') {
-    text = 'First-time buyers pay no SDLT on the first £300,000. Between £300,001 and £500,000, a 5% rate applies on that portion only. Properties above £500,000 do not qualify for first-time buyer relief \u2014 standard rates apply instead.';
+    text = 'Relief requires every buyer to be a qualifying first-time buyer and intend to occupy the property as their only or main residence. It is not available for buy-to-let. Eligible buyers pay no SDLT on the first £300,000 and 5% on the portion up to £500,000. Above £500,000, standard rates apply.';
   } else if (buyerType === 'main') {
     text = 'Standard residential rates apply. No SDLT on the first £125,000, then 2% on £125,001\u2013£250,000, 5% on £250,001\u2013£925,000, 10% on £925,001\u2013£1.5m, and 12% above that.';
   } else {
-    text = 'Investors and additional property buyers pay a 5% surcharge on top of standard rates at every band. SDLT starts at 5% from £0 (there is no 0% band), rising to 7% on £125,001\u2013£250,000, and 10% on £250,001\u2013£925,000.';
+    text = 'For purchases of £40,000 or more, additional property buyers usually pay a 5% surcharge on top of standard rates at every band. Below £40,000 the higher rates do not apply. At or above £40,000, SDLT starts at 5% on the first £125,000, then 7% up to £250,000 and 10% up to £925,000.';
   }
-  return `<div class="sdlt-explanation"><p>${text}</p><a href="${govUrl}" target="_blank" rel="noopener noreferrer" class="sdlt-gov-link">Verify on GOV.UK &rarr;</a></div>`;
+  return `<div class="sdlt-explanation"><p>${text} The overall SDLT total is rounded down to whole pounds; band amounts are shown before rounding. Estimate for UK-resident individuals buying one residential freehold or an assigned existing lease in England or Northern Ireland. Excludes companies, trusts, linked/mixed-use purchases, new lease rent, non-residents and special reliefs. Confirm your transaction with a conveyancer.</p><a href="${govUrl}" target="_blank" rel="noopener noreferrer" class="sdlt-gov-link">Verify on GOV.UK &rarr;</a></div>`;
 }
 
 function getResultForBuyerType(result, bt) {
@@ -1046,7 +1069,8 @@ document.getElementById('mortgageCalcBtn').addEventListener('click', async () =>
   console.log('Mortgage Calc Debug:', { purchasePrice: price, deposit: deposit, calculatedMortgageAmount: mortgageAmt });
 
   try {
-    const res = await fetch(API_BASE + `/api/sdlt?price=${price}`);
+    const eligibility = getFTBEligibility();
+    const res = await fetch(API_BASE + `/api/sdlt?price=${price}&allBuyersFirstTime=${eligibility.allBuyersFirstTime}&mainResidence=${eligibility.mainResidence}`);
     const data = await res.json();
     const buyerType = getSelectedBuyerType();
     const sdltData = getSdltApiDataForBuyerType(data, buyerType);
@@ -1955,7 +1979,7 @@ function renderSDLTTable(breakdown) {
     html += `<tr>
       <td>${fmt(b.from)} \u2013 ${fmt(b.to)}</td>
       <td class="rate-col">${(b.rate * 100).toFixed(0)}%</td>
-      <td class="amount-col">${fmt(b.tax)}</td>
+      <td class="amount-col">${b.tax.toLocaleString('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
     </tr>`;
   }
   html += '</tbody></table>';
@@ -3702,7 +3726,7 @@ function renderLiveSDLT() {
   }
   var buyerType = getSelectedBuyerType();
   var sdltType = buyerType === 'ftb' ? 'ftb' : (buyerType === 'investor' ? 'additional' : 'main');
-  var result = calcSDLTClientFull(price, sdltType);
+  var result = calcSDLTClientFull(price, sdltType, getFTBEligibility());
   var address = document.getElementById('address').value || 'Property';
   var sdltLabel = getBuyerTypeLabel(buyerType);
 
@@ -3914,6 +3938,9 @@ async function applyHistoryEntry(entry) {
   if (entry.buyerType) {
     if (currentMode === 'sdlt') {
       selectedBuyerType = entry.buyerType;
+      // Reopening old data must not implicitly confirm tax eligibility.
+      document.getElementById('ftbAllBuyers').checked = false;
+      document.getElementById('ftbMainResidence').checked = false;
       document.querySelectorAll('.buyer-type-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.buyer === entry.buyerType);
       });
@@ -3925,6 +3952,7 @@ async function applyHistoryEntry(entry) {
     }
   }
 
+  updateFTBEligibility();
   if (entry.analyserCostItems && entry.analyserCostItems.length > 0) {
     costItems = entry.analyserCostItems.map(i => ({ label: i.label || '', amount: parseFloat(i.amount) || 0 }));
     while (costItems.length < 3) costItems.push({ label: '', amount: 0 });

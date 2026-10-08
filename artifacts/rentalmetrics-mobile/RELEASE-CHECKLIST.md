@@ -61,11 +61,11 @@ Official sources consulted:
 3. https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm29831
 4. https://www.gov.uk/hmrc-internal-manuals/stamp-duty-land-tax-manual/sdltm00050
 
-### Intentional website differences, not silently changed
+### Website corrections agreed and implemented (8 October 2026)
 
-The preserved website lacks the below-£40,000 additional-property exception, rounds to the nearest pound, and exposes first-time buyer relief in its investment flow without confirming main-residence eligibility. The native companion uses the verified restrictions/rounding instead. These are flagged in the app and remain a separate website correction decision.
+The owner explicitly approved correcting the preserved website after reverification of all four sources above. Website and API SDLT totals now round down once and exclude higher rates below £40,000. First-time-buyer relief requires explicit every-buyer and main-residence confirmation in the standalone SDLT calculator; rental analysis does not grant this relief. Existing stored deals are not rewritten.
 
-The site prose also describes net yield on an acquisition-cost basis while its live snapshot uses purchase price. The companion matches the live **purchase-price denominator** and labels it explicitly. Net yield excludes financing; cash flow deducts the mortgage payment exactly once (including capital for repayment mortgages). Management uses scheduled rent; percentage maintenance uses rent after voids. Defaults are blank/zero, not invented property figures.
+Website prose now matches its unchanged **purchase-price denominator**. The companion also uses and labels this basis. Net yield excludes financing; cash flow deducts the mortgage payment exactly once (including capital for repayment mortgages). Management uses scheduled rent; percentage maintenance uses rent after voids. Defaults are blank/zero, not invented property figures.
 
 ## Before TestFlight / App Store
 

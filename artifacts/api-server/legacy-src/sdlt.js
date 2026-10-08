@@ -1,7 +1,8 @@
-function calculateSDLT(price, buyerType) {
+// FTB relief is opt-in, for qualifying individuals buying their main home only.
+function calculateSDLT(price, buyerType, eligibility = {}) {
   if (price <= 0) return 0;
 
-  if (buyerType === 'ftb') {
+  if (buyerType === 'ftb' && eligibility.allBuyersFirstTime === true && eligibility.mainResidence === true) {
     return calculateFTB(price);
   } else if (buyerType === 'additional') {
     return calculateAdditional(price);
@@ -32,6 +33,7 @@ function calculateFTB(price) {
 }
 
 function calculateAdditional(price) {
+  if (price < 40000) return calculateStandard(price);
   const bands = [
     { threshold: 125000, rate: 0.05 },
     { threshold: 250000, rate: 0.07 },
@@ -53,19 +55,19 @@ function applyBands(price, bands) {
     }
     prev = band.threshold;
   }
-  return Math.round(tax);
+  return Math.floor(tax);
 }
 
-function getSDLTBreakdown(price, buyerType) {
+function getSDLTBreakdown(price, buyerType, eligibility = {}) {
   if (price <= 0) return { total: 0, bands: [] };
 
   let bands;
-  if (buyerType === 'ftb' && price <= 500000) {
+  if (buyerType === 'ftb' && eligibility.allBuyersFirstTime === true && eligibility.mainResidence === true && price <= 500000) {
     bands = [
       { from: 0, to: 300000, rate: 0 },
       { from: 300000, to: 500000, rate: 0.05 },
     ];
-  } else if (buyerType === 'additional') {
+  } else if (buyerType === 'additional' && price >= 40000) {
     bands = [
       { from: 0, to: 125000, rate: 0.05 },
       { from: 125000, to: 250000, rate: 0.07 },
@@ -89,7 +91,7 @@ function getSDLTBreakdown(price, buyerType) {
     if (price <= band.from) break;
     const taxable = Math.min(price, band.to) - band.from;
     if (taxable > 0) {
-      const tax = Math.round(taxable * band.rate);
+      const tax = taxable * band.rate;
       total += tax;
       result.push({
         from: band.from,
@@ -101,7 +103,8 @@ function getSDLTBreakdown(price, buyerType) {
     }
   }
 
-  return { total, bands: result };
+  // Keep band amounts unrounded; HMRC floors the overall tax, not each band.
+  return { total: Math.floor(total), bands: result };
 }
 
 module.exports = { calculateSDLT, getSDLTBreakdown };

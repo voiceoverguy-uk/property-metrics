@@ -8,8 +8,8 @@ Keep the native iPhone companion separate from the working website. Version one 
 
 **How to apply:** Build mobile changes within the mobile artifact; website tax fixes require a separate agreed change.
 
-Use verified England/Northern Ireland SDLT rules rather than blindly copying website edge-case errors. The audit on 8 October 2026 found the website missing the additional-property exception below £40,000 and rounding to nearest pound instead of HMRC's floor. First-time-buyer relief requires main-residence intent, not a buy-to-let.
+Use verified England/Northern Ireland SDLT rules rather than blindly copying another calculator's edge cases. Website calculation changes require explicit agreement, even when an official tax source establishes the correction.
 
 **Why:** The user required current official verification and explicit unresolved differences instead of guessed rules.
 
-**How to apply:** Reverify official guidance for future tax updates. Keep calculation parity for the operating/mortgage formulas, but disclose deliberate compliance differences; do not introduce unverified Scotland/Wales calculations.
+**How to apply:** Reverify official guidance for future tax updates. Keep operating/mortgage formula parity and explain deliberate compliance differences. Do not introduce unverified Scotland/Wales calculations. The owner approved the narrow SDLT corrections on 8 October 2026, not a website migration or a change to the net-yield formula.

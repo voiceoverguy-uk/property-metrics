@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test tests/calculations.test.cjs",
     "dev": "node server.cjs",
     "build": "node --check server.cjs",
     "serve": "node server.cjs",

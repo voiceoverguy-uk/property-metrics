@@ -52,14 +52,18 @@ app.get('/api/sdlt', (req, res) => {
       return res.status(400).json({ error: 'Price is required and must be positive.' });
     }
     const { calculateSDLT } = require('./legacy-src/sdlt');
+    const eligibility = {
+      allBuyersFirstTime: req.query.allBuyersFirstTime === 'true',
+      mainResidence: req.query.mainResidence === 'true',
+    };
     res.json({
       standard: {
         total: calculateSDLT(price, 'standard'),
         breakdown: getSDLTBreakdown(price, 'standard'),
       },
       ftb: {
-        total: calculateSDLT(price, 'ftb'),
-        breakdown: getSDLTBreakdown(price, 'ftb'),
+        total: calculateSDLT(price, 'ftb', eligibility),
+        breakdown: getSDLTBreakdown(price, 'ftb', eligibility),
       },
       additional: {
         total: calculateSDLT(price, 'additional'),

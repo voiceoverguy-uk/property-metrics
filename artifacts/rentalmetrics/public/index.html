@@ -137,6 +137,11 @@
               <button type="button" class="buyer-type-btn active" data-buyer="investor">Investor</button>
               <button type="button" class="buyer-type-btn" data-buyer="ftb">First-Time Buyer</button>
             </div>
+            <div id="ftbEligibility" hidden>
+              <p>Relief is for a first home, not a rental investment. Standard rates apply unless both conditions are confirmed.</p>
+              <label><input type="checkbox" id="ftbAllBuyers"> Every buyer is an individual who qualifies as a first-time buyer (never owned a dwelling or an interest in one anywhere in the world).</label>
+              <label><input type="checkbox" id="ftbMainResidence"> Every buyer intends to occupy this property as their only or main residence.</label>
+            </div>
           </div>
 
           <hr class="form-divider">
@@ -455,7 +460,7 @@
           <div class="landing-faq">
             <details class="faq-item">
               <summary>What's the difference between gross and net yield?</summary>
-              <p>Gross yield divides the annual rent by the property price. Net yield goes further — it subtracts running costs like insurance, letting agent fees and maintenance from the rent, then divides by total acquisition cost including SDLT and solicitor fees. Net yield is the more realistic measure of return.</p>
+              <p>Gross yield divides annual rent by the purchase price. Net yield subtracts voids and running costs like insurance, letting agent fees and maintenance, then divides by the purchase price too. It excludes mortgage payments, SDLT and acquisition fees. Cash flow deducts mortgage payments (including capital on repayment mortgages); cash-on-cash return uses your upfront cash including SDLT and fees.</p>
             </details>
             <details class="faq-item">
               <summary>What costs should landlords include in "net yield"?</summary>
@@ -606,7 +611,7 @@
 
           <div class="landing-card sdlt-info-card">
             <h3>How is Stamp Duty calculated?</h3>
-            <p class="sdlt-explanation">Stamp Duty is charged in tax bands, similar to income tax. You only pay each rate on the portion of the price that falls within that band &mdash; not on the entire purchase price. If you already own a property and are buying an additional one, a surcharge is added on top of each band. SDLT rates are set by the government and may change at future budgets.</p>
+            <p class="sdlt-explanation">Stamp Duty is charged on the portion of the price within each band, not the entire price at one rate. Additional-property higher rates do not apply below &pound;40,000. First-time-buyer relief requires every buyer to qualify and intend a main residence; it is not for buy-to-let. The final total is rounded down to whole pounds. Rates may change at future budgets.</p>
           </div>
 
           <p class="sdlt-cta">Want full rental yield and stress testing? Try the <a href="/deal-analyser">Deal Calculator</a>.</p>

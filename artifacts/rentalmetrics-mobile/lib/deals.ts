@@ -50,8 +50,7 @@ export function purchaseTax(price: number, buyer: Buyer): { total: number; bands
     if (taxable > 0) bands.push({ from, to: Math.min(price, to), taxable, rate: rates[i], tax: taxable * rates[i] });
     from = to;
   });
-  // HMRC SDLTM00050 requires rounding DOWN once. The website rounds to nearest,
-  // so fractional-pound tax cases are an intentional, documented parity exception.
+  // HMRC SDLTM00050 requires rounding DOWN once, matching the corrected website.
   return { total: Math.floor(bands.reduce((n, b) => n + b.tax, 0) + 1e-8), bands };
 }
 export function mortgagePayment(loan: number, rate: number, years: number, type: Deal['mortgageType']) {

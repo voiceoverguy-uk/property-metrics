@@ -27,7 +27,7 @@ export default function Settings() {
       <Card>
         <T variant="heading">Calculation assumptions</T>
         {ASSUMPTIONS.map((a, i) => <T key={i} variant="small">{a}</T>)}
-        <T variant="small">SDLT totals are rounded down to the nearest pound, following HMRC guidance (SDLTM00050), so fractional-pound estimates can differ from the website. Additional property rates do not apply below £40,000.</T>
+        <T variant="small">SDLT totals are rounded down to the nearest pound, following HMRC guidance (SDLTM00050). Additional property rates do not apply below £40,000. The website follows these rules too.</T>
       </Card>
       <Card>
         <T variant="heading">Tax scope</T>
