@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/rentalmetrics-mobile/"
+title = "RentalMetrics Mobile"
+description = "Native offline iPhone companion to analyse, save, compare and share England and Northern Ireland rental deals."
+version = "1.0.0"
+id = "artifacts/rentalmetrics-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/rentalmetrics-mobile/" ]
+localPort = 19958
+
+[services.development]
+run = "pnpm --filter @workspace/rentalmetrics-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rentalmetrics-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/rentalmetrics-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "19958"
+BASE_PATH = "/rentalmetrics-mobile/"

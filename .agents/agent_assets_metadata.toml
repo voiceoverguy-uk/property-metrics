@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "qcmWN--LxyBK7MrEc7qAT"
+uri = "file://artifacts/rentalmetrics-mobile/RELEASE-CHECKLIST.md"
+type = "text"
+title = "RentalMetrics iPhone testing and release checklist"
+description = "Verified calculations and tax sources, physical-iPhone sign-off checks, and remaining Apple signing, privacy, support and screenshot requirements. No App Store submission performed."
+logical_id = "c0b59c1d-8fca-486c-a2d6-de15e015d678"
+content_hash = "sha256:c0a76b66e300e33c4c86d30a3ca2df41308ac98a438cac28bfaedcf9d6a5aa12"
+size = 8828
+mtime_ms = 1791419395396
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:8901f6e4-31e2-4a3c-ab1e-8d25ad9826dc/c0b59c1d-8fca-486c-a2d6-de15e015d678/59fe6b5e-fafb-4663-9bcb-88db7bdd2f75"
+storage_version_token = "1791419552121074"
+content_type = "text/markdown"
