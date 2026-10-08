@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "pnpm run build:website",
+  "outputDirectory": ".vercel-static",
+  "cleanUrls": true,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "artifacts/api-server/{legacy-src,data}/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" }
+  ],
+  "redirects": [
+    { "source": "/privacy", "destination": "/privacy-policy", "permanent": true }
+  ]
+}

@@ -1,2 +1,3 @@
 - [Mobile companion boundaries](mobile-companion-boundaries.md) — preserve the website, keep native v1 offline and focused, disclose verified SDLT differences.
 - [Expo native verification](expo-native-verification.md) — SDK 57 splash schema and physical-device checks that browser tests cannot establish.
+- [Deployment boundaries](deployment-boundaries.md) — the website also has a GitHub/Vercel pipeline; keep it separate from Replit preview and native builds.

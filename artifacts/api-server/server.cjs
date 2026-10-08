@@ -6,7 +6,7 @@ const { getSDLTBreakdown } = require('./legacy-src/sdlt');
 
 const app = express();
 const PORT = Number(process.env.PORT);
-if (!Number.isInteger(PORT) || PORT <= 0) throw new Error('PORT is required');
+if (require.main === module && (!Number.isInteger(PORT) || PORT <= 0)) throw new Error('PORT is required');
 
 const ALLOWED_ORIGINS = [
   'https://rentalmetrics.co.uk',
@@ -179,6 +179,9 @@ function isRateLimited(ip) {
 }
 
 app.post('/api/suggestions/cost-label', (req, res) => {
+  if (process.env.VERCEL === '1') {
+    return res.status(503).json({ error: 'Server-side suggestion collection is unavailable on this deployment. Custom labels remain saved in your browser.' });
+  }
   try {
     const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
     if (isRateLimited(ip)) {
@@ -222,6 +225,9 @@ app.post('/api/suggestions/cost-label', (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  require('pino')().info({ port: PORT }, 'RentalMetrics API running');
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    require('pino')().info({ port: PORT }, 'RentalMetrics API running');
+  });
+}
+module.exports = app;

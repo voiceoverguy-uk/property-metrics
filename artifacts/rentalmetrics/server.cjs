@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 const PORT = Number(process.env.PORT);
-if (!Number.isInteger(PORT) || PORT <= 0) throw new Error('PORT is required');
+if (require.main === module && (!Number.isInteger(PORT) || PORT <= 0)) throw new Error('PORT is required');
 const CACHE_BUST = Date.now().toString(36);
 const ALLOWED_ORIGINS = [
   'https://rentalmetrics.co.uk',
@@ -59,8 +59,8 @@ const routeMeta = {
     ogUrl: 'https://rentalmetrics.co.uk/sdlt-calculator',
   },
 };
-function serveHtml(req, res) {
-  const meta = routeMeta[req.path] || routeMeta['/'];
+function renderHtml(routePath) {
+  const meta = routeMeta[routePath] || routeMeta['/'];
   const html = htmlTemplate
     .replace(/%%PAGE_TITLE%%/g, meta.pageTitle)
     .replace(/%%META_DESC%%/g, meta.metaDesc)
@@ -69,10 +69,15 @@ function serveHtml(req, res) {
     .replace(/%%OG_DESC%%/g, meta.ogDesc)
     .replace(/%%OG_URL%%/g, meta.ogUrl)
     .replace(/%%OG_IMAGE%%/g, OG_IMAGE);
+  return html.replace(/\?v=\d+/g, '?v=' + CACHE_BUST);
+}
+app.locals.renderHtml = renderHtml;
+app.locals.pageRoutes = ['/', '/deal-analyser', '/simple-analyser', '/sdlt-calculator'];
+function serveHtml(req, res) {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.send(html.replace(/\?v=\d+/g, '?v=' + CACHE_BUST));
+  res.send(renderHtml(req.path));
 }
 app.get(['/', '/deal-analyser', '/simple-analyser', '/sdlt-calculator'], serveHtml);
 app.get('/privacy', (req, res) => res.redirect(301, '/privacy-policy'));
@@ -96,6 +101,9 @@ app.use(express.static(path.join(__dirname, 'public'), {
     res.setHeader('Expires', '0');
   }
 }));
-app.listen(PORT, '0.0.0.0', () => {
-  require('pino')().info({ port: PORT }, 'RentalMetrics website running');
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    require('pino')().info({ port: PORT }, 'RentalMetrics website running');
+  });
+}
+module.exports = app;
