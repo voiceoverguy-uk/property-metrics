@@ -1,0 +1,45 @@
+{
+  "test item": {
+    "label": "Test item",
+    "source": "additional_costs",
+    "count": 1,
+    "firstSeen": "2026-02-17T12:47:58.666Z"
+  },
+  "fire": {
+    "label": "Fire",
+    "source": "additional_costs",
+    "count": 1,
+    "firstSeen": "2026-02-17T14:32:11.285Z"
+  },
+  "insu": {
+    "label": "Insu",
+    "source": "recurring_costs",
+    "count": 1,
+    "firstSeen": "2026-02-17T17:20:20.103Z"
+  },
+  "ele": {
+    "label": "Ele",
+    "source": "additional_costs",
+    "count": 1,
+    "firstSeen": "2026-02-18T20:35:17.769Z"
+  },
+  "insura": {
+    "label": "Insura",
+    "source": "recurring_costs",
+    "count": 2,
+    "firstSeen": "2026-02-18T20:38:24.310Z",
+    "lastSeen": "2026-02-19T23:01:27.270Z"
+  },
+  "refurb": {
+    "label": "Refurb",
+    "source": "additional_costs",
+    "count": 1,
+    "firstSeen": "2026-02-20T07:50:06.480Z"
+  },
+  "sol": {
+    "label": "Sol",
+    "source": "additional_costs",
+    "count": 1,
+    "firstSeen": "2026-03-11T07:38:31.235Z"
+  }
+}

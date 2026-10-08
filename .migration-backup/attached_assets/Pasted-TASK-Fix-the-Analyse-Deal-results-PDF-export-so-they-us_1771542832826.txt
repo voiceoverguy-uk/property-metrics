@@ -1,0 +1,106 @@
+TASK: Fix the “Analyse Deal” results + PDF export so they use the same calculation engine as the live snapshot, and update wording/labels for clarity. Include BOTH Net Yield (Asset) and Cash-on-Cash in the PDF.
+
+PROBLEM:
+The live snapshot shows correct Net Yield (Asset) and Cash-on-Cash, but the PDF/report after clicking “Analyse Deal” is incorrect:
+- PDF shows Net Yield (Asset) = 6.00% and Gross Yield = 6.00% when operating costs exist (agent fees + running costs).
+- PDF “Net Annual Rent” is incorrectly equal to Annual Rent (operating costs ignored).
+This indicates Analyse Deal / PDF is using a separate (older) calculation path.
+
+GOAL:
+Create ONE single source of truth calculation function used everywhere:
+- Snapshot
+- Analyse Deal results page
+- PDF export
+So the values cannot diverge.
+
+REQUIRED METRIC DEFINITIONS:
+Inputs:
+- purchasePrice
+- monthlyRent
+- lettingAgentFeePercent
+- lettingAgentVatEnabled
+- recurringMonthlyCostsTotal (sum)
+- voidAllowancePercent (default 0)
+- maintenance mode: (% of rent) OR (£ per year)
+- purchaseType: cash or mortgage
+Mortgage inputs (if mortgage):
+- deposit amount or %
+- rate
+- interest-only vs repayment
+- term years
+
+Core calculations:
+1) annualRent = monthlyRent * 12
+2) lettingAgentMonthly = monthlyRent * (lettingAgentFeePercent/100) * (lettingAgentVatEnabled ? 1.2 : 1)
+3) annualLettingAgent = lettingAgentMonthly * 12
+4) annualRecurring = recurringMonthlyCostsTotal * 12
+5) annualVoidLoss = annualRent * (voidAllowancePercent/100)
+6) annualMaintenance:
+   - if % mode: annualRent * (maintenancePercent/100)
+   - if £/year mode: maintenancePerYear
+7) annualOperatingCosts = annualLettingAgent + annualRecurring + annualVoidLoss + annualMaintenance
+8) annualNetIncomeBeforeFinance = annualRent - annualOperatingCosts
+
+YIELDS:
+A) Gross Yield (%) = (annualRent / purchasePrice) * 100
+B) Net Yield (Asset) (%) = (annualNetIncomeBeforeFinance / purchasePrice) * 100
+   - MUST exclude mortgage costs.
+C) Mortgage monthly payment:
+   - interest-only: loanAmount * (rate/100) / 12
+   - repayment: standard amortisation formula
+D) monthlyCashflowAfterFinance =
+   monthlyRent - lettingAgentMonthly - recurringMonthlyCostsTotal - (annualVoidLoss/12) - (annualMaintenance/12) - mortgageMonthlyPayment
+E) annualCashflowAfterFinance = monthlyCashflowAfterFinance * 12
+F) cashInvested = deposit + SDLT + solicitorFees + totalAdditionalCosts (+ any other upfront costs you already track)
+G) Cash-on-Cash (%) = (annualCashflowAfterFinance / cashInvested) * 100
+   - Guard: if cashInvested <= 0 then 0
+
+REPORT/PDF TERMINOLOGY FIXES:
+Replace confusing phrases:
+- Replace “Net Annual Rent” with “Net Annual Income (before finance)”
+- Replace any “Net yield based on cash invested” language with “Cash-on-Cash Return” (because that is what it is)
+Ensure labels are consistent:
+- Gross Yield
+- Net Yield (Asset)
+- Cash-on-Cash Return
+
+FORMATTING:
+- Snapshot already uses 1 decimal for yields; keep that.
+- “Analyse Deal” results and PDF should show yields to 2 decimals (e.g., 4.70%, 2.89%).
+- Cash figures should be formatted as GBP with commas; monthly should show “/mo”.
+
+PDF CONTENT REQUIREMENTS:
+The PDF must include:
+1) Input Summary (existing)
+2) SDLT breakdown (existing)
+3) Cost breakdown (existing)
+4) Yield Analysis section with BOTH:
+   - Gross Yield (2dp)
+   - Net Yield (Asset) (2dp)
+   - Cash-on-Cash Return (2dp) (when mortgage is selected; if cash purchase, still show it but it will equal net yield on cash invested or show “N/A” — choose the clearer approach)
+5) Yield Breakdown table showing:
+   - Annual Rent
+   - Annual Operating Costs (breakdown: agent, recurring, maintenance, void)
+   - Net Annual Income (before finance)
+   - Annual Mortgage Cost (if mortgage)
+   - Annual Cashflow (after finance) (if mortgage)
+   - Cash Invested
+   - Total Acquisition Cost
+
+IMPLEMENTATION STEPS:
+1) Identify where “Analyse Deal” computes metrics and where PDF generation computes metrics.
+2) Refactor so both call the shared function (e.g., calculateDealMetrics(inputs)).
+3) Remove duplicate yield logic in report/PDF paths.
+4) Add a small internal test (dev-only log or unit test) using this scenario:
+   price=200000, rent=1000, agent=15.5%, VAT=true, recurring=30/mo, void=0, maintenance=0,
+   deposit=25%, rate=5% interest-only, SDLT=11500, solicitor=1500, additional=3000
+Expected approx:
+- Gross Yield = 6.00%
+- Net Yield (Asset) ≈ 4.70%
+- Cash-on-Cash ≈ 2.89%
+Ensure PDF matches UI.
+
+DELIVERABLE:
+- Update code
+- Provide list of files changed
+- Confirm the test scenario outputs match across Snapshot, Analyse Deal page, and PDF.

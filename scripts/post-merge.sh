@@ -1,5 +1,4 @@
 #!/bin/bash
 set -e
-
-npm install
+pnpm install --frozen-lockfile
 bash scripts/build-mobile.sh

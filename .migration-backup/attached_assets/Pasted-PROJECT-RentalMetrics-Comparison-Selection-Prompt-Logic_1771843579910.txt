@@ -1,0 +1,82 @@
+PROJECT: RentalMetrics — Comparison Selection Prompt Logic
+
+GOAL
+When user clicks "Compare Deals" with no history items selected,
+do NOT automatically compare all.
+
+Instead, show a small confirmation prompt:
+
+"Select specific deals to compare, or compare all history?"
+
+With buttons:
+- Compare Selected (disabled if 0 selected)
+- Compare All
+- Cancel
+
+------------------------------------------------------------
+1) Trigger Logic
+------------------------------------------------------------
+
+When user clicks "Compare Deals":
+
+IF selectedHistoryIds.length >= 1
+  → Open comparison modal with selected deals only.
+
+IF selectedHistoryIds.length === 0
+  → Show a confirmation modal instead of opening comparison immediately.
+
+------------------------------------------------------------
+2) Confirmation Modal UI
+------------------------------------------------------------
+
+Title:
+"Choose deals to compare"
+
+Body text:
+"You haven't selected any deals. Would you like to compare all saved deals, or go back and select specific ones?"
+
+Buttons:
+- Compare All (primary button, red style)
+- Cancel (secondary style)
+
+Optional:
+- Show small helper line:
+  "Tip: Tick the checkboxes beside deals to compare specific ones."
+
+Modal must:
+- Match existing modal styling
+- Close on Cancel
+- Close on outside click
+- Not break scroll lock
+
+------------------------------------------------------------
+3) Behaviour
+------------------------------------------------------------
+
+If user clicks:
+- Compare All → Open comparison modal with full history list.
+- Cancel → Close prompt only.
+
+Do NOT auto-select all checkboxes.
+Do NOT silently fallback to compare-all without prompt.
+
+------------------------------------------------------------
+4) Edge Cases
+------------------------------------------------------------
+
+If history count < 2:
+- Disable Compare Deals button entirely
+- Tooltip: "Add at least two deals to compare."
+
+------------------------------------------------------------
+5) Acceptance Checks
+------------------------------------------------------------
+
+1) Tick 2 deals → Compare Deals → opens comparison with only those.
+2) Tick none → Compare Deals → prompt appears.
+3) Click Compare All → opens full comparison.
+4) Click Cancel → nothing changes.
+5) With only 1 deal in history → Compare button disabled.
+
+DELIVERABLE
+Implement cleanly without breaking existing comparison sorting or PDF export.

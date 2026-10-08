@@ -1,0 +1,86 @@
+TASK: Finalise Grade Guide in Deal Comparison PDF
+
+We are refining the Grade Guide table recently added to the Deal Comparison PDF.
+
+GOALS:
+1) Fix encoding issue (replace ≥ symbol with plain text).
+2) Add missing Grade “E” band.
+3) Make grade structure consistent and complete (A–F).
+4) Slightly strengthen disclaimer language (optional extra safety line).
+5) Do NOT change any calculations or grade logic.
+
+-----------------------------------------
+A) FIX SYMBOL ISSUE
+-----------------------------------------
+
+Replace any special characters like ≥ with plain text.
+
+Instead of:
+(≥8%)
+
+Use:
+(8% or higher)
+
+Avoid any non-ASCII symbols in the PDF to prevent encoding glitches.
+
+-----------------------------------------
+B) UPDATE GRADE GUIDE TABLE
+-----------------------------------------
+
+Update the Grade Guide section in the Deal Comparison PDF to:
+
+Title:
+Grade Guide
+
+Helper line (keep):
+Grades are calculated automatically using Net Yield (Asset) bands.
+
+Table columns:
+| Grade | Meaning | Yield Band | Based On |
+
+Rows:
+
+A | Excellent – very strong yield | 8% or higher | Net Yield (Asset)
+B | Strong – solid performance | 7% – 7.99% | Net Yield (Asset)
+C | Fair – acceptable return | 6% – 6.99% | Net Yield (Asset)
+D | Weak – below target yield | 5% – 5.99% | Net Yield (Asset)
+E | Very weak – high caution | 4% – 4.99% | Net Yield (Asset)
+F | Poor – low return | Below 4% | Net Yield (Asset)
+
+NOTES:
+- Do not use emotional or advisory wording.
+- Keep tone neutral and analytical.
+- Table styling should remain compact and professional:
+  - Font size ~10–11px
+  - Light grey header row
+  - 1px light grey borders
+  - ~85–90% width centred
+  - Subtle spacing
+
+-----------------------------------------
+C) DISCLAIMER ENHANCEMENT
+-----------------------------------------
+
+Below the existing disclaimer, add one additional sentence:
+
+“Results are based solely on the information entered and do not account for void periods, maintenance shocks, taxation changes or market risk.”
+
+Keep formatting consistent with the existing disclaimer box.
+Do not make it visually dominant.
+Do not increase box size dramatically.
+
+-----------------------------------------
+D) IMPORTANT
+-----------------------------------------
+
+- No changes to grade calculation logic.
+- No changes to sorting.
+- No UI changes on the live site.
+- PDF output must remain forced to light mode.
+- Ensure pagination still works correctly.
+- If space runs out on page 1, Grade Guide moves cleanly to page 2.
+
+-----------------------------------------
+FILES LIKELY TO EDIT:
+- public/app.js (PDF generation HTML)
+- Any PDF styling block

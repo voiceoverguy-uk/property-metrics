@@ -1,0 +1,88 @@
+We are live on https://rentalmetrics.co.uk and verified in Google Search Console.
+Please implement branding + SEO + icons + OpenGraph + schema + sitemap + robots.
+
+BRAND
+- Primary red: #d42027
+- Site name: RentalMetrics
+- Meta title: "RentalMetrics | UK Buy-to-Let Yield Calculator"
+- Meta description (150–160 chars):
+  "Free UK property deal analyser. Calculate net yield, cash-on-cash return, SDLT, mortgage stress tests and export PDF reports."
+
+ASSETS (I will upload these into /public)
+- /rental-metrics-logo-primary-600x60.png  (header logo)
+- /rental-metrics-icon-32.png              (favicon)
+- /rental-metrics-icon-192.png             (PWA icon)
+- /rental-metrics-icon-512.png             (PWA icon)
+- /rental-metrics-icon-1024.png            (master icon)
+(Optional if we add later)
+- /og-rentalmetrics.png (1200x630)
+
+HEADER UI UPDATE
+- Replace the plain “Rental Metrics” text header with an <img> logo:
+  src="/rental-metrics-logo-primary-600x60.png"
+  alt="RentalMetrics"
+  height should be ~36px on desktop and ~30px on mobile, keeping aspect ratio.
+- Make header background white (or very light grey) with a thin bottom border.
+- Add a small tagline under the logo or to the right on desktop only:
+  "UK Buy-to-Let Yield Calculator" (simple, readable, not shouty).
+- Keep everything responsive and tidy.
+
+FAVICON + APP ICONS
+Add these to the <head> on all pages:
+- <link rel="icon" type="image/png" sizes="32x32" href="/rental-metrics-icon-32.png">
+- <link rel="icon" type="image/png" sizes="16x16" href="/rental-metrics-icon-16.png"> (only if file exists; otherwise omit)
+- <link rel="apple-touch-icon" sizes="180x180" href="/rental-metrics-icon-192.png">
+Also create /site.webmanifest with:
+- name: RentalMetrics
+- short_name: RentalMetrics
+- icons: 192 and 512 PNGs
+- theme_color: #d42027
+- background_color: #ffffff
+- display: standalone
+
+META + SOCIAL (Open Graph + Twitter)
+In <head> globally:
+- <title>RentalMetrics | UK Buy-to-Let Yield Calculator</title>
+- meta description above
+- canonical: https://rentalmetrics.co.uk/
+- robots: index,follow
+Open Graph:
+- og:title, og:description, og:url=https://rentalmetrics.co.uk/, og:type=website
+- og:image:
+   If /og-rentalmetrics.png exists, use it.
+   Otherwise temporarily use /rental-metrics-icon-1024.png.
+Twitter:
+- twitter:card=summary_large_image
+- twitter:title, twitter:description, twitter:image (same logic as OG)
+
+STRUCTURED DATA (JSON-LD)
+Add SoftwareApplication schema in the head:
+{
+  "@context":"https://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"RentalMetrics | UK Buy-to-Let Yield Calculator",
+  "applicationCategory":"FinanceApplication",
+  "operatingSystem":"Web",
+  "url":"https://rentalmetrics.co.uk/",
+  "description":"UK buy-to-let deal analyser with yield calculation, mortgage stress testing, SDLT and PDF reports.",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"}
+}
+
+SITEMAP + ROBOTS
+- Create /robots.txt with:
+  User-agent: *
+  Allow: /
+  Sitemap: https://rentalmetrics.co.uk/sitemap.xml
+
+- Create /sitemap.xml listing at minimum:
+  https://rentalmetrics.co.uk/
+
+IMPORTANT: This is an Express app. Serve /robots.txt and /sitemap.xml with correct content types:
+- robots.txt: text/plain
+- sitemap.xml: application/xml
+
+QUALITY CHECKS
+- No console errors
+- Confirm favicon appears in browser tab
+- Confirm OG tags present by viewing page source
+- Ensure logo loads from /public path on Vercel

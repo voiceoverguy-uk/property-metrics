@@ -1,0 +1,59 @@
+TASK: Remove “Buyer Type” from the Deal Analyser (BTL-only), lock logic to Investor/Additional Property, and ensure nothing breaks.
+
+CONTEXT
+RentalMetrics Deal Analyser is a Buy-to-Let deal tool. “Main Residence” / “First-Time Buyer” options confuse positioning and are not needed in the Deal Analyser. SDLT Calculator Only route can stay as-is (no change required unless needed).
+
+GOALS
+1) Deal Analyser: remove the Buyer Type toggle UI entirely.
+2) Deal Analyser: always calculate using Investor / Additional Property rules (i.e., additional property SDLT where applicable and all investor assumptions).
+3) Ensure existing features still work:
+   - Analysis + grade
+   - Snapshot + PDF export + comparison PDF
+   - History save/recall + comparison modal
+   - SDLT breakdown displayed in Deal Analyser (if present)
+4) Do not break the separate “SDLT Calculator Only” page/route.
+
+IMPLEMENTATION STEPS
+A) UI removal
+- In the Deal Analyser page template (index.html or the Deal Analyser component/section), remove the entire “Buyer Type” block:
+  - Label “Buyer Type”
+  - 3-way toggle: Main Residence / Investor / First-Time Buyer
+
+B) Lock the underlying state (critical)
+- Find the state/variable that stores buyer type, e.g.:
+  - buyerType
+  - purchaserType
+  - isInvestor
+  - sdltProfile
+  - purchaseProfile
+- In the Deal Analyser initialisation, force it to Investor/Additional Property:
+  - buyerType = "investor"
+  - and/or sdltMode = "additional_property"
+- Do this in ONE central place that runs:
+  1) on page load
+  2) on “Start Again”
+  3) when loading a deal from History
+- If there is a persisted value in localStorage/history that includes buyerType:
+  - Ignore it for Deal Analyser (override it to investor)
+  - BUT do not delete it from stored deals (just don’t use it here)
+
+C) Defensive code cleanup
+- Any logic that branches on buyerType should still work, but in Deal Analyser it should always use investor path.
+- Remove any event listeners that were tied to the old toggle.
+- If the UI removal causes “null element” errors, guard or remove those references.
+
+D) SDLT Calculator Only route
+- Leave SDLT Calculator Only route unchanged.
+- If it shares components with Deal Analyser, ensure the buyer type selector remains available there ONLY if it currently exists and is intended.
+
+E) Regression checks (must do)
+- Run through these flows:
+  1) Enter deal -> Analyse Deal -> SDLT breakdown correct for investor additional property
+  2) Mortgage + cash modes still calculate correctly
+  3) Capture Snapshot / Share / Save as PDF works
+  4) Comparison history save -> open history -> recall -> map loads -> analysis still investor rules
+  5) Comparison modal -> Download PDF works
+- Confirm no console errors.
+
+OUTPUT
+- Provide a summary of files changed and confirm Deal Analyser now always runs as Investor / Additional Property with no Buyer Type toggle shown.

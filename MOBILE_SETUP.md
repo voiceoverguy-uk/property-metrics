@@ -7,7 +7,7 @@ This project uses **Capacitor** to wrap the web app into native iOS and Android 
 - The mobile app bundles the files from `mobile/www/`
 - API calls go to `https://rentalmetrics.co.uk` when running inside the app
 - All calculations, SDLT, Maps — everything uses the live server
-- `scripts/build-mobile.sh` regenerates `mobile/www/` from `public/` whenever needed
+- `scripts/build-mobile.sh` regenerates `mobile/www/` from `artifacts/rentalmetrics/public/` whenever needed
 
 ---
 
@@ -29,7 +29,7 @@ git clone <your-repo-url>
 cd <repo-folder>
 
 # 2. Install dependencies
-npm install
+pnpm install
 
 # 3. Build the mobile web assets
 bash scripts/build-mobile.sh

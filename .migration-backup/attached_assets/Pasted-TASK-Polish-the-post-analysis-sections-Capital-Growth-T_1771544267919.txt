@@ -1,0 +1,47 @@
+TASK: Polish the post-analysis sections (Capital Growth, Target Offer Price, Section 24, Stress Test) with clear wording + safer UX + consistent PDF rendering.
+
+1) CAPITAL GROWTH PROJECTION — wording
+- Change the label “Equity” to “Projected Equity” everywhere it appears in this section (UI + PDF if included).
+- Example: “Projected Equity: £106,673”
+- This is purely a label change; no calculation changes.
+
+2) TARGET OFFER PRICE — confirm correct basis
+- Verify that “Target Offer Price for X% Yield” is calculated using Net Yield (Asset) logic:
+  Net Yield (Asset) = (Annual Rent - Annual Operating Costs) / Purchase Price
+  - Must include: agent fee (and VAT toggle), recurring costs, void allowance, maintenance allowance
+  - Must EXCLUDE: mortgage costs
+- If it is currently based on cash-on-cash or includes mortgage, correct it.
+- Add a short tooltip or helper text near the Target Offer Price heading:
+  “Based on Net Yield (Asset), excluding mortgage.”
+- Ensure UI + PDF use the same basis.
+
+3) SECTION 24 TAX ESTIMATE — disclaimer + future-proofing
+- Add small note under the section title (UI + PDF):
+  “Estimate only — not tax advice.”
+- Add conditional behaviour for future “Limited Company” option:
+  If Buyer Type / ownership type is set to “Limited Company” (or if such a flag exists / is added later),
+  hide the Section 24 Tax Estimate section and instead show a small note:
+  “Section 24 applies to individual landlords, not limited companies.”
+  (If the app does not currently have a limited company option, implement the logic behind a placeholder boolean
+   like isLimitedCompany=false for now, so it’s easy to wire in later without rework.)
+
+4) STRESS TEST BADGE — show only one status (UI + PDF)
+- Fix the issue where both stress test badges can appear.
+- Render exactly ONE badge based on stress-test monthly cashflow:
+   - If stressCashflowMonthly >= 0:
+       show “Cash Flow Positive at Stress Rate” (green)
+   - Else:
+       show “Cash Flow Negative at Stress Rate” (red)
+- If stress test is disabled or no stress figure is calculated, show no badge (keep clean).
+- Apply the same conditional logic in both the on-page analysis and the PDF export so they cannot diverge.
+
+5) QUALITY CHECKS
+- Confirm the PDF matches UI for:
+  - Target Offer Price
+  - Stress test badge (only one)
+  - The new labels and disclaimers
+- Provide a short summary of files changed.
+
+IMPORTANT:
+- Do not change any of the already-correct yield formulas for Net Yield (Asset) and Cash-on-Cash.
+- These changes are wording, basis confirmation for Target Offer Price, and conditional rendering cleanup.

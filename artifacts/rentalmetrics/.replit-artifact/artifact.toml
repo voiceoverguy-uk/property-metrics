@@ -1,0 +1,32 @@
+kind = "web"
+previewPath = "/"
+title = "RentalMetrics"
+description = "The existing RentalMetrics website for UK property investors, preserving its rental calculators, deal analysis, local history and exports."
+version = "1.0.0"
+id = "artifacts/rentalmetrics"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22552
+
+[services.development]
+run = "pnpm --filter @workspace/rentalmetrics run dev"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/rentalmetrics", "run", "build"]
+
+[services.production.run]
+args = ["node", "artifacts/rentalmetrics/server.cjs"]
+
+[services.production.run.env]
+PORT = "22552"
+NODE_ENV = "production"
+
+[services.production.health.startup]
+path = "/"
+
+[services.env]
+PORT = "22552"
+BASE_PATH = "/"

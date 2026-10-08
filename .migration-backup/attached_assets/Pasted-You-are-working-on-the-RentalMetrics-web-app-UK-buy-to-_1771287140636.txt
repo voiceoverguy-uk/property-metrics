@@ -1,0 +1,44 @@
+You are working on the RentalMetrics web app (UK buy-to-let tool). Please implement the following across BOTH Simple mode and Advanced/Deal Analyser mode.
+
+1) SIMPLE MODE: Add “Recurring Monthly Costs”
+- Add a section titled exactly: “Recurring Monthly Costs”
+- UI: repeatable rows with two inputs:
+  - left: cost name placeholder “e.g. Insurance”
+  - right: monthly amount in GBP, placeholder “£0”
+  - include remove row button (x) per row
+  - include “+ Add Recurring Cost” button
+- Show a live total line: “Total Recurring Monthly Costs: £X/mo”
+- Persist these costs in the same app state as the advanced version (shared model), so switching between Simple and Advanced does not lose values.
+
+2) RENAME: Wherever “Monthly Running Costs” exists, rename to “Recurring Monthly Costs” (label text only; keep any underlying variable names if needed).
+
+3) DEPOSIT INPUT UX (Simple + Advanced Mortgage sections)
+Replace the current single “Deposit (£)” input with:
+- A single input field plus a small toggle to choose input type: “£” or “%”
+- When toggle is “£”: user types deposit in pounds; automatically compute deposit percentage based on purchase price.
+- When toggle is “%”: user types deposit percentage; automatically compute deposit pounds.
+- Display the computed counterpart below the field as helper text, e.g.:
+  - If input is £: “That’s 15.0% deposit”
+  - If input is %: “That’s £30,000 deposit”
+- Validation:
+  - Clamp % to 0–100
+  - Deposit £ cannot exceed purchase price; if it does, set deposit £ = purchase price
+  - Prevent NaN; empty input should behave sensibly (treat as 0)
+- Ensure mortgage loan amount updates live: loan = purchasePrice - deposit£
+
+4) FINANCE IN RESULTS (Add suggestion #5)
+When Purchase Type is Mortgage, include finance in the analysis outputs:
+- Calculate monthly mortgage payment at minimum using interest-only:
+  monthlyMortgagePayment = (loanAmount * (interestRate/100)) / 12
+- Incorporate this into deal results:
+  - Show “Monthly Mortgage Payment: £X/mo”
+  - Show “Cashflow After Mortgage: £(monthlyRent - recurringMonthlyCosts - lettingAgentFee - monthlyMortgagePayment)/mo”
+  - Ensure recurringMonthlyCosts are included in this calculation
+- Keep existing calculations intact; just add these new outputs and ensure they update when inputs change.
+
+General requirements:
+- GBP formatting with £ and 2 decimals where appropriate.
+- Keep the UI styling consistent with existing components.
+- No breaking changes, no loss of existing saved values.
+- If there are separate state slices for simple vs advanced, unify them so both read/write the same fields.
+- After implementing, verify both Simple and Advanced pages show the same recurring costs and deposit values when toggling between modes.

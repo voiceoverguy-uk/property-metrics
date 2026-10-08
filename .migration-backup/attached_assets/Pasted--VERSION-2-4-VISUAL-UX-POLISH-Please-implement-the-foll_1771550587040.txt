@@ -1,0 +1,108 @@
+🛠️ VERSION 2.4 – VISUAL & UX POLISH
+
+Please implement the following UI and UX refinements without changing any underlying calculations.
+
+⸻
+
+1️⃣ Deal Snapshot – Visual Hierarchy Upgrade
+
+Rework visual emphasis in the Deal Snapshot card so metrics are clearly prioritised.
+
+New hierarchy:
+	1.	Net Yield (Asset) – most prominent metric
+	2.	Monthly Cashflow – second most prominent
+	3.	Cash-on-Cash
+	4.	Upfront Total – slightly reduced emphasis
+
+Changes:
+	•	Increase font-size of Net Yield by ~10–15%
+	•	Make Net Yield slightly bolder
+	•	Keep existing colour logic
+	•	Slightly reduce font-weight of Upfront Total so it doesn’t compete visually
+	•	Maintain responsive layout
+
+Goal: Yield visually anchors the decision logic.
+
+⸻
+
+2️⃣ History Row – Improve Monthly Cashflow Visibility
+
+In Comparison History rows:
+
+Current format:
+£200k · Yield 6.0% · +£993/mo
+
+Update:
+	•	Increase monthly cashflow font-weight (600 or 700)
+	•	Slightly increase font-size by 1px if currently small
+	•	Keep green/red colour coding
+	•	Do NOT bold the entire line
+
+Goal: Make cashflow the eye-catching number during quick scanning.
+
+⸻
+
+3️⃣ Grading Clarification Line
+
+Under the grade label (e.g. “Excellent”), add small grey helper text:
+
+Rating based on Net Yield (Asset) only.
+
+Requirements:
+	•	Subtle grey colour
+	•	Smaller font-size than grade label
+	•	Display in compare modal and PDF export
+	•	Do not clutter layout
+
+Goal: Avoid confusion about what grading represents.
+
+⸻
+
+4️⃣ BEST DEAL Badge – Mobile Optimisation
+
+Prevent “BEST DEAL” from awkwardly wrapping into two chunky lines on mobile.
+
+Adjust:
+	•	Slightly reduce horizontal padding
+	•	Slightly reduce vertical padding if needed
+	•	Ensure badge remains readable
+	•	Keep consistent styling
+
+Goal: Cleaner mobile presentation.
+
+⸻
+
+5️⃣ Auto-Generated Deal Naming Logic
+
+If Deal Reference field is empty, auto-generate a display name using this priority:
+	1.	Use Address/Postcode if available
+	2.	Else use: “£{Asking Price} Deal”
+	3.	Else fallback to: “Untitled Deal”
+
+Do not overwrite stored reference — this is display logic only.
+
+Apply to:
+	•	Comparison History
+	•	Compare Modal
+	•	PDF export
+
+Goal: Remove generic “Untitled Deal” where avoidable.
+
+⸻
+
+6️⃣ Quality Check
+
+Verify:
+	•	Sorting still works correctly
+	•	BEST DEAL logic unchanged (still based on highest Net Yield)
+	•	No layout breakage on mobile
+	•	No metric overlap or overflow
+
+⸻
+
+Version Update
+
+Bump version to:
+
+APP_VERSION = “2.4”
+APP_VERSION_DATE = “February 2026”

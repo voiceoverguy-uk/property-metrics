@@ -1,0 +1,70 @@
+Add live “Deal Snapshot” running totals to BOTH analysers:
+1) Simple Analyser
+2) Deal Analyser (Advanced)
+
+IMPORTANT LAYOUT REQUIREMENTS:
+- Desktop/tablet (>= 992px): show the Deal Snapshot inside the EXISTING right-hand results panel (the panel that shows results after pressing Analyse).
+  - It should be visible even before Analyse is clicked (in an “as you type” state).
+  - Keep it “sticky” within that right panel so it stays visible while scrolling the left form.
+  - Do NOT add a floating bottom bar on desktop.
+
+- Mobile (< 992px): show a compact sticky bottom bar (fixed to bottom of viewport).
+  - Bar should be collapsible/expandable (e.g. “Show details”).
+  - Add bottom padding to the page content so the bar doesn’t cover the Analyse button or last fields.
+
+FUNCTIONAL REQUIREMENTS:
+A) Deal Snapshot should update LIVE as the user types (no need to press Analyse).
+
+B) Show TWO key outputs:
+1) Upfront Total (£)
+2) Monthly Cashflow (£/mo)
+
+C) Use progressive calculations consistent with existing Analyse logic. Do not duplicate logic; create shared helper functions used by both analysers and the final Analyse output.
+
+WHAT TO INCLUDE IN CALCULATIONS (by mode):
+
+1) SIMPLE ANALYSER:
+Upfront Total should include:
+- SDLT (from asking price + buyer type)
+- Solicitor Fees (if present in simple; if not present, omit)
+- Total Additional Costs (from additional costs list)
+- Deposit (ONLY if Mortgage is selected; using deposit £/% input)
+Monthly Cashflow should include:
+- Expected Monthly Rent
+- Letting Agent Fee (rent * fee %, incl VAT toggle)
+- Total Recurring Monthly Costs
+- Mortgage payment (ONLY if Mortgage is selected; using selected mortgage type)
+
+2) DEAL ANALYSER (ADVANCED):
+Include everything from Simple, PLUS apply any relevant yield adjustments that affect monthly rent if they exist in the Deal Analyser:
+- Void Allowance (%) should reduce rent accordingly (rent * (1 - void%/100))
+- Maintenance Allowance should reduce monthly cashflow (if % of rent or £/year convert to £/mo)
+Only include these if they are already part of the deal analyser model. If not available, ignore.
+
+VALIDATION UX:
+- If required fields are missing (Address/Postcode, Asking Price, Expected Monthly Rent), snapshot should show a “Missing required fields” warning and list which ones.
+- Clicking the warning should scroll to the first missing required field with correct sticky-header offset (use the custom scroll logic already added).
+
+DISPLAY / UI:
+- On desktop right panel: show snapshot as a neat card at the top of the results panel:
+  Title: “Deal Snapshot”
+  Lines:
+   - Upfront Total: £X
+   - Monthly Cashflow: £Y/mo
+  Optional small breakdown below (collapsed by default):
+   Deposit, SDLT, Solicitor, Additional, Recurring, Agent fee, Mortgage
+
+- On mobile bottom bar: show two-line compact view:
+  “Upfront: £X” and “Cashflow: £Y/mo”
+  Tap expands to show the breakdown.
+
+FORM UX TWEAK:
+- Move “Expected Monthly Rent (£)” into the same section row/group as “Letting Agent Fee (%)” (wherever feasible) in BOTH analysers for better flow.
+  - Keep tooltips and styling consistent.
+  - On mobile they can stack but remain in the same grouped section.
+
+Acceptance tests:
+- Enter asking price and buyer type -> SDLT updates immediately and upfront total updates.
+- Enter rent + agent fee -> cashflow updates immediately.
+- Toggle mortgage on/off -> deposit and mortgage payment inclusion updates.
+- Mobile: sticky bar never hides Analyse button (page has enough bottom padding).

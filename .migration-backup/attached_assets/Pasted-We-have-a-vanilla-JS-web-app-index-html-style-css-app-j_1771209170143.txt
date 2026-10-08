@@ -1,0 +1,75 @@
+We have a vanilla JS web app (index.html, style.css, app.js) with Node + Express (server.js). The app already shows a Google Map after the user selects an address.
+
+Please implement ONLY this feature:
+
+FEATURE A — Radius slider + “What’s near here?” toggles (not cluttered)
+
+Goal: Let users optionally show nearby amenities around the selected property, without making the UI messy.
+
+UI REQUIREMENTS (clean + compact)
+1) Add a small UI block directly under (or beside) the map titled: “What’s near here?”
+2) Include a radius slider with a live label:
+   - Default: 1 mile
+   - Range: 0.25 to 5 miles
+   - Step: 0.25 miles
+   - Display in miles (UK)
+3) Add toggle “chips” (OFF by default):
+   - Supermarkets
+   - Schools
+   - Transport
+   - Parks
+   - Healthcare
+   - Gyms
+4) If no toggles are enabled:
+   - Do not show any extra markers
+   - UI should stay compact (no blank results sections)
+5) Add a “Clear” link/button inside the block that turns all toggles OFF and removes markers.
+
+MAP BEHAVIOUR
+1) When a toggle is enabled (or radius changes), show markers for that category within the selected radius.
+2) Do not overwhelm the map:
+   - Limit results to a sensible max per category (e.g. 10)
+   - If 3+ categories are enabled, enable marker clustering automatically.
+3) Markers should be visually simple and consistent with the site:
+   - Use subtle styling and brand accent (#d42027) where appropriate
+   - No huge custom icons, no clutter.
+
+PERFORMANCE
+1) Debounce slider changes (e.g. 400–600ms) so it doesn’t spam requests while dragging.
+2) Add caching so repeated queries don’t re-hit the API constantly:
+   - Cache key: lat,lng,radiusMeters,category
+   - Cache TTL: 10 minutes (in-memory is fine)
+
+SECURITY / ARCHITECTURE (IMPORTANT)
+Do NOT call Places API directly from the browser.
+Implement a server proxy endpoint:
+
+- POST /api/places/nearby
+  Request body: { lat, lng, radiusMeters, category }
+  Response: return only the fields needed to render markers: name, lat, lng, placeId, rating (optional)
+
+Server should:
+- Use Google Places API (New) or appropriate Places endpoint
+- Read Google API key from environment variable ONLY (never hardcode)
+- Basic rate limiting per IP (simple in-memory is fine)
+
+Category -> Places type mapping
+- Supermarkets -> supermarket
+- Schools -> school
+- Transport -> transit_station (optionally also bus_station)
+- Parks -> park
+- Healthcare -> doctor (optionally also hospital)
+- Gyms -> gym
+
+FILES TO MODIFY
+- server.js: add /api/places/nearby proxy, caching, rate limit
+- app.js: add UI controls, state, fetch calls, markers, clustering
+- style.css: style the UI block to match the existing clean design and red accent
+
+ACCEPTANCE TESTS
+- With all toggles off: map looks exactly as it does today
+- Enable one toggle: markers appear within selected radius
+- Change radius: markers update after debounce
+- Clear: removes all markers and resets toggles
+- No API key visible in browser DevTools (network tab)
+- Works on all routes without breaking mode switching

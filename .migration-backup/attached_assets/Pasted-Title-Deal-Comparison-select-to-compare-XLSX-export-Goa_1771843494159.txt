@@ -1,0 +1,98 @@
+Title: Deal Comparison — select-to-compare + XLSX export
+
+Goal
+Improve the “Comparison History” workflow so users can:
+	1.	tick specific deals to compare (or compare all), and
+	2.	export the comparison results to XLSX (single sheet) from the comparison modal.
+
+⸻
+
+1) History list: add checkboxes + selection controls
+
+Requirements
+	•	Add a checkbox to the left side of each history item row.
+	•	Add controls above the list (near “Compare Deals”):
+	•	Select all
+	•	Select none
+	•	Optional: a small label like “Selected: 0”
+	•	Default state: none selected (clean + safe).
+	•	When user clicks Compare Deals:
+	•	If 1+ deals are selected → open comparison modal using only selected deals.
+	•	If 0 selected → compare all history (current behaviour).
+	•	Add a subtle helper text (optional):
+	•	“Tip: Tick deals to compare specific ones.”
+
+UX details
+	•	The checkbox shouldn’t trigger “load this deal” behaviour when the row is clicked.
+	•	Stop propagation on checkbox click.
+	•	Don’t make the row layout jump:
+	•	Keep checkbox area a fixed width.
+
+Data model
+	•	Store selected IDs in state, e.g. selectedHistoryIds: Set<string> (or array).
+	•	Each history item must have a stable unique id already — use that.
+
+⸻
+
+2) Comparison modal: XLSX export button
+
+Requirements
+	•	In the comparison modal header (where “Download PDF” is), add:
+	•	Export XLSX button (secondary style)
+	•	Export should include only the deals shown in the modal, in the current sort order.
+	•	Export should generate a file named like:
+	•	rental-metrics-comparison-YYYY-MM-DD.xlsx
+	•	Single sheet only, named:
+	•	Comparison
+
+Columns (suggested)
+Include the key stuff users actually care about (don’t overdo it):
+	•	Date Saved
+	•	Deal Reference
+	•	Address/Postcode
+	•	Buyer Type
+	•	Purchase Type (Cash/Mortgage)
+	•	Asking Price (£)
+	•	Monthly Rent (£)
+	•	Net Yield (Asset) %
+	•	Gross Yield %
+	•	Monthly Cashflow (£)
+	•	Cash-on-Cash %
+	•	SDLT (£)
+	•	Deposit (£) (if mortgage)
+	•	Mortgage Amount (£) (if mortgage)
+	•	Agent Fee (%)
+	•	Notes / Warnings (optional, keep short)
+
+If any value doesn’t apply, export empty cell (not “—”).
+
+Implementation notes
+	•	Use a lightweight XLSX library (common choice: xlsx / SheetJS).
+	•	Generate worksheet from JSON rows.
+	•	Trigger download client-side.
+
+⸻
+
+3) Sorting + export consistency
+
+Requirements
+	•	The modal already supports sorting. Ensure:
+	•	The XLSX export uses the same sorted array currently rendered.
+	•	If user changes sort dropdown, XLSX export reflects that instantly.
+
+⸻
+
+4) Acceptance criteria (how we’ll test)
+	1.	Tick 2–3 deals → Compare Deals → modal shows only those.
+	2.	Tick none → Compare Deals → modal shows all history (unchanged behaviour).
+	3.	Select all / none works instantly.
+	4.	XLSX downloads successfully, opens in Excel, with tidy columns + correct values.
+	5.	XLSX row order matches the modal’s current sort order.
+	6.	No layout jitter in history list when ticking checkboxes.
+
+⸻
+
+5) Please implement safely
+	•	Don’t break existing “click row to load deal” behaviour (if present).
+	•	Keep styling consistent with current UI (rounded, clean, subtle).
+	•	No paid APIs. No new external network calls.

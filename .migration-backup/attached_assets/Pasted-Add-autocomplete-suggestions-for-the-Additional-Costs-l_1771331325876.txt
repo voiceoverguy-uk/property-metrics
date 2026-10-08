@@ -1,0 +1,124 @@
+Add autocomplete suggestions for the Additional Costs label input.
+
+Create a local constant array called PROPERTY_COST_SUGGESTIONS containing the following 100 strings:
+
+const PROPERTY_COST_SUGGESTIONS = [
+  // Refurb & Repairs
+  "Refurb / repairs",
+  "Decorating",
+  "Redecoration",
+  "Painting",
+  "Plastering",
+  "Electrics",
+  "Rewiring",
+  "New consumer unit",
+  "Lighting upgrades",
+  "Plumbing",
+  "Boiler replacement",
+  "Central heating system",
+  "Radiators",
+  "Bathroom installation",
+  "Kitchen installation",
+  "Flooring",
+  "Carpets",
+  "Laminate flooring",
+  "Tiling",
+  "Windows replacement",
+  "Doors replacement",
+  "Roof repairs",
+  "New roof",
+  "Damp proofing",
+  "Structural works",
+  "Extension",
+  "Loft conversion",
+  "Garage conversion",
+  "Chimney repairs",
+  "Insulation",
+
+  // Purchase & Finance Costs
+  "Solicitor fees",
+  "Stamp duty",
+  "Survey",
+  "Valuation fee",
+  "Broker fee",
+  "Mortgage arrangement fee",
+  "Lender fee",
+  "Sourcing fee",
+  "Auction fees",
+  "Legal searches",
+  "Land Registry fee",
+  "Bridging loan interest",
+  "Bridging arrangement fee",
+  "Refinance costs",
+  "Product transfer fee",
+  "Early repayment charge",
+  "Mortgage exit fee",
+  "Accountant fees",
+  "Company setup costs",
+  "Incorporation fee",
+
+  // Compliance & Letting
+  "Gas safety certificate",
+  "EICR",
+  "EPC",
+  "Fire doors",
+  "Smoke alarms",
+  "Carbon monoxide alarms",
+  "HMO licence",
+  "Selective licence",
+  "Planning permission",
+  "Building control",
+  "PAT testing",
+  "Legionella assessment",
+  "Fire risk assessment",
+  "Tenancy agreement setup",
+  "Inventory",
+  "Deposit protection fee",
+  "Referencing",
+  "Letting agent setup fee",
+  "Letting agent tenant-find fee",
+  "Compliance upgrades",
+
+  // Furnishing & Setup
+  "Furniture",
+  "Appliances",
+  "White goods",
+  "Beds",
+  "Sofas",
+  "Wardrobes",
+  "Curtains / blinds",
+  "Garden works",
+  "Landscaping",
+  "Fence replacement",
+  "Driveway works",
+  "Clearance",
+  "Waste removal",
+  "Skip hire",
+  "Deep cleaning",
+  "Professional cleaning",
+  "End of tenancy clean",
+  "Pest control",
+  "Security system",
+  "CCTV installation",
+
+  // Ongoing / Operational
+  "Insurance",
+  "Landlord insurance",
+  "Service charge",
+  "Ground rent",
+  "Maintenance allowance",
+  "Void allowance",
+  "Management fee",
+  "Bookkeeping",
+  "Software subscriptions",
+  "Marketing costs"
+];
+
+Implement autocomplete behaviour:
+- Case-insensitive filtering.
+- Show suggestions when user types at least 1 character.
+- Show maximum 6 suggestions at a time.
+- Clicking a suggestion fills the label input.
+- User can always type custom text (no restriction).
+- No backend or database required.
+- Styling consistent with existing UI.

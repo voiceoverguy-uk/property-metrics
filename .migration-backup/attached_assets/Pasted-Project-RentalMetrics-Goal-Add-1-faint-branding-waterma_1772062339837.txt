@@ -1,0 +1,73 @@
+Project: RentalMetrics
+Goal: Add (1) faint branding watermark to PDF exports and (2) subtle success animation when the Deal Snapshot updates/turns “good”.
+
+✅ Requirements
+
+(1) PDF Export: Add faint watermark
+
+What to add
+	•	When exporting a PDF (both Deal PDF and Comparison PDF if applicable), add a faint RentalMetrics icon watermark behind the content.
+	•	Use the existing house icon asset already used on-page (or the RentalMetrics icon file currently in /public). If the exact icon file isn’t easy to reuse, use any existing icon already referenced in the app so we don’t add new assets.
+
+Behaviour
+	•	Watermark should be:
+	•	centred on the page
+	•	large (roughly 50–70% of page width)
+	•	very low opacity (approx 6–12%)
+	•	behind all text (must not obscure figures)
+	•	Apply watermark to every page if PDF is multi-page.
+	•	Must work in both light/dark modes (since it’s the watermark on the PDF, keep it neutral/faint).
+
+Implementation guidance
+	•	Find the PDF export code path (likely in public/app.js where “Save as PDF” is handled).
+	•	If PDF export is generated from DOM screenshot (e.g., html2canvas):
+	•	easiest approach: temporarily inject a watermark element into the export container, export, then remove it.
+	•	If PDF export uses a PDF library (e.g., jsPDF):
+	•	add the image as a background layer for each page before adding text/image content.
+	•	Keep it robust: if watermark image fails to load, export should still succeed with no errors.
+
+Acceptance
+	•	PDF exports still work exactly as before.
+	•	Watermark is visible but subtle.
+	•	No console errors.
+
+⸻
+
+(2) Deal Snapshot: subtle success animation
+
+What to add
+	•	When the Deal Snapshot updates after calculations (Analyse Deal or Re-analyse) and produces a result, add a small pulse/glow animation to draw the eye.
+
+Rules (important)
+	•	Trigger animation:
+	•	once when a new result is rendered (after Analyse/Re-analyse)
+	•	not continuously while typing in inputs
+	•	If you can detect state: only “success” pulse when the snapshot is in a “meets target / above target” state (green/positive), otherwise use a neutral pulse (or no pulse).
+	•	Keep it subtle and quick:
+	•	duration ~250–450ms
+	•	scale 1.00 → 1.01 → 1.00 OR a soft box-shadow glow that fades
+	•	Must not cause layout shift.
+
+Implementation guidance
+	•	Add a CSS animation class (e.g. .snapshot-pulse and optionally .snapshot-pulse-success)
+	•	In JS, after snapshot render completes, add the class to the snapshot container, then remove it after animation ends.
+	•	Ensure it doesn’t spam: gate with a short debounce or compare a “lastSnapshotHash/lastCalculatedAt” timestamp so it only runs on result updates.
+
+Acceptance
+	•	After Analyse Deal (and Re-analyse), the snapshot animates subtly.
+	•	No animation spam while typing.
+	•	No console errors.
+
+⸻
+
+Files to check/change
+	•	public/app.js (PDF export + snapshot render)
+	•	public/style.css (animation + any watermark helper style if using DOM injection)
+	•	Any PDF helper file used currently (if present)
+
+⸻
+
+Notes / Constraints
+	•	Do NOT introduce paid APIs.
+	•	Do NOT add heavy dependencies.
+	•	Keep everything lightweight and stable.

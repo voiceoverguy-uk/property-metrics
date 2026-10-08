@@ -1,0 +1,45 @@
+TASK: Add “landing content under the fold” ONLY on the homepage route / (Simple Analyser). Do NOT show this section on /deal-analyser or /sdlt-calculator.
+
+Goal: Friendly “DIY landlord helper” vibe (professional, but not corporate). Keep the page clean and uncluttered.
+
+Design rules (non-negotiable):
+	•	Must match existing layout width/container and spacing.
+	•	Use existing brand red #d42027 only as small accents (thin divider line, small icon accents, button outline). No big red blocks.
+	•	Desktop: simple, airy 2-column layout with two cards only.
+	•	Mobile: single column.
+	•	Only one H2.
+	•	Bullets: max 6.
+	•	FAQ must be an accordion with answers collapsed by default.
+	•	Keep disclaimer to one short paragraph.
+
+Mobile Show/Hide toggle (important):
+	•	On screens <= 768px, the entire under-fold section should be collapsed by default and replaced with a single button:
+“Show calculator help” (outline style, #d42027).
+	•	When tapped, expand the whole section and change button text to:
+“Hide calculator help”
+	•	The expand/collapse should be smooth (CSS transition), and should not jump the page around.
+	•	On desktop, the section is always visible (no toggle).
+
+Content structure (homepage only):
+	1.	H2: “UK buy-to-let maths, without the headache.”
+	2.	Intro (2–3 sentences): explain RentalMetrics gives quick GBP estimates for yield, costs, and cash flow using common UK assumptions. Keep it calm and friendly.
+	3.	Two cards side-by-side (desktop) / stacked (mobile):
+	•	Card A (H3): “What you can calculate”
+Bullets (max 6): Gross yield, net yield, monthly cash flow, cash-on-cash return, mortgage stress test, SDLT estimate, PDF export (pick best 6).
+	•	Card B (H3): “How it works”
+Steps (3 lines): 1) Enter price + rent 2) Add costs (and mortgage if needed) 3) Get results + export PDF
+	4.	FAQ accordion (use these 4 Qs + ~40–70 word answers):
+	•	What’s the difference between gross and net yield?
+	•	What costs should landlords include in “net yield”?
+	•	What is a “stress test rate” and why does it matter?
+	•	What’s considered a “good” rental yield in the UK?
+	5.	Disclaimer (1 short paragraph): estimates only, not financial/tax advice, figures depend on real costs and lender terms.
+	6.	Single community link line (no API, no event feed):
+Text: “Leeds Property Investor Group on Meetup”
+Link URL: https://www.meetup.com/leeds-property-people/
+Open in new tab with rel="noopener noreferrer".
+
+Technical:
+	•	Ensure this section is in the DOM on / immediately (not lazy inserted after load).
+	•	Keep performance fast: no new libraries.
+	•	Keep existing SEO + schema unchanged except if you need to add IDs/classes for styling and the mobile toggle.

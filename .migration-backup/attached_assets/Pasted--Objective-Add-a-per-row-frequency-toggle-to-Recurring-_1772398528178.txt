@@ -1,0 +1,126 @@
+# Objective
+Add a per-row frequency toggle to **Recurring Monthly Costs** so users can enter values as **£/mo** or **£/yr**, with automatic conversion of the input value when toggled. Internally we still calculate totals as monthly.
+
+This improves UX for common annual costs (e.g. landlord insurance) without changing the model.
+
+---
+
+# Tasks
+
+## T001 — Data model: store frequency per recurring item
+**Where:** `public/app.js`
+
+1) Extend each recurring cost item to store:
+- `label: string`
+- `amount: number` (the number currently shown in the input)
+- `freq: "mo" | "yr"` (default `"mo"`)
+
+2) Backwards compatibility:
+- Any existing history items without `freq` should be treated as `"mo"`.
+
+**Acceptance:**
+- Existing saved deals load without errors
+- Existing recurring items default to `/mo`
+
+---
+
+## T002 — Calculations: totals still monthly
+**Where:** `public/app.js`
+
+When calculating recurring totals:
+- If `freq === "mo"`: monthly = amount
+- If `freq === "yr"`: monthly = amount / 12
+
+Use monthly values for:
+- Total Recurring Monthly Costs
+- Net cashflow calculations
+- Any downstream calculations
+
+**Acceptance:**
+- Total Recurring Monthly Costs remains displayed as `£X/mo`
+- Switching freq changes totals correctly
+
+---
+
+## T003 — UI: Add /mo /yr toggle per recurring row
+**Where:** `public/app.js`, `public/style.css` (if needed)
+
+In each recurring cost row, add a compact two-state toggle beside the amount input:
+- Options: `/mo` and `/yr`
+- Default: `/mo`
+- Must work on mobile without breaking layout
+
+Suggested UI layout:
+- Label input (left)
+- Amount input (right)
+- Frequency toggle (to the right of amount)
+- Remove button (as existing)
+
+**Acceptance:**
+- Each recurring row shows a working `/mo` `/yr` toggle
+- Toggle is subtle and consistent with the site styling
+- No layout shift / overflow on mobile
+
+---
+
+## T004 — Conversion behaviour when toggling (IMPORTANT)
+**Where:** `public/app.js`
+
+When a user toggles frequency, convert the value currently in the amount input so the *meaning stays the same*:
+
+- `/mo → /yr`: newAmount = oldAmount * 12
+- `/yr → /mo`: newAmount = oldAmount / 12
+
+Rules:
+- Only convert when the input contains a valid number
+- If empty or invalid, do nothing (just switch freq)
+- Formatting:
+  - For `/mo`, show up to 2 decimals (e.g. 18.92)
+  - For `/yr`, show 0 decimals unless needed (or keep 2dp if easiest)
+- Avoid floating point weirdness (use rounding to 2dp where appropriate)
+
+**Acceptance:**
+- Enter 227 `/mo`, toggle to `/yr` → shows 2724
+- Toggle back to `/mo` → shows 227
+- Totals update instantly and correctly
+
+---
+
+## T005 — History + exports must preserve the user’s unit
+**Where:** `public/app.js`
+
+1) Saving to History:
+- Persist `freq` along with `label` and `amount`
+
+2) Loading from History:
+- Restore `freq`
+- Restore displayed input value (`amount`) exactly as stored
+
+3) PDF export:
+- In any breakdown area where recurring line items are printed, show the unit:
+  - `Landlord Insurance — £227 / yr`
+  - `Service Charge — £50 / mo`
+
+4) XLSX export (if already present):
+- Include unit in the line item description or a separate column if easy
+
+**Acceptance:**
+- Reloading from history keeps `/mo` or `/yr` exactly as saved
+- PDF shows recurring items with correct unit
+- No regressions to existing PDF output
+
+---
+
+# Implementation notes
+- Keep all recurring calculations based on monthly values internally
+- Only add this to **Recurring Monthly Costs** (not Additional Costs)
+- Keep the UI clean: small toggle, no extra explanatory text
+- Ensure no console errors
+
+---
+
+# Done Definition
+- Users can enter recurring costs in monthly or yearly terms per row
+- Totals remain monthly and correct
+- History + PDF (and XLSX if applicable) preserve and display unit
+- Mobile layout remains stable

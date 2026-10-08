@@ -1,0 +1,77 @@
+TASK: Update the Deal Snapshot (top fixed bar) + Details panel to present the right investor metrics with responsive desktop/mobile behaviour, clear naming, and consistent formatting.
+
+GOALS:
+1) Desktop: show both “Net Yield (Asset)” and “Cash-on-Cash” when Mortgage is selected.
+2) Mobile: keep the snapshot compact (3 metrics). The 3rd metric slot should switch label+value depending on Purchase Type:
+   - Cash Purchase: show Net Yield (Asset)
+   - Mortgage: show Cash-on-Cash Return
+   Net Yield (Asset) must still be visible in Details.
+3) Formatting: Snapshot yields show 1 decimal place; Details yields show 2 decimals.
+4) UX feedback: add a subtle pulse/glow animation to the 3rd metric on mobile when the Purchase Type toggle changes AND when the 3rd metric value changes (debounced to avoid constant flicker).
+
+DEFINITIONS / NAMING (make consistent across app):
+- Gross Yield = annualRent / purchasePrice * 100
+- Net Yield (Asset) = (annualRent - annualOperatingCosts) / purchasePrice * 100
+  (annualOperatingCosts includes letting agent (inc VAT if toggled), recurring costs, void allowance, maintenance allowance)
+  Mortgage costs are excluded from Net Yield (Asset).
+- Cash-on-Cash Return = annualCashflowAfterMortgage / cashInvested * 100
+
+IMPORTANT: Avoid confusing labels like “NET YIELD (CASH-ON-CASH)”.
+Use these exact labels:
+- “Net Yield (Asset)”
+- “Cash-on-Cash”
+- “Gross Yield”
+
+RESPONSIVE SNAPSHOT SPEC:
+A) Desktop (>= 768px):
+- Snapshot shows 3 metrics when Cash Purchase:
+  [UPFRONT] [CASHFLOW] [NET YIELD (ASSET)]
+- Snapshot shows 4 metrics when Mortgage:
+  [UPFRONT] [CASHFLOW] [NET YIELD (ASSET)] [CASH-ON-CASH]
+- Add tooltips on the yield metrics:
+  Net Yield (Asset) tooltip:
+    “Net Yield (Asset) = (Annual rent – operating costs) ÷ purchase price. Excludes mortgage.”
+  Cash-on-Cash tooltip:
+    “Cash-on-Cash = annual cashflow after mortgage ÷ cash invested. Changes with leverage.”
+
+B) Mobile (< 768px):
+- Snapshot always shows 3 metrics:
+  [UPFRONT] [CASHFLOW] [RETURN]
+- RETURN metric behaviour:
+  - Cash Purchase: label “NET YIELD” and value = Net Yield (Asset)
+  - Mortgage: label “CASH-ON-CASH” and value = Cash-on-Cash Return
+- When Purchase Type toggles, RETURN metric should:
+  - change label + value
+  - run a subtle pulse/glow animation for ~600ms so user notices
+- Net Yield (Asset) must still be shown in Details when Mortgage is selected (since it no longer shows in mobile snapshot).
+
+FORMATTING:
+- Snapshot yields (Net Yield/Cash-on-Cash/Gross Yield if shown) display 1 decimal place: toFixed(1) + “%”
+- Details yields display 2 decimals: toFixed(2) + “%”
+- Monthly cashflow can remain whole pounds unless already using decimals; keep current formatting.
+
+IMPLEMENTATION NOTES:
+1) Ensure there is a single shared calculation function for metrics used by:
+   - Snapshot bar
+   - Details panel
+   - Deal analysis results
+   so values cannot diverge.
+2) Add a small debounce (e.g. 250–400ms) before triggering the “value changed” glow on mobile RETURN to avoid flicker while typing.
+3) Keep the layout clean and aligned; do not make the snapshot taller.
+
+DELIVERABLES:
+- Update the snapshot rendering to be responsive as above.
+- Update labels site-wide to the standardised naming.
+- Update formatting rules (1dp snapshot, 2dp details).
+- Add pulse/glow animation (CSS class + JS toggle) for mobile RETURN on:
+   a) purchase type change
+   b) RETURN value change (debounced)
+- Provide list of files changed and brief summary of what changed.
+
+QA CHECKS (must pass):
+- Toggling VAT changes Net Yield (Asset) and Cashflow appropriately.
+- Switching Cash Purchase ↔ Mortgage changes mobile RETURN label/value and triggers pulse.
+- Desktop shows both Net Yield (Asset) and Cash-on-Cash when Mortgage is on.
+- Snapshot yields show 1dp; Details yields show 2dp.
+- Net Yield (Asset) does not change when Mortgage toggled (still shown in Details).
+- Cash-on-Cash does change when Mortgage inputs change (rate, deposit, etc.).

@@ -24,13 +24,19 @@ Key features include SDLT calculation for various scenarios, comprehensive yield
 
 The project is set up for native iOS and Android deployment via **Capacitor**:
 - `capacitor.config.json` — app config (Bundle ID: `co.uk.rentalmetrics.app`, webDir: `mobile/www`)
-- `scripts/build-mobile.sh` — copies `public/` → `mobile/www/` and fills template variables
+- `scripts/build-mobile.sh` — copies `artifacts/rentalmetrics/public/` → `mobile/www/` and fills template variables
 - `mobile/www/` — built web assets bundled into the native shell
 - API calls use `API_BASE` in `app.js`: empty string on web, `https://rentalmetrics.co.uk` in-app
-- CORS is enabled in `server.js` for `capacitor://localhost` and `http://localhost` origins
+- CORS is enabled in `artifacts/api-server/server.cjs` for `capacitor://localhost` and `http://localhost` origins
 - See `MOBILE_SETUP.md` for full instructions to build iOS/Android on a Mac
 
 ## External Dependencies
+The existing vanilla website is served by `artifacts/rentalmetrics/server.cjs` at `/`.
+The original calculation and suggestions API is served by `artifacts/api-server/server.cjs` at `/api`.
+Keep server-side HTML metadata replacement; this website is not a static React SPA.
+History remains in browser local storage and suggestions remain in the existing JSON file storage.
+Run the artifact-owned workflows to preview each service.
+
 - **Google Maps API**: Used for address autocomplete, map previews, and postcode extraction.
 - **Node.js**: Backend runtime environment.
 - **Express**: Web framework for the Node.js backend.

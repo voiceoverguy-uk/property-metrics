@@ -1,0 +1,58 @@
+
+Goal: Enhance RentalMetrics (plain CSS project) by adding 8 practical investor features + clear tooltips, without cluttering the UI. Keep it mobile-friendly and consistent with the current design.
+
+Constraints:
+	•	No Tailwind. Use existing styles in public/style.css.
+	•	Preserve current layout/flow. Add new inputs in logical sections with clean spacing.
+	•	All currency in GBP (£). UK wording/spelling.
+	•	Add sensible defaults.
+	•	Make calculations update correctly in the Deal Analysis results and PDF export (if PDF is currently generated from the same data).
+	•	Add tooltips (small “?” icons) explaining key metrics and new inputs.
+
+⸻
+
+1) Void / Vacancy Allowance (%)
+
+Add a new input in the “Yield Adjustments” area:
+	•	Label: Void Allowance (%)
+	•	Default: 5
+	•	Help tooltip: “Allowance for empty periods. 5% means rent is reduced by 5% across the year.”
+	•	Calculation: Effective Annual Rent = Annual Rent × (1 − void%/100)
+	•	Use effective annual rent in: gross yield, net yield, cash flow, ROI calculations.
+
+2) Maintenance Allowance (choose %) OR (£/year)
+
+Add a toggle with two modes (radio or segmented):
+	•	Maintenance (% of rent) default 8%
+	•	Maintenance (£ per year) default £0
+Tooltip: “Ongoing repairs/maintenance allowance. Many investors budget 5–10% of rent.”
+	•	If % mode: annual maintenance = effective annual rent × (maintenance%/100)
+	•	If £ mode: annual maintenance = entered amount
+	•	Include this in net annual rent and net yield calculations.
+
+3) Stress Test Interest Rate (%)
+
+In Mortgage section, add:
+	•	Label: Stress Test Rate (%)
+	•	Default: 7.0
+	•	Add a “Run Stress Test” button or auto-calc toggle.
+Output in results:
+	•	Monthly mortgage at stress rate
+	•	Monthly cash flow at stress rate
+	•	“Cash Flow Positive/Negative at Stress Rate” badge
+Tooltip: “Checks affordability if rates rise (e.g. 7%).”
+
+4) Refinance Scenario (simple)
+
+Add an optional “Refinance” collapsible section in results:
+Inputs:
+	•	Years until refinance default 2
+	•	Annual price growth (%) default 3
+	•	Refinance LTV (%) default 75
+Outputs:
+	•	Projected property value
+	•	New mortgage amount at chosen LTV
+	•	Equity released (if any)
+	•	Updated cash invested after equity release
+	•	Updated cash-on-cash return (based on revised cash invested)
+Tooltip: “Simple refinance model for BRR-style investing. For guidance only.”

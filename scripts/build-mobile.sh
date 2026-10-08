@@ -7,7 +7,7 @@ echo "Building mobile web assets..."
 mkdir -p mobile/www
 
 # Copy all public files
-cp -r public/. mobile/www/
+cp -r artifacts/rentalmetrics/public/. mobile/www/
 
 # Replace template variables in index.html with mobile-appropriate values
 sed -i \
