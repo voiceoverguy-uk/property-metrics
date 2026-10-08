@@ -191,6 +191,32 @@ body.sdlt-mode .layout {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+#ftbEligibility {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+#ftbEligibility label {
+  align-items: flex-start;
+  margin-top: 10px;
+  font-weight: 400;
+}
+
+#ftbEligibility input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  margin-top: 3px;
+  accent-color: #B11217;
+}
+
+#ftbEligibility input:focus-visible {
+  outline: 2px solid #B11217;
+  outline-offset: 2px;
+}
+
 .form-group input:focus {
   outline: none;
   border-color: #B11217;
