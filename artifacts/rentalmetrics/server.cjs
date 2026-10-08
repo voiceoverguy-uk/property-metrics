@@ -75,6 +75,11 @@ function serveHtml(req, res) {
   res.send(html.replace(/\?v=\d+/g, '?v=' + CACHE_BUST));
 }
 app.get(['/', '/deal-analyser', '/simple-analyser', '/sdlt-calculator'], serveHtml);
+app.get('/privacy', (req, res) => res.redirect(301, '/privacy-policy'));
+app.get('/privacy-policy', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'privacy-policy.html'));
+});
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain').sendFile(path.join(__dirname, 'public', 'robots.txt'));
 });
